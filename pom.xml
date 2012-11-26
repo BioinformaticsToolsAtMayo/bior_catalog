@@ -7,10 +7,8 @@
 	<name>bior_catalog</name>
 	<build>
 		<plugins>
-			<!-- 
-				Build all necessary files into a zip file for ez deploy.
-				Run this as "Run As..." : "Maven build..." : "package"
-			-->
+			<!-- Build all necessary files into a zip file for ez deploy. Run this 
+				as "Run As..." : "Maven build..." : "package" -->
 			<plugin>
 				<artifactId>maven-assembly-plugin</artifactId>
 				<version>2.3</version>
@@ -28,9 +26,33 @@
 					</execution>
 				</executions>
 			</plugin>
+			<plugin>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<version>1.7</version>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>run</goal>
+						</goals>
+						<configuration>
+							<target>
+								<echo>Unzipping distribution</echo>
+
+								<!-- use exec task over unzip task to preserve perms -->
+								<exec executable="unzip">
+									<arg value="target/bior*.zip" />
+									<arg value="-d" />
+									<arg value="target" />
+								</exec>
+							</target>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
-	
+
 	<dependencies>
 		<dependency>
 			<groupId>edu.mayo</groupId>
