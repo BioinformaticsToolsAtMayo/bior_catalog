@@ -58,7 +58,7 @@ public class NCBIGenePublisher {
                 System.out.println("Processing File: " + filename);
                 String chrstr = filename.replaceAll(".gbs.txt", "");
                 String c = GenomicObjectUtils.computechr(chrstr); 
-                System.out.println(c);
+                //System.out.println(c);
                 process(chrDir + filename, c, new PrintPipe());
             }
         } catch (Exception ex) {
@@ -71,8 +71,9 @@ public class NCBIGenePublisher {
 	}
     
     private void process(String chrFile, String chr, Pipe load) {
-        //BioJavaRichSequence2ThriftGenes bj = new BioJavaRichSequence2ThriftGenes(NSpace.NCBIGene, version, chr);
-        BioJavaRichSequence2JSON bj = new BioJavaRichSequence2JSON(chr, ); //just a placeholder...
+        String[] featureTypes = new String[1];
+        featureTypes[0] = "gene"; //CDS, mRNA, exon, ...
+        BioJavaRichSequence2JSON bj = new BioJavaRichSequence2JSON(chr, featureTypes); //just a placeholder...
         
         Pipe p = new Pipeline(new GenbankPipe(), bj, new DrainPipe(), load);
         p.setStarts(Arrays.asList(chrFile));
