@@ -1,0 +1,5 @@
+The attached perl script will download all the hgnc data with the column specified in the url. You can modify the url to only get the columns you are interested in. Alternatively, you can generate a new perl code by following instructions here: http://www.genenames.org/data/gdlw_columndef.html . See the section about "make perl code". Example execution: (from one directory up aka home bior_etl)
+
+bin/getHGMDData.pl > hgmdData.txt
+
+
