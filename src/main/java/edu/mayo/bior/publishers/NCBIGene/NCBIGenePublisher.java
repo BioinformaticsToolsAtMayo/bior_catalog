@@ -51,7 +51,7 @@ public class NCBIGenePublisher {
             System.out.println("Parsing Genes from: " + chrDir);            
             
             //Pipeline p = new Pipeline(new LSPipe(false), new GrepPipe(".*gbs.txt"));
-            Pipeline p = new Pipeline(new LSPipe(false), new GrepPipe(".*gbs.txt"));
+            Pipeline p = new Pipeline(new Pipe[] {new LSPipe(false), new GrepPipe(".*gbs.txt")});
             p.setStarts(Arrays.asList(new String[] {chrDir}));
             for(int i = 0; p.hasNext(); i++){ 
                 String filename = (String)p.next();
@@ -75,7 +75,7 @@ public class NCBIGenePublisher {
         featureTypes[0] = "gene"; //CDS, mRNA, exon, ...
         BioJavaRichSequence2JSON bj = new BioJavaRichSequence2JSON(chr, featureTypes); //just a placeholder...
         
-        Pipe p = new Pipeline(new GenbankPipe(), bj, new DrainPipe(), load);
+        Pipe p = new Pipeline(new Pipe[] {new GenbankPipe(), bj, new DrainPipe(), load});
         p.setStarts(Arrays.asList(new String[] {chrFile}));
         for(int i=0; p.hasNext(); i++){
             p.next();
