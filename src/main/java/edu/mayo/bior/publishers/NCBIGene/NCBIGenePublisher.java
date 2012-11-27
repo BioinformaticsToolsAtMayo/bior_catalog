@@ -46,15 +46,17 @@ public class NCBIGenePublisher {
         NCBIGenePublisher publisher = new NCBIGenePublisher();
         System.out.println(args.length);
         //publisher.exec("/tmp/");
-        if(args.length >= 2){
-            publisher.exec(args[1]);
+        if(args.length >= 1){
+            publisher.exec(args[0]);
         }else{
             usage();
         }
     } 
 
     public void exec(String outputDir) {
-    	//System.out.println("Started loading NCBIGenes.. at:" + new Timestamp(new Date().getTime()));
+    	System.out.println("Started loading NCBIGenes.. at:" + new Timestamp(new Date().getTime()));
+        String outfile = outputDir + geneCatalogFile;
+        System.out.println("Outputing File to: " + outfile);
 
 		SystemProperties sysprop;
         try {
@@ -72,7 +74,7 @@ public class NCBIGenePublisher {
                 String chrstr = filename.replaceAll(".gbs.txt", "");
                 String c = GenomicObjectUtils.computechr(chrstr); 
                 //System.out.println(c);
-                processGenes(chrDir + filename, c, new WritePipe(outputDir + geneCatalogFile));
+                processGenes(chrDir + filename, c, new WritePipe(outfile));
             }
         } catch (Exception ex) {
             Logger.getLogger(NCBIGenePublisher.class.getName()).log(Level.SEVERE, null, ex);
