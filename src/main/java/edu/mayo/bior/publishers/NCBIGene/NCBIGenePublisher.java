@@ -76,7 +76,7 @@ public class NCBIGenePublisher {
         BioJavaRichSequence2JSON bj = new BioJavaRichSequence2JSON(chr, featureTypes); //just a placeholder...
         
         Pipe p = new Pipeline(new GenbankPipe(), bj, new DrainPipe(), load);
-        p.setStarts(Arrays.asList(chrFile));
+        p.setStarts(Arrays.asList(new String[] {chrFile}));
         for(int i=0; p.hasNext(); i++){
             p.next();
         }
