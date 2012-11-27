@@ -9,9 +9,12 @@ import com.tinkerpop.pipes.transform.IdentityPipe;
 import com.tinkerpop.pipes.util.Pipeline;
 import edu.mayo.pipes.DrainPipe;
 import edu.mayo.pipes.JSON.BioJavaRichSequence2JSON;
+import edu.mayo.pipes.JSON.SimpleDrillPipe;
+import edu.mayo.pipes.MergePipe;
 import edu.mayo.pipes.PrintPipe;
 import edu.mayo.pipes.UNIX.GrepPipe;
 import edu.mayo.pipes.UNIX.LSPipe;
+import edu.mayo.pipes.WritePipe;
 import edu.mayo.pipes.bioinformatics.GenbankPipe;
 import edu.mayo.pipes.util.GenomicObjectUtils;
 import edu.mayo.pipes.util.SystemProperties;
@@ -59,7 +62,8 @@ public class NCBIGenePublisher {
                 String chrstr = filename.replaceAll(".gbs.txt", "");
                 String c = GenomicObjectUtils.computechr(chrstr); 
                 //System.out.println(c);
-                process(chrDir + filename, c, new PrintPipe());
+                Pipe load = new WritePipe("/tmp/genes.tab"); //new PrintPipe();
+                process(chrDir + filename, c, load);
             }
         } catch (Exception ex) {
             Logger.getLogger(NCBIGenePublisher.class.getName()).log(Level.SEVERE, null, ex);
@@ -74,8 +78,18 @@ public class NCBIGenePublisher {
         String[] featureTypes = new String[1];
         featureTypes[0] = "gene"; //CDS, mRNA, exon, ...
         BioJavaRichSequence2JSON bj = new BioJavaRichSequence2JSON(chr, featureTypes); //just a placeholder...
+        String[] drillops = new String[3];
+        drillops[0] = "chr";
+        drillops[1] = "minBP";
+        drillops[2] = "maxBP";
         
-        Pipe p = new Pipeline(new GenbankPipe(), bj, new DrainPipe(), load);
+        
+        Pipe p = new Pipeline(new GenbankPipe(), 
+                              bj, 
+                              new DrainPipe(), 
+                              new SimpleDrillPipe(true, drillops), 
+                              new MergePipe("\t", true),
+                              load);
         p.setStarts(Arrays.asList(chrFile));
         for(int i=0; p.hasNext(); i++){
             p.next();
