@@ -42,8 +42,9 @@ public class NCBIGenePublisher {
         System.out.println("usage: NCBIGenePublisher <catalogDir>");
     }
     
-    public static void main(String[] args) {	
+    public static void main(String[] args) {	 
         NCBIGenePublisher publisher = new NCBIGenePublisher();
+        System.out.println(args.length);
         //publisher.exec("/tmp/");
         if(args.length >= 2){
             publisher.exec(args[1]);
