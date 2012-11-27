@@ -59,5 +59,10 @@
 			<artifactId>pipes</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
+		<dependency>
+			<groupId>com.google.code.externalsorting</groupId>
+			<artifactId>externalsortinginjava</artifactId>
+			<version>0.1.1</version>
+		</dependency>
 	</dependencies>
 </project>
