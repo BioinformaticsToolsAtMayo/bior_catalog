@@ -52,7 +52,7 @@ public class NCBIGenePublisher {
             
             //Pipeline p = new Pipeline(new LSPipe(false), new GrepPipe(".*gbs.txt"));
             Pipeline p = new Pipeline(new LSPipe(false), new GrepPipe(".*gbs.txt"));
-            p.setStarts(Arrays.asList(chrDir));
+            p.setStarts(Arrays.asList(new String[] {chrDir}));
             for(int i = 0; p.hasNext(); i++){ 
                 String filename = (String)p.next();
                 System.out.println("Processing File: " + filename);
