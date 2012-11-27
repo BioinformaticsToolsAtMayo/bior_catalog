@@ -12,6 +12,7 @@ import edu.mayo.pipes.JSON.BioJavaRichSequence2JSON;
 import edu.mayo.pipes.PrintPipe;
 import edu.mayo.pipes.UNIX.GrepPipe;
 import edu.mayo.pipes.UNIX.LSPipe;
+import edu.mayo.pipes.WritePipe;
 import edu.mayo.pipes.bioinformatics.GenbankPipe;
 import edu.mayo.pipes.util.GenomicObjectUtils;
 import edu.mayo.pipes.util.SystemProperties;
@@ -35,12 +36,22 @@ import java.util.logging.Logger;
  * @author m102417
  */
 public class NCBIGenePublisher {
-        public static void main(String[] args) {	
+    String geneCatalogFile = "genes.tab";
+    
+    public static void usage(){
+        System.out.println("usage: NCBIGenePublisher <catalogDir>");
+    }
+    
+    public static void main(String[] args) {	
         NCBIGenePublisher publisher = new NCBIGenePublisher();
-        publisher.exec();
+        if(args.length > 1){
+            publisher.exec(args[1]);
+        }else{
+            usage();
+        }
     } 
 
-    public void exec() {
+    public void exec(String outputDir) {
     	//System.out.println("Started loading NCBIGenes.. at:" + new Timestamp(new Date().getTime()));
 
 		SystemProperties sysprop;
@@ -59,7 +70,7 @@ public class NCBIGenePublisher {
                 String chrstr = filename.replaceAll(".gbs.txt", "");
                 String c = GenomicObjectUtils.computechr(chrstr); 
                 //System.out.println(c);
-                process(chrDir + filename, c, new PrintPipe());
+                processGenes(chrDir + filename, c, new WritePipe(outputDir + geneCatalogFile));
             }
         } catch (Exception ex) {
             Logger.getLogger(NCBIGenePublisher.class.getName()).log(Level.SEVERE, null, ex);
@@ -70,7 +81,7 @@ public class NCBIGenePublisher {
         System.out.println("Completed loading NCBIGenes.. at:" + new Timestamp(new Date().getTime()));
 	}
     
-    private void process(String chrFile, String chr, Pipe load) {
+    private void processGenes(String chrFile, String chr, Pipe load) {
         String[] featureTypes = new String[1];
         featureTypes[0] = "gene"; //CDS, mRNA, exon, ...
         BioJavaRichSequence2JSON bj = new BioJavaRichSequence2JSON(chr, featureTypes); //just a placeholder...
