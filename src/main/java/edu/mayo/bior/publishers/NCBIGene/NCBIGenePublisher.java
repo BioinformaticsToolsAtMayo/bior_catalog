@@ -9,6 +9,8 @@ import com.tinkerpop.pipes.transform.IdentityPipe;
 import com.tinkerpop.pipes.util.Pipeline;
 import edu.mayo.pipes.DrainPipe;
 import edu.mayo.pipes.JSON.BioJavaRichSequence2JSON;
+import edu.mayo.pipes.JSON.SimpleDrillPipe;
+import edu.mayo.pipes.MergePipe;
 import edu.mayo.pipes.PrintPipe;
 import edu.mayo.pipes.UNIX.GrepPipe;
 import edu.mayo.pipes.UNIX.LSPipe;
@@ -74,7 +76,10 @@ public class NCBIGenePublisher {
                 String chrstr = filename.replaceAll(".gbs.txt", "");
                 String c = GenomicObjectUtils.computechr(chrstr); 
                 //System.out.println(c);
+                //processGenes(chrDir + filename, c, new PrintPipe());
                 processGenes(chrDir + filename, c, new WritePipe(outfile));
+                
+                
             }
         } catch (Exception ex) {
             Logger.getLogger(NCBIGenePublisher.class.getName()).log(Level.SEVERE, null, ex);
@@ -89,8 +94,12 @@ public class NCBIGenePublisher {
         String[] featureTypes = new String[1];
         featureTypes[0] = "gene"; //CDS, mRNA, exon, ...
         BioJavaRichSequence2JSON bj = new BioJavaRichSequence2JSON(chr, featureTypes); //just a placeholder...
+        String[] paths = new String[3];
+        paths[0] = "chr";
+        paths[1] = "minBP";
+        paths[2] = "maxBP";
         
-        Pipe p = new Pipeline(new Pipe[] {new GenbankPipe(), bj, new DrainPipe(), load});
+        Pipe p = new Pipeline(new GenbankPipe(), bj, new DrainPipe(), new SimpleDrillPipe(true, paths), new MergePipe("\t", true), load);
         p.setStarts(Arrays.asList(new String[] {chrFile}));
         for(int i=0; p.hasNext(); i++){
             p.next();
