@@ -48,7 +48,7 @@ public class NCBIGenePublisher {
     public static void main(String[] args) {	 
         NCBIGenePublisher publisher = new NCBIGenePublisher();
         System.out.println(args.length);
-        //publisher.exec("/tmp/");
+        //publisher.exec("/tmp/"); //
         if(args.length >= 1){
             publisher.exec(args[0]);
         }else{
