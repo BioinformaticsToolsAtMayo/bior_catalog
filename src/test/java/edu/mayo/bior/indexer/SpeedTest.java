@@ -61,8 +61,6 @@ public class SpeedTest {
 	@Test
 	// Estimate: 14s for 4M lookups (286,000/s), 1.7GB mem used
 	public void memory() throws IOException {
-		if(true) 
-			return;
 		System.out.println("=================================");
 		System.out.println("Perform in-memory search...");
 		double start = System.currentTimeMillis();
@@ -83,8 +81,6 @@ public class SpeedTest {
 	@Test
 	// Estimate: 79s for 4M lookups (50,600/s), 1GB mem used
 	public void database() throws ClassNotFoundException, SQLException, IOException {
-		if( true)
-			return;
 		System.out.println("=================================");
 		System.out.println("Perform database search...");
 		double start = System.currentTimeMillis();
