@@ -16,7 +16,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -25,11 +28,9 @@ import com.google.code.externalsorting.ExternalSort;
 import net.sf.samtools.util.BlockCompressedInputStream;
 import net.sf.samtools.util.BlockCompressedOutputStream;
 
-public class IndexerFile extends IndexUtils {
+public class IndexerFile {
 
-	// TODO:  Make one to many Id->Positions in case Id is NOT unique
-
-	
+	private IndexUtils utils = new IndexUtils();
 	
 	public static void main(String[] args) {
 		try {
@@ -57,18 +58,18 @@ public class IndexerFile extends IndexUtils {
 		
 		// Save ALL indexes, separated by tabs, based on rsId in column 2 (0-based)
 		System.out.println("Creating indexes...");
-		zipIndexesToTextFile(bgzipFile, "\t", 3, null, indexFileUnsorted);
+		utils.zipIndexesToTextFile(bgzipFile, "\t", 3, null, indexFileUnsorted);
 		System.out.println("Sorting index file...");
 		SortExternal.sortIndexFile(indexFileUnsorted, indexFileSorted, false);
 
 		
 		// Given a set of sample keys / ids, get the rows from the bgzip file and save to txt file
-		List<String> sampleKeys = getSampleVariantIds();
+		List<String> sampleKeys = utils.getSampleVariantIds();
 		System.out.println("Finding sample variant ids...");
 		HashMap<String,List<Long>> matchingIndexes = findIndexes(sampleKeys, indexFileSorted);
 		List<String> lines = getLinesByIndex(bgzipFile, matchingIndexes);
 		System.out.println("Writing results to output txt file...");
-		writeLines(lines, queryResultTxt);
+		utils.writeLines(lines, queryResultTxt);
 		System.out.println("DONE.");
 	}
 	
@@ -80,12 +81,12 @@ public class IndexerFile extends IndexUtils {
 		File queryResultTxt = new File("resources/queryResults.variants.txt");
 
 		// Given a set of sample keys / ids, get the rows from the bgzip file and save to txt file
-		List<String> sampleKeys = getSampleVariantIds();
+		List<String> sampleKeys = utils.getSampleVariantIds();
 		System.out.println("Finding sample variant ids...");
 		HashMap<String,List<Long>> matchingIndexes = findIndexes(sampleKeys, indexFileSorted);
 		List<String> lines = getLinesByIndex(bgzipFile, matchingIndexes);
 		System.out.println("Writing results to output txt file...");
-		writeLines(lines, queryResultTxt);
+		utils.writeLines(lines, queryResultTxt);
 		double end = System.currentTimeMillis();
 		System.out.println("DONE.  Runtime = " + (end-start)/1000.0);
 	}
@@ -115,13 +116,33 @@ public class IndexerFile extends IndexUtils {
 	public HashMap<String,List<Long>> findIndexes(List<String> idsToFind, File idxFileSorted) throws IOException {
 		HashMap<String,List<Long>> matchingIndexes = new HashMap<String,List<Long>>();
 		RandomAccessFile idxFileRnd = new RandomAccessFile(idxFileSorted, "r");
-		for(String id : idsToFind) {
-			if(matchingIndexes.keySet().contains(id)) 
-				continue;
-			
+		int count = 0;
+		// Remove any duplicate ids by assigning to a HashSet
+		double start = System.currentTimeMillis();
+		Set<String> idSet = new HashSet<String>(idsToFind);
+		Iterator<String> it = idSet.iterator();
+		double end = System.currentTimeMillis();
+		System.out.println("Time to create set from list: " + (end-start)/1000.0);
+		System.out.println("Set size: " + idSet.size());
+		int maxMem = 0;
+		while(it.hasNext()) {
+			String id = it.next();
+			count++;
+			if(count % 10000 == 0 ) {
+				//System.out.println(".");
+				double now = System.currentTimeMillis();
+				int numPerSec = (int)(count/((now-end)/1000.0));
+				long mem = utils.getMemoryUseMB();
+				if(mem > maxMem)
+					maxMem = (int)mem;
+				System.out.println(count + "\t #/sec: " + numPerSec + "\t Est time: " + ((idSet.size()-count)/numPerSec) + " s  " + mem + "MB");
+			}
 			List<Long> positions = getPositionsForId(id, idxFileRnd);
 			matchingIndexes.put(id, positions);
 		}
+		System.out.println("Max memory: " + maxMem);
+
+		System.out.println();
 		return matchingIndexes;
 	}
 	

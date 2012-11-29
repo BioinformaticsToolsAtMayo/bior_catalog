@@ -2,8 +2,6 @@ package edu.mayo.bior.indexer;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.sql.Connection;
@@ -13,16 +11,20 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.Set;
+
+import com.jayway.jsonpath.JsonPath;
 
 import net.sf.samtools.util.BlockCompressedInputStream;
 
-public class IndexerDatabase extends IndexUtils {
+public class IndexerDatabase {
 
+	private IndexUtils utils = new IndexUtils();
+	
 	public static void main(String[] args) {
 		double start = System.currentTimeMillis();
 		try {
@@ -49,13 +51,13 @@ public class IndexerDatabase extends IndexUtils {
 		}
 		
 	    Connection dbConn = getConnectionH2(thousandGenomesDb);
-	    createTable(false, dbConn);
+	    createTable(false, 200, dbConn);
 
 		// Save ALL indexes, separated by tabs, based on rsId in column 3 (1-based)
 	    System.out.println("Adding items to database...");
 		//addZipIndexesToDb(bgzipFile, 3, false, "\t", dbConn);
 	    double start = System.currentTimeMillis();
-	    zipIndexesToTextFile(bgzipFile, "\t", 3, null, tmpTxt);
+	    utils.zipIndexesToTextFile(bgzipFile, "\t", 3, null, tmpTxt);
 	    double end = System.currentTimeMillis();
 	    System.out.println("runtime: " + (end-start)/1000.0);
 	    textIndexesToDb(dbConn, false, tmpTxt);
@@ -63,13 +65,13 @@ public class IndexerDatabase extends IndexUtils {
 		createDbTableIndex(dbConn);
 
 		// Given a set of sample keys / ids, get the rows from the bgzip file and save to txt file
-		List<String> sampleKeys = getSampleVariantIds();
+		List<String> sampleKeys = utils.getSampleVariantIds();
 		System.out.println("Find positions based on sample keys...");
 		HashMap<String,List<Long>> key2posMap = findIndexes(sampleKeys, false, dbConn);
 		System.out.println("Find lines in zip file based on positions...");
-		HashMap<String,List<String>> key2LinesMap = getZipLinesByIndex(bgzipFile, key2posMap);
+		HashMap<String,List<String>> key2LinesMap = utils.getZipLinesByIndex(bgzipFile, key2posMap);
 		System.out.println("Write lines to file...");
-		writeLines(key2LinesMap, queryResultTxt);
+		utils.writeLines(key2LinesMap, queryResultTxt);
         
         dbConn.close();
         System.out.println("DONE.");
@@ -78,9 +80,13 @@ public class IndexerDatabase extends IndexUtils {
 	
 	public Connection getConnectionH2(File databaseFile) throws ClassNotFoundException, SQLException, IOException {
 		Class.forName("org.h2.Driver");
-		System.out.println("Database path: " + databaseFile.getCanonicalPath());
-        String url = "jdbc:h2:file:" + databaseFile.getCanonicalPath();
+		String dbPath = databaseFile.getCanonicalPath().replace(".h2.db", "");
+		System.out.println("Database path: " + dbPath);
+        String url = "jdbc:h2:file:" + dbPath + ";FILE_LOCK=SERIALIZED";
+        double start = System.currentTimeMillis();
         Connection conn = DriverManager.getConnection(url, "sa", "");
+        double end = System.currentTimeMillis();
+        System.out.println("Time to connect to database: " + (end-start)/1000.0);
         return conn;
 	}
 	
@@ -95,10 +101,10 @@ public class IndexerDatabase extends IndexUtils {
         return conn;
 	}
 	
-	public void createTable(boolean isKeyInteger, Connection dbConn) throws SQLException {
+	private void createTable(boolean isKeyInteger, int maxKeyLength, Connection dbConn) throws SQLException {
         final String SQL = "CREATE TABLE Indexer " 
         		+ "("
-        		+   (isKeyInteger ? "Key BIGINT," : "Key VARCHAR(200), ")
+        		+   (isKeyInteger ? "Key BIGINT," : "Key VARCHAR(" + maxKeyLength + "), ")
         		+   "FilePos BIGINT" 
         		+ ")";
         Statement stmt = dbConn.createStatement();
@@ -107,65 +113,60 @@ public class IndexerDatabase extends IndexUtils {
 	}
 	
 	
-	// WARNING!! FOR SOME REASON, ATTEMPTING TO READ FROM THE GZIP FILE AND WRITE DIRECTLY TO THE DATABASE
-	//   STORES ALL OF THE STRINGS INTO MEMORY FOR THE H2 PAGESTORE, AND THOSE STRINGS ARE ****NOT**** GARBAGE COLLECTED
-	//   WHICH BLOWS THE HEAP!!!!!!!!!!!!!!!!!!!!!!!!
-	// INSTEAD, USE THE OTHER METHODS TO WRITE THE KEY,POS PAIRS TO A TEMP TEXT FILE, THEN WRITE TO THE DATABASE.
-	public void zipIndexesToDb(File bgzipFile, int keyColumn, boolean isKeyInteger, String delimiter, Connection dbConn) throws NumberFormatException, SQLException, IOException, InterruptedException {
-		long fileLen = bgzipFile.length();
-		BlockCompressedInputStream instr = new BlockCompressedInputStream(bgzipFile);
+	/** NOTE: For some reason, attempting to read from the bgzip file and write DIRECTLY to the database
+	  * saves all of the strings into memory for the H2 pagestore, and those strings are ***NOT*** garbage collected
+	  * WHICH BLOWS THE HEAP!!!!!!!!!!!!!!!!!!!!!!!!
+	  * INSTEAD, this will first extract the key,fileposition pairs to a temporary text file, THEN write to the database.
+	  */
+	public void zipIndexesToDb(File bgzipFile, int keyColumn, String jsonPathToKey, boolean isKeyInteger, String delimiter, File newDb)
+	 throws NumberFormatException, SQLException, IOException, InterruptedException, ClassNotFoundException {
+		// Write the indexes to a flat text file
+		File tmpTxtIdxFile = new File(bgzipFile.getParent() + "/tmpIdx.txt");
+		utils.zipIndexesToTextFile(bgzipFile, delimiter, keyColumn, jsonPathToKey, tmpTxtIdxFile);
 		
-		String line = null;
-		long numObjects = 0;
-		long numBytesRead = 0;
-		long pos = 0;
-		long MB = 1024L * 1024L;
-		boolean isFirstLineRead = false;
+		int maxKeyLength = getMaxKeyLength(tmpTxtIdxFile);
+		
+		// Read the text file and write to database
+		BufferedReader fin = new BufferedReader(new FileReader(tmpTxtIdxFile)); //"/Users/m054457/Downloads/UcscDbSnp135/chr1.index.rsId.sorted.txt")); //tmpTxtIdxFile));
+		
+		Connection dbConn = getConnectionH2(newDb);
+		createTable(isKeyInteger, maxKeyLength, dbConn);
 		
 		final String SQL = "INSERT INTO Indexer (Key, FilePos) VALUES (?, ?)";
 		PreparedStatement stmt = dbConn.prepareStatement(SQL);
-		int numInBatch = 0;
 		dbConn.setAutoCommit(true);
-		
-
-		
-		do {
-			if( isFirstLineRead )
-				pos = instr.getFilePointer();
-			line = instr.readLine();
-			isFirstLineRead = true;
-			if( line == null  ||  line.startsWith("#") )
-				continue;
-			
-			numObjects++;
-			numBytesRead += line.length() + 1;
-				
-			//String[] cols = line.split(delimiter);
-			//String key = cols[keyColumn-1];
-			String key = getCol(line, delimiter, keyColumn);
+		String line = null;
+		while( (line = fin.readLine()) != null ) {
+			String key = utils.getCol(line, delimiter, 1);
+			Long pos = Long.valueOf(utils.getCol(line, delimiter, 2));
 			if(isKeyInteger)
 				stmt.setLong(1, Integer.valueOf(key));
 			else
 				stmt.setString(1, key);
 			stmt.setLong(2, pos);
-			//stmt.execute();
-			System.out.println(key + "\t" + pos);
-			dbConn.commit();
+			stmt.execute();
+		}
 
-			if( numObjects % 10000 == 0 ) {
-				System.out.println(key + "    " + numObjects 
-						+ ", avgBytesPerItem: " + (numBytesRead / numObjects) 
-						+ ", MBs read: " + (numBytesRead/MB) + ", Mem (MBs): " + (getMemoryUse()/MB));
-			}
-		} while( line != null );
-
-		
+		//tmpTxtIdxFile.delete();
+		createDbTableIndex(dbConn);
 		stmt.close();
-		
-		System.out.println("Num objects read: " + numObjects);
+		dbConn.close();
+		fin.close();
 	}
 	
 	
+	private int getMaxKeyLength(File tmpTxtIdxFile) throws IOException {
+		BufferedReader fin = new BufferedReader(new FileReader(tmpTxtIdxFile));
+		String line = null;
+		int maxKeyLen = 0;
+		while( (line = fin.readLine()) != null ) {
+			String key = line.split("\t")[0];
+			if(key.length() > maxKeyLen)
+				maxKeyLen = key.length();
+		}
+		return maxKeyLen;
+	}
+
 	private void textIndexesToDb(Connection dbConn, boolean isKeyInteger, File tmpTxt) throws NumberFormatException, SQLException, IOException {
 		long numObjects = 0;
 		long numBytesRead = 0;
@@ -194,7 +195,7 @@ public class IndexerDatabase extends IndexUtils {
 			if( numObjects % 10000 == 0 ) {
 				System.out.println(key + "    " + numObjects 
 						+ ", avgBytesPerItem: " + (numBytesRead / numObjects) 
-						+ ", MBs read: " + (numBytesRead/MB) + ", Mem (MBs): " + (getMemoryUse()/MB));
+						+ ", MBs read: " + (numBytesRead/MB) + ", Mem (MBs): " + (utils.getMemoryUse()/MB));
 			}
 		} while( line != null );
 
@@ -205,7 +206,7 @@ public class IndexerDatabase extends IndexUtils {
 	}
 	
 	
-	public void createDbTableIndex(Connection dbConn) throws SQLException {
+	private void createDbTableIndex(Connection dbConn) throws SQLException {
 		 final String SQL = "CREATE INDEX keyIndex ON Indexer (Key);";
 		 Statement stmt = dbConn.createStatement();
 		 stmt.execute(SQL);
@@ -218,7 +219,28 @@ public class IndexerDatabase extends IndexUtils {
 		final String SQL = "SELECT FilePos FROM Indexer WHERE Key = ?";
 		PreparedStatement stmt = dbConn.prepareStatement(SQL);
 		HashMap<String,List<Long>> key2posMap = new HashMap<String,List<Long>>();
-		for(String id : idsToFind) {
+		int count = 0;
+		// Remove any duplicate ids by assigning to a HashSet
+		double start = System.currentTimeMillis();
+		Set<String> idSet = new HashSet<String>(idsToFind);
+		Iterator<String> it = idSet.iterator();
+		double end = System.currentTimeMillis();
+		System.out.println("Time to create set from list: " + (end-start)/1000.0);
+		System.out.println("Set size: " + idSet.size());
+		IndexUtils utils = new IndexUtils();
+		long maxMem = 0;
+		while(it.hasNext()) {
+			String id = it.next();
+			count++;
+			if(count % 100000 == 0 ) {
+				//System.out.println(".");
+				double now = System.currentTimeMillis();
+				int numPerSec = (int)(count/((now-end)/1000.0));
+				long mem = utils.getMemoryUseMB();
+				if(mem > maxMem)
+					maxMem = mem;
+				System.out.println(count + "\t #/sec: " + numPerSec + "\t Est time: " + ((idSet.size()-count)/numPerSec) + " s  " + mem + "MB");
+			}
 			List<Long> positions = key2posMap.get(id);
 			if(positions == null) {
 				positions = new ArrayList<Long>();
@@ -237,6 +259,7 @@ public class IndexerDatabase extends IndexUtils {
 			}
 			rs.close();
 		}
+		System.out.println("Max memory: " + maxMem);
 		stmt.close();
 		return key2posMap;
 	}

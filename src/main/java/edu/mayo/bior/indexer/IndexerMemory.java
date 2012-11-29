@@ -1,30 +1,35 @@
 package edu.mayo.bior.indexer;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.zip.GZIPInputStream;
 
 import net.sf.samtools.util.BlockCompressedInputStream;
-import net.sf.samtools.util.BlockCompressedOutputStream;
 
-public class IndexerMemory extends IndexUtils {
+public class IndexerMemory  {
+	
+	private IndexUtils utils = new IndexUtils();
+	
 	public static void main(String[] args) {
 		try {
 			IndexerMemory zip = new IndexerMemory();
-			
+			IndexUtils utils = new IndexUtils();
 			File idxTxt = new File("resources/idxSorted.idx.txt");
 			File idxZip = new File("resources/idxSorted.idx.gz");
-			zip.bgzip(idxTxt, idxZip);
+			utils.bgzip(idxTxt, idxZip);
 			double start = System.currentTimeMillis();
-			zip.loadIndexZip(idxZip);
+			utils.loadIndexBgzip(idxZip);
 			double end = System.currentTimeMillis();
 			System.out.println("runtime = " + (end-start)/1000.0);
 		}catch(Exception e) {
@@ -38,11 +43,11 @@ public class IndexerMemory extends IndexUtils {
 		File queryResultTxt = new File("resources/queryResults.variants.txt");
 
 		// Given a set of sample keys / ids, get the rows from the bgzip file and save to txt file
-		List<String> sampleKeys = getSampleVariantIds();
-		HashMap<String,List<Long>> allIndexes  = loadIndexZip(indexFileOut);
+		List<String> sampleKeys = utils.getSampleVariantIds();
+		HashMap<String,List<Long>> allIndexes  = utils.loadIndexBgzip(indexFileOut);
 		HashMap<String,List<Long>> matchingIndexes = findIndexes(sampleKeys, allIndexes);
 		List<String> lines = getLinesByIndex(bgzipFile, matchingIndexes);
-		writeLines(lines, queryResultTxt);
+		utils.writeLines(lines, queryResultTxt);
 	}
 	
 	public void testGenes() throws IOException {
@@ -51,22 +56,42 @@ public class IndexerMemory extends IndexUtils {
 		File queryResultTxt = new File("resources/queryResults.genes.txt");
 
 		// Given a set of sample keys / ids, get the rows from the bgzip file and save to txt file
-		List<String> sampleKeys = getSampleGeneIds();
-		HashMap<String,List<Long>> allIndexes = loadIndexZip(indexFileOut);
+		List<String> sampleKeys = utils.getSampleGeneIds();
+		HashMap<String,List<Long>> allIndexes = utils.loadIndexBgzip(indexFileOut);
 		HashMap<String,List<Long>> matchingIndexes = findIndexes(sampleKeys, allIndexes);
 		List<String> lines = getLinesByIndex(bgzipFile, matchingIndexes);
-		writeLines(lines, queryResultTxt);
+		utils.writeLines(lines, queryResultTxt);
 	}
 	
 	
 	
 	public HashMap<String,List<Long>> findIndexes(List<String> idsToFind, HashMap<String,List<Long>> allIndexes) {
 		HashMap<String,List<Long>> matchingIndexes = new HashMap<String,List<Long>>();
-		for(String id : idsToFind) {
+		int count = 0;
+		// Remove any duplicate ids by assigning to a HashSet
+		double start = System.currentTimeMillis();
+		Set<String> idSet = new HashSet<String>(idsToFind);
+		Iterator<String> iter = idSet.iterator();
+		double end = System.currentTimeMillis();
+		System.out.println("Time to create set from list: " + (end-start)/1000.0);
+		System.out.println("Set size: " + idSet.size());
+		int maxMem = 0;
+		while(iter.hasNext()) {
+			String id = iter.next();
+			count++;
+			if(count % 100000 == 0 ) {
+				double now = System.currentTimeMillis();
+				int numPerSec = (int)(count/((now-end)/1000.0));
+				long mem = utils.getMemoryUseMB();
+				if(mem > maxMem)
+					maxMem = (int)mem;
+				System.out.println(count + "\t #/sec: " + numPerSec + "\t Est time: " + ((idSet.size()-count)/numPerSec) + " s  " + mem + "MB");
+			}
 			List<Long> positions = allIndexes.get(id);
-			if(positions != null)
-				matchingIndexes.put(id, positions);
+			matchingIndexes.put(id, positions);
 		}
+		System.out.println("Max memory: " + maxMem);
+
 		return matchingIndexes;
 	}
 	
@@ -90,4 +115,5 @@ public class IndexerMemory extends IndexUtils {
 		instr.close();
 		return linesOut;
 	}
+	
 }

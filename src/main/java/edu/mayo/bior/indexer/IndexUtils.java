@@ -6,7 +6,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
-import java.sql.Connection;
+import java.io.InputStreamReader;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -14,31 +14,71 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
-
-import com.jayway.jsonpath.JsonPath;
+import java.util.zip.GZIPInputStream;
 
 import net.sf.samtools.util.BlockCompressedInputStream;
 import net.sf.samtools.util.BlockCompressedOutputStream;
 
+import com.jayway.jsonpath.JsonPath;
+
 public class IndexUtils {
 
+	
+	/** 
+	 * 
+	 * @param args Consists of:<br>
+	 *   bgzipFilePath (the data file used as input that has several columns, one of which we will index on)<br>
+	 *   delimiter (the delimiter within the file, usually a comma or tab.  To specify a tab, use "TAB")
+	 *   keyColumns (the column in which the key occurs that we want to index on)
+	 *   jsonPathToKey (JSON path to the key/value pair that will be used for the index.  If the whole column will be indexed, then use "" for this parameter)
+	 *   indexTxtFileOut (path to the file that will contain the key-filePos index file)
+	 */
 	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-
+		try {
+			System.out.println("IndexUtils loading...");
+			double start = System.currentTimeMillis();
+			
+			String bgzip = args[0];
+			String delim = args[1];
+			if("TAB".equalsIgnoreCase(delim))
+				delim = "\t";
+			String keyCol = args[2];
+			String jsonPath = args[3];
+			String indexOutFile = args[4];
+			
+			IndexUtils utils = new IndexUtils();
+			// Bgzip 4M lines: 986MB mem, 12.75s
+			//utils.loadIndexBgzip(new File("/Users/m054457/Downloads/UcscDbSnp135/chr1.index.rsId.sorted.txt.bgz"));
+			// Gzip 4M lines: 1000MB mem, 12.2s
+			//utils.loadIndexGzip(new File("/Users/m054457/Downloads/UcscDbSnp135/chr1.index.rsId.sorted.txt.gz"));
+			// Text 4M lines:  922MB mem, 15.6s
+			utils.loadIndexTxt(new File("/Users/m054457/Downloads/UcscDbSnp135/chr1.index.rsId.sorted.txt"));
+			
+			//new IndexUtils().zipIndexesToTextFile(new File(bgzip), delim, Integer.valueOf(keyCol), jsonPath, new File(indexOutFile));
+			
+			double end = System.currentTimeMillis();
+			System.out.println("Done.  Elapsed time: " + (end-start)/1000.0);
+		}catch(Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void zipIndexesToTextFile(File bgzipFile, String delimiter, int keyColumn, File txtIndexOut) throws SQLException, IOException {
+		zipIndexesToTextFile(bgzipFile, delimiter, keyColumn, null, txtIndexOut);
 	}
 	
 	/**
-	 * 
+	 * Get the indexes from a bgzip file based on column and json path and store in a text file in (key,bgzipFilePosition) pairs
+	 * NOTE: The output is NOT sorted.  To do this, run SortExternal
 	 * @param bgzipFile
-	 * @param keyColumn
-	 * @param isKeyInteger Is the key an integer or a string?
 	 * @param delimiter
+	 * @param keyColumn
 	 * @param jsonPathToKey  Example: $.store.book[0].title   (If this is null or "", then the whole column will be used as the index key)
-	 * @param tmpTxt
+	 * @param txtIndexOut
 	 * @throws SQLException
 	 * @throws IOException
 	 */
-	public void zipIndexesToTextFile(File bgzipFile, String delimiter, int keyColumn, String jsonPathToKey, File tmpTxt) throws SQLException, IOException {
+	public void zipIndexesToTextFile(File bgzipFile, String delimiter, int keyColumn, String jsonPathToKey, File txtIndexOut) throws SQLException, IOException {
 		BlockCompressedInputStream instr = new BlockCompressedInputStream(bgzipFile);
 		
 		// Compile the JsonPath to make it faster and more reusable
@@ -47,11 +87,12 @@ public class IndexUtils {
 			jsonPath = JsonPath.compile(jsonPathToKey);
 		
 		String line = null;
-		FileOutputStream fout = new FileOutputStream(tmpTxt);
+		FileOutputStream fout = new FileOutputStream(txtIndexOut);
 		long pos = 0;
 		boolean isFirstLine = true;
 		final int MB = 1024*1024;
 		int numObjects = 0;
+		System.out.println("numObjs\tMem_MBs\tkey");
 		do {
 			if(! isFirstLine ) 
 				pos = instr.getFilePointer();
@@ -69,7 +110,7 @@ public class IndexUtils {
 			fout.write( (key + "\t" + pos + "\n").getBytes() );
 
 			if( numObjects % 10000 == 0 ) {
-				System.out.println(key + "    " + numObjects + ", Mem (MBs): " + (getMemoryUse()/MB));
+				System.out.println(numObjects + "\t" + (getMemoryUse()/MB) + "\t" + key);
 			}
 		} while( line != null );
 		fout.close();
@@ -77,6 +118,11 @@ public class IndexUtils {
 	}
 
 
+	public static String pad(String s, int len) {
+		char[] sp = new char[len-s.length()];
+		Arrays.fill(sp, ' ');
+		return s + (new String(sp));
+	}
 
 	/** Get the lines from the bgzip file that match the indexes.
 	 * Return a HashMap that maps the key to the list of lines returned
@@ -128,6 +174,10 @@ public class IndexUtils {
 	}
 
 
+	public long getMemoryUseMB() {
+		return getMemoryUse() / (1024*1024);
+	}
+	
 	public long getMemoryUse() {
 		long memoryUse = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
 		return memoryUse;
@@ -150,9 +200,9 @@ public class IndexUtils {
 	}
 
 	
-	public HashMap<String,List<Long>> loadIndexZip(File idxZip) throws IOException {
+	public HashMap<String,List<Long>> loadIndexBgzip(File bgzipIdx) throws IOException {
 		HashMap<String,List<Long>> map = new HashMap<String,List<Long>>();
-		BlockCompressedInputStream instream = new BlockCompressedInputStream(idxZip);
+		BlockCompressedInputStream instream = new BlockCompressedInputStream(bgzipIdx);
 		String line = null;
 		while( (line = instream.readLine()) != null ) {
 			String[] split = line.split("\t");
@@ -162,10 +212,35 @@ public class IndexUtils {
 			if(positions == null) 
 				positions = new ArrayList<Long>();
 			positions.add(Long.valueOf(pos));
+			map.put(key,positions);
 		}
+		System.out.println("Bgzip index load.  Mem used: " + getMemoryUseMB() + "MB");
 		instream.close();
 		return map;
 	}
+	
+	public  HashMap<String,List<Long>> loadIndexGzip(File gzipFile) throws IOException {
+		HashMap<String,List<Long>> map = new HashMap<String,List<Long>>();
+		GZIPInputStream gzip = new GZIPInputStream(new FileInputStream(gzipFile));
+		BufferedReader instream = new BufferedReader(new InputStreamReader(gzip));
+		String line = null;
+		while( (line = instream.readLine()) != null ) {
+			String[] split = line.split("\t");
+			String key = split[0];
+			String pos = split[1];
+			List<Long> positions = map.get(key);
+			if(positions == null) 
+				positions = new ArrayList<Long>();
+			positions.add(Long.valueOf(pos));
+			map.put(key,positions);
+		}
+		System.out.println("Gzip index load. Mem used: " + getMemoryUseMB() + "MB");
+		instream.close();
+		gzip.close();
+		return map;
+	}
+
+
 	
 	private HashMap<String,List<Long>> loadIndexTxt(File indexFile) throws IOException {
 		BufferedReader fin = new BufferedReader(new FileReader(indexFile));
@@ -179,6 +254,7 @@ public class IndexUtils {
 				positions.add(Long.valueOf(splits[i]));
 			indexes.put(key, positions);
 		}
+		System.out.println("Text index load. Mem used: " + getMemoryUseMB() + "MB");
 		fin.close();
 		return indexes;
 	}
@@ -255,8 +331,23 @@ public class IndexUtils {
 		fout.close();
 	}
 
+	public static boolean isInteger(String str) {
+		try {
+			Integer.valueOf(str);
+			return true;
+		}catch(Exception e) { }
+		return false;
+	}
+	
 
-
+	/** Get the delimiter from command line arguments, converting them as necessary 
+	 * @return */
+	public static String getDelimFromCmdLine(String cmdLineDelim) {
+		String delimiter =cmdLineDelim;
+		if("TAB".equalsIgnoreCase(delimiter))
+			delimiter = "\t";
+		return delimiter;
+	}
 	
 	public List<String> getSampleGeneIds() {
 		return Arrays.asList(
