@@ -39,7 +39,7 @@ import java.util.logging.Logger;
  * @author m102417
  */
 public class NCBIGenePublisher {
-    String geneCatalogFile = "genes.tab";
+    String geneCatalogFile = "genes.tsv";
     
     public static void usage(){
         System.out.println("usage: NCBIGenePublisher <catalogDir>");
