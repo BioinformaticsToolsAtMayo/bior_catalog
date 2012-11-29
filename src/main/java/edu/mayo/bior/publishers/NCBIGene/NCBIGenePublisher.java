@@ -15,6 +15,7 @@ import edu.mayo.pipes.PrintPipe;
 import edu.mayo.pipes.UNIX.GrepPipe;
 import edu.mayo.pipes.UNIX.LSPipe;
 import edu.mayo.pipes.WritePipe;
+import edu.mayo.pipes.bioinformatics.CoreAttributes;
 import edu.mayo.pipes.bioinformatics.GenbankPipe;
 import edu.mayo.pipes.util.GenomicObjectUtils;
 import edu.mayo.pipes.util.SystemProperties;
@@ -95,9 +96,9 @@ public class NCBIGenePublisher {
         featureTypes[0] = "gene"; //CDS, mRNA, exon, ...
         BioJavaRichSequence2JSON bj = new BioJavaRichSequence2JSON(chr, featureTypes); //just a placeholder...
         String[] paths = new String[3];
-        paths[0] = "chr";
-        paths[1] = "minBP";
-        paths[2] = "maxBP";
+        paths[0] = CoreAttributes._landmark.toString();
+        paths[1] = CoreAttributes._minBP.toString();
+        paths[2] = CoreAttributes._maxBP.toString();
         
         Pipe p = new Pipeline(new GenbankPipe(), bj, new DrainPipe(), new SimpleDrillPipe(true, paths), new MergePipe("\t", true), load);
         p.setStarts(Arrays.asList(new String[] {chrFile}));
