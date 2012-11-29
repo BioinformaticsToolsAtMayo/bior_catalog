@@ -17,10 +17,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import com.jayway.jsonpath.JsonPath;
-
-import net.sf.samtools.util.BlockCompressedInputStream;
-
 public class IndexerDatabase {
 
 	private IndexUtils utils = new IndexUtils();
