@@ -11,20 +11,20 @@ import edu.mayo.bior.indexer.SortExternal;
  * @author m054457
  */
 public class BuildBgzip {
-
+	
 	public static void main(String[] args) {
 		try {
 			if(args.length != 3) {
 				usage();
 				return;
 			}
-			
 
 			File txtFile = new File(args[0]);
 			File bgzipFileOut = new File(args[1]);
 			boolean isIntKey = "true".equalsIgnoreCase(args[2]);
 			
-			File txtTmpSorted = new File(bgzipFileOut.getParent() + "/tmpUnsorted.txt");
+			String parentFolder = new File(bgzipFileOut.getCanonicalPath()).getParent();
+			File txtTmpSorted = new File(parentFolder + "/tmpUnsorted.txt");
 			
 			IndexUtils utils = new IndexUtils();
 			SortExternal.sortIndexFile(txtFile, txtTmpSorted, isIntKey);

@@ -15,7 +15,7 @@ public class SortExternal {
         public int compare(String r1, String r2){
         	String key1 = r1.split("\t")[0];
         	String key2 = r2.split("\t")[0];
-        	return key1.compareTo(key2);
+        	return key1.compareToIgnoreCase(key2);
         }
     };
 

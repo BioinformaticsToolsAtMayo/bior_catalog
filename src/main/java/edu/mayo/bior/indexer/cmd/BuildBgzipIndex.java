@@ -31,8 +31,9 @@ public class BuildBgzipIndex {
 			boolean isIntKey = "true".equalsIgnoreCase(args[3]);
 			
 			File txtIndexOutZip = new File(args[4]);
-			File tmpTxt1 = new File(txtIndexOutZip.getParent() + "/tmpUnsorted.txt");
-			File tmpTxt2 = new File(txtIndexOutZip.getParent() + "/tmpSorted.txt");
+			String parentFolder = new File(txtIndexOutZip.getCanonicalPath()).getParent();
+			File tmpTxt1 = new File(parentFolder + "/tmpUnsorted.txt");
+			File tmpTxt2 = new File(parentFolder + "/tmpSorted.txt");
 			
 			utils.zipIndexesToTextFile(bgzipFile, delimiter, colJsonPathPair.column, colJsonPathPair.jsonPath, tmpTxt1);
 			SortExternal.sortIndexFile(tmpTxt1, tmpTxt2, isIntKey);
