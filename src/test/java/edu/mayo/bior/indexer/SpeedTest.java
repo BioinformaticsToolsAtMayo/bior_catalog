@@ -108,5 +108,20 @@ public class SpeedTest {
 		System.out.println("  Num matching keys: " + idxMap.size());
 		System.out.println("  Mem use (MBs):  " + memUse);
 	}
+	
+	@Test
+	public void loadGeneNameIndex() throws IOException {
+		System.out.println("=================================");
+		System.out.println("Load gene index...");
+		double start = System.currentTimeMillis();
+		IndexUtils utils = new IndexUtils();
+		File geneNameIndex = new File("genes.index.geneName.bgz");
+		HashMap<String,List<Long>> fullIndex = utils.loadIndexBgzip(geneNameIndex);
+		double end2 = System.currentTimeMillis();
+		System.out.println("Time to load index: " + (end2-start)/1000.0);
+		System.out.println("Runtime for bgzip load and in-memory search: " + (end2-start)/1000.0);
+		long memUse = new IndexUtils().getMemoryUse() / (1024*1024);
+		System.out.println("  Mem use (MBs):  " + memUse);
+	}
 
 }
