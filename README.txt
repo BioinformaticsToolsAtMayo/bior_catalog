@@ -15,8 +15,13 @@
 = Setup =
 	
 	Prior to running any project executables, the following must be setup:
-	
-	1. $BIOR_CATALOG_HOME environment variable
+		
+	1. Setup your UNIX environment:
+
+		1.1		open terminal
+		1.2		cd ${project}
+		1.3		mvn clean package	# runs the build to create the distribution
+		1.4		source setupEnv.sh	# inspects the target folder to setup env vars	
 	
 	2. Tabix application
 			
