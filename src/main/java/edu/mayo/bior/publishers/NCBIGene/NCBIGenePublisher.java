@@ -15,7 +15,7 @@ import edu.mayo.pipes.PrintPipe;
 import edu.mayo.pipes.UNIX.GrepPipe;
 import edu.mayo.pipes.UNIX.LSPipe;
 import edu.mayo.pipes.WritePipe;
-import edu.mayo.pipes.bioinformatics.CoreAttributes;
+import edu.mayo.pipes.bioinformatics.vocab.CoreAttributes;
 import edu.mayo.pipes.bioinformatics.GenbankPipe;
 import edu.mayo.pipes.util.GenomicObjectUtils;
 import edu.mayo.pipes.util.SystemProperties;
