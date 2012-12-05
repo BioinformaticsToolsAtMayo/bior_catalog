@@ -14,6 +14,7 @@ set -x
 #------------------------------------------------------------------------------------------
 rawDataDir=$1
 targetCatalogDir=$2
+
 echo "Build JSON data file from raw data files in current directory"
 echo "Assumes paths from sys.properties file have been loaded"
 echo "Target directory: $targetCatalogDir"
