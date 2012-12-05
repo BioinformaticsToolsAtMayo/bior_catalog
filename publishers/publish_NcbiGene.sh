@@ -18,7 +18,7 @@ targetCatalogDir=$2
 echo "Build JSON data file from raw data files in current directory"
 echo "Assumes paths from sys.properties file have been loaded"
 echo "Target directory: $targetCatalogDir"
-java -cp $BIOR_CATALOG_HOME/conf:$BIOR_CATALOG_HOME/lib/* edu.mayo.publishers.NCBIGene.NCBIGenePublisher $rawDataDir  $targetCatalogDir
+java -cp $BIOR_CATALOG_HOME/conf:$BIOR_CATALOG_HOME/lib/* edu.mayo.bior.publishers.NCBIGene.NCBIGenePublisher $rawDataDir  $targetCatalogDir
 
 
 #------------------------------------------------------------------------------------------
