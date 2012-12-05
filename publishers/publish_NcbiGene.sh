@@ -47,3 +47,6 @@ rm $targetCatalogDir/genes.tsv
 # Ex: Index <bgzipDataFile> <delimiter> <keyColumn> <isKeyColumnInt> <bgzipIndexOut>
 #------------------------------------------------------------------------------------------
 ##### java -cp $BIOR_CATALOG_HOME/conf:$BIOR_CATALOG_HOME/lib/*  edu.mayo.bior.indexer.cmd.BuildBgzipIndex  
+
+
+echo "DONE."
