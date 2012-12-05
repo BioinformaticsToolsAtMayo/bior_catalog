@@ -5,7 +5,8 @@
 # 2) Tabix is installed on the local machine
 # 3) BIOR_CATALOG_HOME variable has been set
 #------------------------------------------------------------------------------------------
-set -x
+# Print each line that is executed (-x), and exit if any command fails (-e)
+set -x -e
 ###../setupEnv.sh
 
 
@@ -24,15 +25,14 @@ java -cp $BIOR_CATALOG_HOME/conf:$BIOR_CATALOG_HOME/lib/* edu.mayo.bior.publishe
 #------------------------------------------------------------------------------------------
 # Sort the JSON data file by columns 1 (chr-string), 2 (minBP-numeric), and 3 (maxBP-numeric), and bgzip it
 #------------------------------------------------------------------------------------------
-sort -t. -k 1,1 -k 2,2n -k 3,3n  > $targetCatalogDir/genes.sorted.tsv
-bgzip $targetCatalogDir/genes.sorted.tsv  >  $targetCatalogDir/genes.sorted.tsv.bgz
+sort -k 1,1 -k 2,2n -k 3,3n  $targetCatalogDir/genes.tsv  |  bgzip >  $targetCatalogDir/genes.tsv.bgz
 
 
 #------------------------------------------------------------------------------------------
 # Create Tabix index
 # s = landmark, b = begin position, e = end position
 #------------------------------------------------------------------------------------------
-tabix -s 1 -b 2 -e 3  $targetCatalogDir/genes.sorted.tsv.bgz
+tabix -s 1 -b 2 -e 3  $targetCatalogDir/genes.tsv.bgz
 
 
 #------------------------------------------------------------------------------------------
