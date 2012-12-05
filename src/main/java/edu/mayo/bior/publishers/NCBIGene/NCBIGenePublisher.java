@@ -57,7 +57,8 @@ public class NCBIGenePublisher {
     public void publish(String rawDataDir, String outputDir) {
         final String geneCatalogFile = "genes.tsv";
 
-    	System.out.println("Started loading NCBIGenes.. at:" + new Timestamp(new Date().getTime()));
+        double start = System.currentTimeMillis();
+    	System.out.println("Started loading NCBIGenes at: " + new Timestamp(new Date().getTime()));
         String outfile = outputDir + "/" + geneCatalogFile;
         System.out.println("Outputing File to: " + outfile);
 
@@ -77,7 +78,9 @@ public class NCBIGenePublisher {
             Logger.getLogger(NCBIGenePublisher.class.getName()).log(Level.SEVERE, null, ex);
             ex.printStackTrace();
         }        
-        System.out.println("Completed loading NCBIGenes.. at:" + new Timestamp(new Date().getTime()));
+        System.out.println("Completed loading NCBIGenes at: " + new Timestamp(new Date().getTime()));
+        double end = System.currentTimeMillis();
+        System.out.println("Runtime: " + (end-start)/1000.0);
 	}
     
     private void processGenes(String chrFile, String chr, Pipe load) {
