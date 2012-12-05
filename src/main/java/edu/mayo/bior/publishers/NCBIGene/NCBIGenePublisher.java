@@ -51,6 +51,7 @@ public class NCBIGenePublisher {
             publisher.publish(args[0], args[1]);
         }else{
             usage();
+            System.exit(1);
         }
     } 
 
