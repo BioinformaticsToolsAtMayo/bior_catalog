@@ -39,10 +39,9 @@ import java.util.logging.Logger;
  * @author m102417
  */
 public class NCBIGenePublisher {
-    String geneCatalogFile = "genes.tsv";
     
     public static void usage(){
-        System.out.println("usage: NCBIGenePublisher <catalogDir>");
+        System.out.println("usage: NCBIGenePublisher <rawDataDir> <catalogOutputDir>");
     }
     
     public static void main(String[] args) {	 
@@ -50,27 +49,29 @@ public class NCBIGenePublisher {
         System.out.println(args.length);
         //publisher.exec("/tmp/"); //
         if(args.length >= 1){
-            publisher.exec(args[0]);
+            publisher.publish(args[0], args[1]);
         }else{
             usage();
         }
     } 
 
-    public void exec(String outputDir) {
+    public void publish(String rawDataDir, String outputDir) {
+        final String geneCatalogFile = "genes.tsv";
+
     	System.out.println("Started loading NCBIGenes.. at:" + new Timestamp(new Date().getTime()));
         String outfile = outputDir + geneCatalogFile;
         System.out.println("Outputing File to: " + outfile);
 
-		SystemProperties sysprop;
+		//SystemProperties sysprop;
         try {
-            sysprop = new SystemProperties();
-            //note, the chrDir is a directory that is constructed using the bin/uncompressGenes.bash (called after the download)
-            String chrDir = sysprop.get("bior.catalog.ncbigene.chrdir");
-            System.out.println("Parsing Genes from: " + chrDir);            
+//            sysprop = new SystemProperties();
+//            //note, the chrDir is a directory that is constructed using the bin/uncompressGenes.bash (called after the download)
+//            String chrDir = sysprop.get("bior.catalog.ncbigene.chrdir");
+            System.out.println("Parsing Genes from: " + rawDataDir); //chrDir);            
             
             //Pipeline p = new Pipeline(new LSPipe(false), new GrepPipe(".*gbs.txt"));
             Pipeline p = new Pipeline(new Pipe[] {new LSPipe(false), new GrepPipe(".*gbs.txt")});
-            p.setStarts(Arrays.asList(new String[] {chrDir}));
+            p.setStarts(Arrays.asList(new String[] {rawDataDir}));
             for(int i = 0; p.hasNext(); i++){ 
                 String filename = (String)p.next();
                 System.out.println("Processing File: " + filename);
@@ -78,7 +79,7 @@ public class NCBIGenePublisher {
                 String c = GenomicObjectUtils.computechr(chrstr); 
                 //System.out.println(c);
                 //processGenes(chrDir + filename, c, new PrintPipe());
-                processGenes(chrDir + filename, c, new WritePipe(outfile));
+                processGenes(rawDataDir + filename, c, new WritePipe(outfile));
                 
                 
             }
