@@ -59,7 +59,7 @@ public class NCBIGenePublisher {
         final String geneCatalogFile = "genes.tsv";
 
     	System.out.println("Started loading NCBIGenes.. at:" + new Timestamp(new Date().getTime()));
-        String outfile = outputDir + geneCatalogFile;
+        String outfile = outputDir + "/" + geneCatalogFile;
         System.out.println("Outputing File to: " + outfile);
 
 		//SystemProperties sysprop;
@@ -79,7 +79,7 @@ public class NCBIGenePublisher {
                 String c = GenomicObjectUtils.computechr(chrstr); 
                 //System.out.println(c);
                 //processGenes(chrDir + filename, c, new PrintPipe());
-                processGenes(rawDataDir + filename, c, new WritePipe(outfile));
+                processGenes(rawDataDir + "/" + filename, c, new WritePipe(outfile));
                 
                 
             }
