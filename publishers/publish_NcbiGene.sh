@@ -6,7 +6,8 @@
 # 3) BIOR_CATALOG_HOME variable has been set
 #------------------------------------------------------------------------------------------
 # Print each line that is executed (-x), and exit if any command fails (-e)
-set -x -e
+#set -x -e
+set -e
 ###../setupEnv.sh
 
 
