@@ -9,7 +9,7 @@
     <fileSet>
       <directory>${basedir}/publishers</directory>
       <includes>
-        <include>*.bash</include>
+        <include>*.*</include>
       </includes>
       <outputDirectory>bin</outputDirectory>
       <fileMode>0755</fileMode>
