@@ -34,6 +34,10 @@ sort -k 1,1 -k 2,2n -k 3,3n  $targetCatalogDir/genes.tsv  |  bgzip >  $targetCat
 #------------------------------------------------------------------------------------------
 tabix -s 1 -b 2 -e 3  $targetCatalogDir/genes.tsv.bgz
 
+#------------------------------------------------------------------------------------------
+# Remove the temporary genes.tsv file that NCBIGenePublisher created
+#------------------------------------------------------------------------------------------
+rm $targetCatalogDir/genes.tsv
 
 #------------------------------------------------------------------------------------------
 # Create index on Gene Id
