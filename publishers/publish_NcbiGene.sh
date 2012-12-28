@@ -8,7 +8,7 @@
 # Print each line that is executed (-x), and exit if any command fails (-e)
 #set -x -e
 set -e
-###../setupEnv.sh
+source $BIOR_CATALOG_HOME/setupEnv.sh
 
 
 #------------------------------------------------------------------------------------------
