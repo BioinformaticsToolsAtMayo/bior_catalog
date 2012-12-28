@@ -21,8 +21,13 @@ fi
 # Print each line that is executed (-x), and exit if any command fails (-e)
 set -x -e
 #set -e
-source $BIOR_CATALOG_HOME/setupEnv.sh
 
+echo "Checking if environment variables are set..."
+${BIOR_CATALOG_HOME?"BIOR_CATALOG_HOME variable is not set.  You may need to:\n  cd bior_pipeline\n  ./setenv.sh":"BIOR_CATALOG_HOME set ok"}
+${$BIOR_LITE_HOME?"BIOR_LITE_HOME variable is not set.  You may need to:\n  cd bior_pipeline\n  ./setenv.sh":"BIOR_LITE_HOME set ok"}
+
+### Create the gzip'd file from the original vcf.
+### NOTE: Assumes that the original vcf is sorted by chromosome then position
 ### a) Extract all variants from the original dbsnp file
 ### b) Pipe into bior_vcf_to_json.sh which will add a JSON string to the end (containing all data)
 ### c) Pipe into bio_drill.sh to add the maxBP as the last column
