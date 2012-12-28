@@ -23,8 +23,8 @@ set -x -e
 #set -e
 
 echo "Checking if environment variables are set..."
-${BIOR_CATALOG_HOME?"BIOR_CATALOG_HOME variable is not set.  You may need to:\n  cd bior_pipeline\n  ./setenv.sh":"BIOR_CATALOG_HOME set ok"}
-${$BIOR_LITE_HOME?"BIOR_LITE_HOME variable is not set.  You may need to:\n  cd bior_pipeline\n  ./setenv.sh":"BIOR_LITE_HOME set ok"}
+: ${BIOR_CATALOG_HOME?"BIOR_CATALOG_HOME variable is not set.  You may need to:\n  cd bior_pipeline\n  ./setenv.sh":"BIOR_CATALOG_HOME set ok"}
+: ${$BIOR_LITE_HOME?"BIOR_LITE_HOME variable is not set.  You may need to:\n  cd bior_pipeline\n  ./setenv.sh":"BIOR_LITE_HOME set ok"}
 
 ### Create the gzip'd file from the original vcf.
 ### NOTE: Assumes that the original vcf is sorted by chromosome then position
