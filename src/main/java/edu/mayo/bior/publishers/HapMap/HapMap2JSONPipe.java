@@ -41,27 +41,27 @@ public class HapMap2JSONPipe extends AbstractPipe<String,String>{
                 record.addProperty(columns.get(i), split[i]);
             }
             
-            record.addProperty(CoreAttributes._landmark.toString(), this.chrm);
-            record.addProperty("population", this.population);
-            record.addProperty(CoreAttributes._id.toString(), split[0]);//add the rs_id
-            JsonArray alts = new JsonArray();
-            String[] al = split[1].split("/");
-            record.addProperty(CoreAttributes._refAllele.toString(), al[0]);
-            for(int i=1; i<al.length;i++){//handle tri-allele
-                String allele = al[i];
-                alts.add(new JsonPrimitive(allele));
-            }
-            record.add(CoreAttributes._altAlleles.toString(), alts);
-            
-            Integer pos = new Integer(split[3]);
-            if (pos != null) {
-                //I think hapmap deals with just snps... int maxBP = new Integer(pos + split[].length() - 1);
-                record.addProperty(CoreAttributes._minBP.toString(), pos);
-                record.addProperty(CoreAttributes._maxBP.toString(), pos);
-            }
-            
-            record.addProperty(CoreAttributes._strand.toString(), split[4]);//fixme...should do some better logic to make sure strand is correct...
-            record.addProperty(CoreAttributes._type.toString(), Type.VARIANT.toString());
+//            record.addProperty(CoreAttributes._landmark.toString(), this.chrm);
+//            record.addProperty("population", this.population);
+//            record.addProperty(CoreAttributes._id.toString(), split[0]);//add the rs_id
+//            JsonArray alts = new JsonArray();
+//            String[] al = split[1].split("/");
+//            record.addProperty(CoreAttributes._refAllele.toString(), al[0]);
+//            for(int i=1; i<al.length;i++){//handle tri-allele
+//                String allele = al[i];
+//                alts.add(new JsonPrimitive(allele));
+//            }
+//            record.add(CoreAttributes._altAlleles.toString(), alts);
+//            
+//            Integer pos = new Integer(split[3]);
+//            if (pos != null) {
+//                //I think hapmap deals with just snps... int maxBP = new Integer(pos + split[].length() - 1);
+//                record.addProperty(CoreAttributes._minBP.toString(), pos);
+//                record.addProperty(CoreAttributes._maxBP.toString(), pos);
+//            }
+//            
+//            record.addProperty(CoreAttributes._strand.toString(), split[4]);//fixme...should do some better logic to make sure strand is correct...
+//            record.addProperty(CoreAttributes._type.toString(), Type.VARIANT.toString());
             
             //System.out.println(record.toString());
             return record.toString();
