@@ -16,7 +16,7 @@
 	
 	Prior to running any project executables, the following must be setup:
 		
-	1. Setup your UNIX environment:
+	1. Setup your UNIX environment:  (this should be done for both the bior_catalog and bior_pipeline projects)
 
 		1.1		open terminal
 		1.2		cd ${project}
@@ -32,5 +32,14 @@
 			add the following to your shell profile: export PATH=/Applications/tabix-0.2.5:$PATH
 	
 = Running =
+    To build the catalog, do this (from project root):
+        cd publishers
+        ./publish_NcbiGene.sh  <pathToRawDataDir>  <pathToPublishOutputDir>
+    For example:
+        ./publish_NcbiGene.sh  /data/catalogs/NCBIGene/GRCh37_p10/scratch/  /data/catalogs/NCBIGene/GRCh37_p10/
 	
-	TODO
+	Now, after having sourced the setupEnv.sh file, you should be able to run these commands
+	   1) Dump the contents of a small vcf file
+    	    zcat /data/dbsnp/dbsnp20k.vcf.gz 
+	   2) Now build this into a variant object
+	          
