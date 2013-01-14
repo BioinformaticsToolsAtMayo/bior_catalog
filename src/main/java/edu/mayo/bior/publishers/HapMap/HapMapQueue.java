@@ -103,22 +103,25 @@ public class HapMapQueue {
             }else if(knownPopulations.containsKey(key)){ //if this key is a population we have seen so far, ignore it...
                 ;
             }else {
+            	System.out.println("  key: " + key + ", " + value);
                 addElegant(specific, key, value);
+                System.out.println("    done.");
                 //specific.put(key, hm.get(key));
             }
-            
         }
         return Arrays.asList(common, specific);
     }
     
     public JsonObject addElegant(JsonObject jo, String key, JsonElement value){
-        //System.out.println(value.toString());
-        if(JSONUtil.isInt(value.getAsString())&& !key.equals(CoreAttributes._landmark.toString())){ 
+    	String valStr = value.toString();
+    	//System.out.println(  "jsonValue.toString(): " + value.toString());
+    	//System.out.println(  "jsonValue.getAsString(): " + value.getAsString());
+    	if(JSONUtil.isInt(valStr)&& !key.equals(CoreAttributes._landmark.toString())){ 
             jo.addProperty(key, value.getAsInt());
-        }else if(JSONUtil.isDouble(value.getAsString())&& !key.equals(CoreAttributes._landmark.toString())){ 
+        }else if(JSONUtil.isDouble(valStr)&& !key.equals(CoreAttributes._landmark.toString())){ 
             jo.addProperty(key, value.getAsDouble());
         }else {
-            jo.addProperty(key, value.getAsString());
+            jo.addProperty(key, valStr);
         }
         return jo;
     }
