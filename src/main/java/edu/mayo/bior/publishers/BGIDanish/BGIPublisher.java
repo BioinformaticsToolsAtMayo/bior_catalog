@@ -19,6 +19,7 @@ import edu.mayo.pipes.UNIX.CatPipe;
 import edu.mayo.pipes.UNIX.LSPipe;
 import edu.mayo.pipes.bioinformatics.vocab.CoreAttributes;
 import edu.mayo.pipes.bioinformatics.vocab.Type;
+import edu.mayo.pipes.history.HCutPipe;
 import edu.mayo.pipes.history.History;
 import edu.mayo.pipes.history.HistoryInPipe;
 import edu.mayo.pipes.history.HistoryOutPipe;
@@ -39,7 +40,7 @@ public class BGIPublisher {
     
     public static void main(String[] args) {	 
         BGIPublisher publisher = new BGIPublisher();
-        publisher.publish("/data/BGI/hg19/LuCAMP_200exomeFinal_hg19.txt", "/tmp");
+        publisher.publish("/data/BGI/hg19/LuCAMP_200exomeFinal_hg19.txt", "/tmp", new PrintPipe());
 //        System.out.println(args.length);
 //        if(args.length >= 1){ 
 //            publisher.publish(args[1], args[2] + "/scratch/");
@@ -49,25 +50,13 @@ public class BGIPublisher {
 //        }
     } 
     
-    public void publish(String rawDataFileFullpath, String outputDir) {
+    public void publish(String rawDataFileFullpath, String outputDir, Pipe out) {
         final String catalogFile = "LuCAMP_200exomeFinal.tsv";
         double start = System.currentTimeMillis();
         System.out.println("Started loading HapMap at: " + new Timestamp(new Date().getTime()));
         String outfile = outputDir + "/" + catalogFile;
         System.out.println("Outputing File to: " + outfile);
         Pipe<History,History> t = new TransformFunctionPipe<History,History>( new BGIPipe() );
-//        InjectIntoJsonPipe inject = new InjectIntoJsonPipe(14, 
-////                                                      new AbstractMap.SimpleEntry(CoreAttributes._type.toString(), Type.VARIANT.toString()), 
-////                                                      new AbstractMap.SimpleEntry("1",CoreAttributes._landmark.toString()), 
-////                                                      new AbstractMap.SimpleEntry("2", CoreAttributes._minBP.toString()),
-////                                                      new AbstractMap.SimpleEntry("3", CoreAttributes._maxBP.toString()),
-////                                                      new AbstractMap.SimpleEntry("4", CoreAttributes._strand.toString()),
-////                                                      new AbstractMap.SimpleEntry("5", CoreAttributes._refAllele.toString()),
-//                                                      new AbstractMap.SimpleEntry("10", CoreAttributes._type.toString()),
-//                                                      new AbstractMap.SimpleEntry("11", CoreAttributes._landmark.toString()),
-//                                                      new AbstractMap.SimpleEntry("12", CoreAttributes._refAllele.toString()),
-//                                                      new AbstractMap.SimpleEntry("13", CoreAttributes._altAlleles.toString())
-//        );
         String[] header = new String[] {
                                         "chromosomeID",
                                         "genomic_position",
@@ -80,16 +69,21 @@ public class BGIPublisher {
                                         "estimatedMAF",
                                         CoreAttributes._type.toString(),
                                         CoreAttributes._landmark.toString(),
-                                        CoreAttributes._refAllele.toString(),
-                                        CoreAttributes._altAlleles.toString()
+                                        //CoreAttributes._refAllele.toString(),
+                                        CoreAttributes._altAlleles.toString(),
+                                        CoreAttributes._minBP.toString(),
+                                        CoreAttributes._maxBP.toString()
                                             };
         InjectIntoJsonPipe inject = new InjectIntoJsonPipe(header);
+        int[] cut = new int[] {1,2,3,4,5,6,7,8,9,10,12,13};
+        int[] cut2 = new int[] {1};
         Pipe p = new Pipeline(new CatPipe(),
                              new HistoryInPipe(),
                              t,
                              inject,
+                             new HCutPipe(false, cut), 
                              new MergePipe("\t"),
-                             new PrintPipe());
+                             out);
         p.setStarts(Arrays.asList(rawDataFileFullpath));
         for(int i=0;p.hasNext();i++){
             p.next();
@@ -136,6 +130,9 @@ public class BGIPublisher {
             h.add(decode(h.get(2)));
             //_maxBP
             h.add(decode(h.get(3)));
+            //some checking on hg19 shows it to be one based not zero based
+            h.add((h.get(1)));
+            h.add((h.get(1)));
             return h;
         }
         
