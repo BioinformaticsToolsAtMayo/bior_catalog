@@ -66,7 +66,7 @@ public class HapMapPublisherPhase2 {
                                   replaceChr,
                                   inject,               //inject the golden attributes into the json
                                   new HCutPipe(cut2),
-                                  new CollapseHapMapVariantsPipe(), 
+                                  //new CollapseHapMapVariantsPipe(), 
                                   new PrintPipe());
         p.setStarts(Arrays.asList(scratchDir+"/"+infile));
         for(int i=0; p.hasNext(); i++){
