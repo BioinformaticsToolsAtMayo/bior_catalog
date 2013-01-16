@@ -1,0 +1,27 @@
+{
+	"rsNumber":"rs2691310",
+	"chrom":"chr1",
+	"pos":46844,
+	"strand":"+",
+	"build":"ncbi_b36",
+	"YRI":{
+		"center":"sanger",
+		"protLSID":"urn:lsid:illumina.hapmap.org:Protocol:Golden_Gate_1.0.0:1",
+		"assayLSID":"urn:lsid:sanger.hapmap.org:Assay:4319165:1",
+		"panelLSID":"urn:LSID:dcc.hapmap.org:Panel:Yoruba-30-trios:1",
+		"QC_code":"QC+",
+		"refallele":"C",
+		"refallele_freq":1.0,
+		"refallele_count":126,
+		"otherallele":"A",
+		"otherallele_freq":0,
+		"otherallele_count":0,
+		"totalcount":126,
+		"population":"YRI"	
+	},
+	"_landmark":"1",
+	"_rsId":"rs2691310",
+	"_minBP":56981,
+	"_maxBP":56981,
+	"_strand":"+"	
+}

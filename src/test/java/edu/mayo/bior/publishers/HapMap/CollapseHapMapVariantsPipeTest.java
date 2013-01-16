@@ -1,46 +1,209 @@
 package edu.mayo.bior.publishers.HapMap;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import edu.mayo.pipes.bioinformatics.vocab.CoreAttributes;
+import static org.junit.Assert.assertEquals;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
+
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonIOException;
+import com.google.gson.JsonParser;
+import com.google.gson.JsonSyntaxException;
+import com.tinkerpop.pipes.Pipe;
+import com.tinkerpop.pipes.util.Pipeline;
+
+import edu.mayo.pipes.UNIX.CatPipe;
+import edu.mayo.pipes.UNIX.GrepPipe;
+import edu.mayo.pipes.history.History;
+import edu.mayo.pipes.history.HistoryInPipe;
 
 /**
  * @author Michael Meiners, Patrick Duffy
  */
 public class CollapseHapMapVariantsPipeTest {
     
-    public CollapseHapMapVariantsPipeTest() {
-    }
-    
-    @BeforeClass
-    public static void setUpClass() {
-    }
-    
-    @AfterClass
-    public static void tearDownClass() {
-    }
-    
+	private Gson mGson = new Gson();
+	private JsonParser mParser = new JsonParser();
+	
+	private Pipe<String, History> mPipeline;
+	
+	// Stored the non-merged rows, 1 row per population
+	// key    = rsID
+	// value  = List of 1 or more rows
+	private Map<String, List<String>> mVariantData = new HashMap<String, List<String>>();
+
+	// Stores the merged JSON, not the entire row
+	// key    = rsID
+	// value  = merged JSON String
+	private Map<String, String> mVariantMergedData = new HashMap<String, String>();	
+
     @Before
-    public void setUp() {
+    public void setUp() throws JsonIOException, JsonSyntaxException, IOException {
+    	
+    	File dataFolder = new File("src/test/resources/testData/hapmap");    	
+    	
+    	// rows from this file are extracted and stored in Lists by rsID
+    	File dataFile = new File(dataFolder, "hapmap.sorted.liftover.first300.tsv");     	
+    	mVariantData.put("rs10399749", getLinesByStringMatch(dataFile, "rs10399749"));
+    	mVariantData.put("rs2691310",  getLinesByStringMatch(dataFile, "rs2691310"));
+    	mVariantData.put("rs2949420",  getLinesByStringMatch(dataFile, "rs2949420"));
+    	mVariantData.put("rs2949421",  getLinesByStringMatch(dataFile, "rs2949421"));
+    	
+    	// load the merged data for each variant
+    	mVariantMergedData.put("rs10399749", loadJsonDocument(new File(dataFolder, "rs10399749_merged.json")));
+    	mVariantMergedData.put("rs2691310",  loadJsonDocument(new File(dataFolder, "rs2691310_merged.json")));
+    	mVariantMergedData.put("rs2949420",  loadJsonDocument(new File(dataFolder, "rs2949420_merged.json")));
+    	mVariantMergedData.put("rs2949421",  loadJsonDocument(new File(dataFolder, "rs2949421_merged.json")));
+    	
+    	// pipes
+    	HistoryInPipe 				historyIn	= new HistoryInPipe();
+    	CollapseHapMapVariantsPipe	logic		= new CollapseHapMapVariantsPipe();
+    	
+		// pipeline definition
+		mPipeline = new Pipeline<String, History>
+			(
+					historyIn,	// String			--> history
+					logic		// history			--> modified history*
+			);    	
     }
     
     @After
     public void tearDown() {
+    	mPipeline.reset();
+    	mVariantData.clear();
+    	mVariantMergedData.clear();
     }
-
-    private final String jsonVariant  = "{\"rsNumber\":\"rs10399749\",\"chrom\":\"chr1\",\"pos\":45162,\"strand\":\"+\",\"build\":\"ncbi_b36\",\"center\":\"perlegen\",\"protLSID\":\"urn:lsid:perlegen.hapmap.org:Protocol:Genotyping_1.0.0:2\",\"assayLSID\":\"urn:lsid:perlegen.hapmap.org:Assay:25761.5318498:1\",\"panelLSID\":\"urn:LSID:dcc.hapmap.org:Panel:Han_Chinese:2\",\"QC_code\":\"QC+\",\"refallele\":\"C\",\"refallele_freq\":1.0,\"refallele_count\":88,\"otherallele\":\"T\",\"otherallele_freq\":0,\"otherallele_count\":0,\"totalcount\":88,\"population\":\"CHB\", \"_type\":\"variant\", \"_landmark\":1, \"_minBP\":55299, \"_maxBP\":55299, \"_strand\":\"+\", \"_refAllele\":\"C\", \"_altAlleles\":\"T\", \"_id\":\"rs10399749\"}";
-    private final String jsonVariant2 = "{\"rsNumber\":\"rs10399749\",\"chrom\":\"chr1\",\"pos\":45162,\"strand\":\"+\",\"build\":\"ncbi_b36\",\"center\":\"perlegen\",\"protLSID\":\"urn:lsid:perlegen.hapmap.org:Protocol:Genotyping_1.0.0:2\",\"assayLSID\":\"urn:lsid:perlegen.hapmap.org:Assay:25761.5318498:1\",\"panelLSID\":\"urn:LSID:dcc.hapmap.org:Panel:Japanese:2\",\"QC_code\":\"QC+\",\"refallele\":\"C\",\"refallele_freq\":1.0,\"refallele_count\":88,\"otherallele\":\"T\",\"otherallele_freq\":0,\"otherallele_count\":0,\"totalcount\":88,\"population\":\"JPT\", \"_type\":\"variant\", \"_landmark\":1, \"_minBP\":55299, \"_maxBP\":55299, \"_strand\":\"+\", \"_refAllele\":\"C\", \"_altAlleles\":\"T\", \"_id\":\"rs10399749\"}";
-    private final String jsonVariant3 = "{\"rsNumber\":\"rs10399749\",\"chrom\":\"chr1\",\"pos\":45162,\"strand\":\"+\",\"build\":\"ncbi_b36\",\"center\":\"perlegen\",\"protLSID\":\"urn:lsid:perlegen.hapmap.org:Protocol:Genotyping_1.0.0:2\",\"assayLSID\":\"urn:lsid:perlegen.hapmap.org:Assay:25761.5318498:1\",\"panelLSID\":\"urn:LSID:dcc.hapmap.org:Panel:Yoruba-30-trios:1\",\"QC_code\":\"QC+\",\"refallele\":\"C\",\"refallele_freq\":1.0,\"refallele_count\":118,\"otherallele\":\"T\",\"otherallele_freq\":0,\"otherallele_count\":0,\"totalcount\":118,\"population\":\"YRI\", \"_type\":\"variant\", \"_landmark\":1, \"_minBP\":55299, \"_maxBP\":55299, \"_strand\":\"+\", \"_refAllele\":\"C\", \"_altAlleles\":\"T\", \"_id\":\"rs10399749\"}";
-    private final String jsonVariant4 = "{\"rsNumber\":\"rs2949420\",\"chrom\":\"chr1\",\"pos\":45257,\"strand\":\"+\",\"build\":\"ncbi_b36\",\"center\":\"sanger\",\"protLSID\":\"urn:lsid:illumina.hapmap.org:Protocol:Golden_Gate_1.0.0:1\",\"assayLSID\":\"urn:lsid:sanger.hapmap.org:Assay:4499502:1\",\"panelLSID\":\"urn:LSID:dcc.hapmap.org:Panel:Japanese:1\",\"QC_code\":\"QC+\",\"refallele\":\"T\",\"refallele_freq\":1.0,\"refallele_count\":88,\"otherallele\":\"A\",\"otherallele_freq\":0,\"otherallele_count\":0,\"totalcount\":88,\"population\":\"JPT\", \"_type\":\"variant\", \"_landmark\":1, \"_minBP\":55394, \"_maxBP\":55394, \"_strand\":\"+\", \"_refAllele\":\"T\", \"_altAlleles\":\"A\", \"_id\":\"rs2949420\"}";
-    private final String jsonVariant5 = "{\"rsNumber\":\"rs2949421\",\"chrom\":\"chr1\",\"pos\":45413,\"strand\":\"+\",\"build\":\"ncbi_b36\",\"center\":\"sanger\",\"protLSID\":\"urn:lsid:illumina.hapmap.org:Protocol:Golden_Gate_1.0.0:1\",\"assayLSID\":\"urn:lsid:sanger.hapmap.org:Assay:4322523:1\",\"panelLSID\":\"urn:LSID:dcc.hapmap.org:Panel:Yoruba-30-trios:1\",\"QC_code\":\"QC+\",\"refallele\":\"A\",\"refallele_freq\":0.032,\"refallele_count\":4,\"otherallele\":\"T\",\"otherallele_freq\":0.968,\"otherallele_count\":120,\"totalcount\":124,\"population\":\"YRI\", \"_type\":\"variant\", \"_landmark\":1, \"_minBP\":55550, \"_maxBP\":55550, \"_strand\":\"+\", \"_refAllele\":\"A\", \"_altAlleles\":\"T\", \"_id\":\"rs2949421\"}";
-
-    private final String jsonSimple  = "{\"_landmark\":\"chr1\",\"A\":1,\"B\":2,\"population\":\"Rochestefarian\",\"C\":3}";
     
+    @Test
+    public void testNoVariants() {
+    	String[] variantIDs = new String[] {};
+    	test(variantIDs);
+    }
+    
+    @Test
+    public void testSingleVariantOnly() {
+
+    	String[] variantIDs;
+    	
+    	// pass in 1 variant that has only 1 population
+    	variantIDs = new String[] {
+    		"rs2691310"  // has 1 population variant 
+    	};    	
+    	test(variantIDs);
+
+    	// pass in 1 variant that has multiple populations
+    	variantIDs = new String[] {
+        	"rs2949420",  // has 2 population variants
+        };        	
+        test(variantIDs);
+    }    
+    
+    @Test
+    public void testMultiplePopulationVariants() {
+    	
+    	String[] variantIDs;
+    	
+    	variantIDs = new String[] {
+    		"rs10399749", // has 4 population variants
+    		"rs2691310",  // has 1 population variant 
+    		"rs2949420",  // has 2 population variants
+    	};    	
+    	test(variantIDs);
+    	
+    	variantIDs = new String[] {
+        		"rs10399749", // has 4 population variants
+        		"rs2691310",  // has 1 population variant 
+        		"rs2949420",  // has 2 population variants
+        		"rs2949421"   // has 1 population variants
+        	};    	
+        test(variantIDs);    	
+    }    
+    
+    /**
+     * Helper method that processes the given variants through the test pipeline.
+     * 
+     * @param variantIDs
+     */
+    private void test(String[] variantIDs) {
+    	// build up the lines of non-merged variant data
+    	List<String> inputLines = new ArrayList<String>();    	
+    	for (String rsID: variantIDs) {
+        	inputLines.addAll(mVariantData.get(rsID));    		
+    	}
+    	    	
+		// prime pipeline
+        mPipeline.setStarts(inputLines);
+        
+        // run pipeline, grab row by row
+    	for (String rsID: variantIDs) {
+            mPipeline.hasNext();
+            History history = mPipeline.next();
+            String json = getCompactJSON(history.get(history.size() - 1));
+            
+            String expectedJSON = mVariantMergedData.get(rsID); 
+            
+            assertEquals(expectedJSON, json);    		
+    	}    	
+    }
+    
+    /**
+     * Gets lines from the given file that match the specified string.
+     * 
+     * @param dataFile The file to be searched.
+     * @param literalStr The literal string to search for on each file line.
+     * @return
+     */
+    private List<String> getLinesByStringMatch(File dataFile, String literalStr) {
+    	
+    	List<String> l = new ArrayList<String>();
+    	
+    	CatPipe cat = new CatPipe();
+    	GrepPipe grep = new GrepPipe(".+"+literalStr+".+");
+    	
+    	Pipeline<String, String> p = new Pipeline<String, String>(cat, grep);
+    	p.setStarts(Arrays.asList(dataFile.getAbsolutePath()));
+    	
+    	while (p.hasNext()) {
+    		String line = p.next();
+    		l.add(line);
+    	}
+    	return l;
+    }
+    
+    /**
+     * Loads a JSON object from a file into a compact string (e.g. no extra whitespace or linefeeds).
+     * 
+     * @param jsonFile
+     * @return
+     * @throws JsonIOException
+     * @throws JsonSyntaxException
+     * @throws FileNotFoundException
+     */
+    private String loadJsonDocument(File jsonFile) throws JsonIOException, JsonSyntaxException, FileNotFoundException {
+    	JsonElement el = mParser.parse(new FileReader(jsonFile));
+    	return mGson.toJson(el);
+    }
+    
+    /**
+     * Compacts the JSON into a one-liner
+     * @param json
+     * @return
+     */
+    private String getCompactJSON(String json) {
+    	JsonElement el = mParser.parse(json);
+    	return mGson.toJson(el);    	
+    }
+        
 }
