@@ -4,20 +4,19 @@
 	"pos":45257,
 	"strand":"+",
 	"build":"ncbi_b36",
+	"refallele":"T",
+	"otherallele":"A",
 	"CHB":{
 		"center":"sanger",
 		"protLSID":"urn:lsid:illumina.hapmap.org:Protocol:Golden_Gate_1.0.0:1",
 		"assayLSID":"urn:lsid:sanger.hapmap.org:Assay:4499502:1",
 		"panelLSID":"urn:LSID:dcc.hapmap.org:Panel:Han_Chinese:1",
 		"QC_code":"QC+",
-		"refallele":"T",
 		"refallele_freq":1.0,
 		"refallele_count":90,
-		"otherallele":"A",
 		"otherallele_freq":0,
 		"otherallele_count":0,
-		"totalcount":90,
-		"population":"CHB"	
+		"totalcount":90
 	},
 	"JPT":{
 		"center":"sanger",
@@ -25,14 +24,11 @@
 		"assayLSID":"urn:lsid:sanger.hapmap.org:Assay:4499502:1",
 		"panelLSID":"urn:LSID:dcc.hapmap.org:Panel:Japanese:1",
 		"QC_code":"QC+",
-		"refallele":"T",
 		"refallele_freq":1.0,
 		"refallele_count":88,
-		"otherallele":"A",
 		"otherallele_freq":0,
 		"otherallele_count":0,
-		"totalcount":88,
-		"population":"JPT"	
+		"totalcount":88
 	},
 	"_landmark":"1",
 	"_rsId":"rs2949420",

@@ -4,20 +4,19 @@
 	"pos":45413,
 	"strand":"+",
 	"build":"ncbi_b36",
+	"refallele":"A",
+	"otherallele":"T",
 	"YRI":{
 		"center":"sanger",
 		"protLSID":"urn:lsid:illumina.hapmap.org:Protocol:Golden_Gate_1.0.0:1",
 		"assayLSID":"urn:lsid:sanger.hapmap.org:Assay:4322523:1",
 		"panelLSID":"urn:LSID:dcc.hapmap.org:Panel:Yoruba-30-trios:1",
 		"QC_code":"QC+",
-		"refallele":"A",
 		"refallele_freq":0.032,
 		"refallele_count":4,
-		"otherallele":"T",
 		"otherallele_freq":0.968,
 		"otherallele_count":120,
-		"totalcount":124,
-		"population":"YRI"	
+		"totalcount":124
 	},
 	"_landmark":"1",
 	"_rsId":"rs2949421",
