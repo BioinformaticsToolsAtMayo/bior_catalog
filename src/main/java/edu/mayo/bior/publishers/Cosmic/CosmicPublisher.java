@@ -5,27 +5,47 @@
 package edu.mayo.bior.publishers.Cosmic;
 
 import com.tinkerpop.pipes.Pipe;
+import com.tinkerpop.pipes.PipeFunction;
+import com.tinkerpop.pipes.transform.TransformFunctionPipe;
 import com.tinkerpop.pipes.util.Pipeline;
+
+import edu.mayo.bior.publishers.BGIDanish.BGIPublisher.BGIPipe;
 import edu.mayo.bior.publishers.HapMap.HapMap2JSONPipe;
 import edu.mayo.bior.publishers.HapMap.HapMapPublisher;
 import edu.mayo.pipes.AppendStringPipe;
 import edu.mayo.pipes.HeaderPipe;
+import edu.mayo.pipes.JSON.BioJavaRichSequence2JSON;
 import edu.mayo.pipes.JSON.Delim2JSONPipe;
+import edu.mayo.pipes.JSON.DrillPipe;
 import edu.mayo.pipes.JSON.InjectIntoJsonPipe;
+import edu.mayo.pipes.JSON.SimpleDrillPipe;
+import edu.mayo.pipes.DrainPipe;
 import edu.mayo.pipes.MergePipe;
 import edu.mayo.pipes.PrependStringPipe;
 import edu.mayo.pipes.PrintPipe;
 import edu.mayo.pipes.SplitPipe;
 import edu.mayo.pipes.UNIX.CatGZPipe;
+import edu.mayo.pipes.UNIX.CatPipe;
 import edu.mayo.pipes.UNIX.GrepEPipe;
 import edu.mayo.pipes.UNIX.GrepPipe;
+import edu.mayo.pipes.UNIX.HeadPipe;
 import edu.mayo.pipes.UNIX.LSPipe;
 import edu.mayo.pipes.WritePipe;
+import edu.mayo.pipes.bioinformatics.GenbankPipe;
 import edu.mayo.pipes.bioinformatics.vocab.CoreAttributes;
 import edu.mayo.pipes.bioinformatics.vocab.Type;
+import edu.mayo.pipes.bioinformatics.vocab.Undefined;
+import edu.mayo.pipes.history.FindAndReplaceHPipe;
+import edu.mayo.pipes.history.HCutPipe;
+import edu.mayo.pipes.history.History;
 import edu.mayo.pipes.history.HistoryInPipe;
+import edu.mayo.pipes.history.HistoryOutPipe;
+import edu.mayo.pipes.util.GenomicObjectUtils;
+import edu.mayo.util.HGVS;
+
 import java.sql.Timestamp;
 import java.util.AbstractMap;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -34,7 +54,7 @@ import java.util.logging.Logger;
 
 /**
  *
- * @author m102417
+ * @author m089716
  */
 public class CosmicPublisher {
         public static void usage(){
@@ -43,132 +63,261 @@ public class CosmicPublisher {
     
     public static void main(String[] args) {	 
         CosmicPublisher publisher = new CosmicPublisher();
-        publisher.publish("/data/cosmic/v62/", "/tmp");
-//        System.out.println(args.length);
-//        if(args.length >= 1){ 
-//            publisher.publish(args[1], args[2] + "/scratch/");
-//        }else{
-//            usage();
-//            System.exit(1);
-//        }
-    } 
+        publisher.publish("C:\\mayo\\bior\\cosmic\\CosmicCompleteExport_v62_291112.tsv.gz", "C:\\temp");
+        //publisher.publish("C:\\mayo\\bior\\cosmic\\cosmic_mart_export.txt", "C:\\temp");        
+    }     
     
-    public void getHeader(String rawDataDir){
-        Pipe p = new Pipeline(new LSPipe(false), 
-                             new PrependStringPipe(rawDataDir),
-                             new CatGZPipe("gzip"),
-                             new HeaderPipe(1),
-                             new HistoryInPipe(),
-                             new PrintPipe());
-        p.setStarts(Arrays.asList(rawDataDir));
-        for(int i=0;p.hasNext();i++){
-            p.next();
-            if(i>100) break;
+   /**
+    * Returns the HEADER columns from the raw data file
+    */
+    public String[] getHeader(String rawDataFile) {    	
+    	String header="";
+    	
+        Pipe p = new Pipeline(new HeadPipe(1, new CatGZPipe("gzip")));
+        p.setStarts(Arrays.asList(rawDataFile));
+        for(int i=0;p.hasNext();i++) {
+        	header = (String) p.next();
+        	//System.out.println(header);        	
         }
+        
+        //System.out.println(header);
+    	//String[] val = header.split("\t");
+        //System.out.println(Arrays.asList(val));
+        
+        return header.split("\t");
     }
     
-    public void publish(String rawDataDir, String outputDir) {
+    /**
+     * TODO
+     * 1. get header [done]
+     * 2. process each header element with "_" [done]
+     * 3. get value from col - 'CDS Mutation Syntax' which is like "c.35G>A",
+     *    parse it to retrieve REF and ALT
+     * 4. load them like in hapmappublish phase 1
+     * 4. parse the file and for each json value(header column add the values from raw file
+     * like gene_name="39443", Accesssion_number="ENSSSS" etc
+     *  
+     * Processes the header columns, replaces spaces within a column name to "_".
+     * "Gene name" to "Gene_name"
+     */
+    private List<String> postProcessHeader(String[] header) {
+		List<String> processedHeader = new ArrayList<String>();
+		
+		FindAndReplaceHPipe replaceChr = new FindAndReplaceHPipe(1, " ", "_");
+		
+		Pipe p = new Pipeline(new HistoryInPipe(), replaceChr, new HistoryOutPipe());
+		p.setStarts(Arrays.asList(header));
+        String result = "";
+        for(int i=0;p.hasNext();i++){
+            result = (String) p.next();
+            
+            if (i>0) { //the first row has junk like #UNKNOWN.. so remove 
+            	processedHeader.add(result);
+            }
+        }
+        
+        //converting array-list to string[]
+        String[] strarray = processedHeader.toArray(new String[processedHeader.size()]);
+        
+        //System.out.println("PH:\n\n"+Arrays.asList(strarray));
+        
+		//return strarray;
+		return processedHeader;
+	}    
+    
+    /**
+     *
+     * 
+     */
+    public void publish(String rawDataFile, String outputDir) {
         final String catalogFile = "cosmic.tsv";
-        getHeader(rawDataDir);
-        InjectIntoJsonPipe inject = new InjectIntoJsonPipe(8, new AbstractMap.SimpleEntry(CoreAttributes._type.toString(), Type.VARIANT.toString()), 
-                                                      new AbstractMap.SimpleEntry("1",CoreAttributes._landmark.toString()), 
-                                                      new AbstractMap.SimpleEntry("2", CoreAttributes._minBP.toString()),
-                                                      new AbstractMap.SimpleEntry("3", CoreAttributes._maxBP.toString()),
-                                                      new AbstractMap.SimpleEntry("4", CoreAttributes._strand.toString()),
-                                                      new AbstractMap.SimpleEntry("5", CoreAttributes._refAllele.toString()),
-                                                      new AbstractMap.SimpleEntry("6", CoreAttributes._altAlleles.toString()),
-                                                      new AbstractMap.SimpleEntry("7", CoreAttributes._id.toString())
-            );
-        double start = System.currentTimeMillis();
+        
+        String[] header = getHeader(rawDataFile);
+        //String[] processedHeader = postProcessHeader(header);
+        List<String> processedHeader = postProcessHeader(header);
+        System.out.println("Processed Header:\n"+Arrays.asList(processedHeader));
+       
         System.out.println("Started loading HapMap at: " + new Timestamp(new Date().getTime()));
-        String outfile = outputDir + "/" + catalogFile;
+        
+        //String outfile = outputDir + "/" + catalogFile; 
+        String outfile = outputDir + "\\" + catalogFile;        
         System.out.println("Outputing File to: " + outfile);
-        Pipe p = new Pipeline(new LSPipe(false), 
-                             new PrependStringPipe(rawDataDir),
-                             new CatGZPipe("gzip"),
-                             new HeaderPipe(1),
-                             new HistoryInPipe(),
-                             inject,
-                             new PrintPipe());
-        p.setStarts(Arrays.asList(rawDataDir));
-        for(int i=0;p.hasNext();i++){
-            p.next();
-            if(i>100) break;
+        
+        processCosmicFile(rawDataFile, processedHeader, new WritePipe(outfile));
+    }    
+    
+   
+    /**
+     *
+     * 
+     */
+    private void processCosmicFile(String file, List<String> headerColumns, Pipe load) {
+    	//Add CoreAttributes
+    	headerColumns.add(CoreAttributes._type.toString());
+    	headerColumns.add(CoreAttributes._landmark.toString());
+    	headerColumns.add(CoreAttributes._minBP.toString());
+    	headerColumns.add(CoreAttributes._maxBP.toString());   	
+    	headerColumns.add(CoreAttributes._refAllele.toString());
+    	headerColumns.add(CoreAttributes._altAlleles.toString());
+    	headerColumns.add(CoreAttributes._strand.toString());    	
+    	
+    	String[] headerArray = headerColumns.toArray(new String[headerColumns.size()]);
+        
+        InjectIntoJsonPipe injectCosmicDataAsJson = new InjectIntoJsonPipe(headerArray);
+        
+        int[] cut = new int[] {3,4,5,6,7,8,9,10,11,12,14,15,16,19,20,21,22,23,24,25,26,28,29,32};
+        
+        Pipe<History,History> transform = new TransformFunctionPipe<History,History>( new CosmicTransformPipe() );
+
+        HistoryInPipe hPipe = new HistoryInPipe(25);
+        
+        Pipe p = new Pipeline(new CatGZPipe("gzip"),
+        						new HeaderPipe(1),        						
+        						hPipe,        						
+        						transform,  
+        						injectCosmicDataAsJson,
+        						new HCutPipe(false, cut),
+        						new MergePipe("\t", true),
+        						load
+        );
+        p.setStarts(Arrays.asList(file));
+        for(int i=0; p.hasNext(); i++){
+            //p.next();
+        	System.out.println("Val="+i+" | "+p.next());
+         
+            //if(i>155) break;
         }
     }
-    
 
-//    public void publish(String rawDataDir, String outputDir) {
-//        final String catalogFile = "hapmap.tsv";
-//
-//        double start = System.currentTimeMillis();
-//    	System.out.println("Started loading HapMap at: " + new Timestamp(new Date().getTime()));
-//        String outfile = outputDir + "/" + catalogFile;
-//        System.out.println("Outputing File to: " + outfile);
-//
-//        try {
-//            System.out.println("Parsing HapMap from: " + rawDataDir); //chrDir);            
-//            
-//            Pipeline p = new Pipeline(new LSPipe(false), new GrepPipe("^allele_freqs.*"));
-//            p.setStarts(Arrays.asList(new String[] {rawDataDir}));
-//            for(int i = 0; p.hasNext(); i++){ 
-//                String filename = (String)p.next();
-//                System.out.println("Processing File: " + filename);
-//
-//                processHapMapFile(rawDataDir + "/" + filename, 
-//                        computeChr(filename), 
-//                        computePopulation(filename), 
-//                        computeColumns(filename, rawDataDir), 
-//                        new WritePipe(outfile)
-//                        //new PrintPipe()
-//                        );
-//                //break;
-//            }
-//        } catch (Exception ex) {
-//            Logger.getLogger(HapMapPublisher.class.getName()).log(Level.SEVERE, null, ex);
-//            ex.printStackTrace();
-//        }        
-//        System.out.println("Completed loading HapMap at: " + new Timestamp(new Date().getTime()));
-//        double end = System.currentTimeMillis();
-//        System.out.println("Runtime: " + (end-start)/1000.0);
-//    }
-//    
-//    private void processHapMapFile(String file, String chr, String population, List<String> header,  Pipe load) { 
-//        HapMap2JSONPipe hmj = new HapMap2JSONPipe(population, chr, header); 
-//        String[] headers = new String[18];
-//        headers[0] = "rsNumber";
-//        headers[1] = "chrom";
-//        headers[2] = "pos";
-//        headers[3] = "strand";
-//        headers[4] = "build"; 
-//        headers[5] = "center";
-//        headers[6] = "protLSID";
-//        headers[7] = "assayLSID"; 
-//        headers[8] = "panelLSID";
-//        headers[9] = "QC_code";
-//        headers[10] = "refallele"; 
-//        headers[11] = "refallele_freq"; 
-//        headers[12] = "refallele_count"; 
-//        headers[13] = "otherallele";
-//        headers[14] = "otherallele_freq";
-//        headers[15] = "otherallele_count";
-//        headers[16] = "totalcount";
-//        headers[17] = "population";//this is added via an append pipe
-//        Delim2JSONPipe delim2JSON = new Delim2JSONPipe(-1, false, headers, " ");
-//        
-//        String[] paths = new String[3];
-//        paths[0] = CoreAttributes._landmark.toString();
-//        paths[1] = CoreAttributes._minBP.toString();
-//        paths[2] = CoreAttributes._maxBP.toString();
-//        
-//        //note... need to get the population
-//        
-//        //Pipe p = new Pipeline(new CatGZPipe("gzip"), new GrepEPipe("^rs#.*"), hmj, new SimpleDrillPipe(true, paths), new MergePipe("\t", true), load);
-//        Pipe p = new Pipeline(new CatGZPipe("gzip"), new GrepEPipe("^rs#.*"), new AppendStringPipe(" " + population), new HistoryInPipe(), delim2JSON, new MergePipe("\t", true), new AppendStringPipe("\n"), load);
-//        p.setStarts(Arrays.asList(new String[] {file}));
-//        for(int i=0; p.hasNext(); i++){
-//            p.next();
-//            //if(i>5) break;
-//        }
-//    }
+	/**
+	 * 
+	 * @author m089716
+	 *
+	 */
+	public class CosmicTransformPipe implements PipeFunction<History,History> {
+
+		/**
+		 * Columns in raw data file:
+			Gene name,
+			Accession Number, 
+			HGNC ID, 
+			Sample name, 
+			ID_sample, 
+			ID_tumour, 
+			Primary site, 
+			Site subtype, 
+			Primary histology, 
+			Histology subtype, 
+			Genome-wide screen, 
+			Mutation ID, 
+			* Col 13: Mutation CDS, [has value like c.35C>G. Used to get REF & ALT allele]
+			Mutation AA, 
+			Mutation Description, 
+			Mutation zygosity, 
+			* Col 17: Mutation NCBI36 genome position, [value: 12:12345:12346.. get chr, and positions]
+			* Col 18: Mutation NCBI36 strand, 
+			Mutation GRCh37 genome position, [col 19]
+			Mutation GRCh37 strand, 
+			Mutation somatic status, 
+			Pubmed_PMID, 
+			Sample source, 
+			Tumour origin, 
+			Comments
+		 */
+			
+		String rawData = "";
+		String temp = "";
+		String chr = "";
+		String minBp = "";
+		String maxBp = "";
+		String ref = "";
+		String alt = "";
+		String strand = "";		
+		
+		@Override
+		public History compute(History history) {
+			
+			chr = Undefined.UNKNOWN.toString(); // DEFAULT
+			minBp = "0"; // DEFAULT
+			maxBp = "0"; // DEFAULT
+			ref = "N"; // DEFAULT
+			alt = "N"; // DEFAULT
+			strand = "."; // DEFAULT
+			
+			//_type
+            history.add(Type.VARIANT.toString());
+            
+            //Compute REF, ALT
+            this.computeAlleles(history);
+
+            //Compute CHR, MINBP, MAXBP
+            this.computeGenomePostion(history);
+            
+            //Compute Strand
+            this.computeStrand(history);
+
+            //_landmark            
+            history.add(this.chr);
+            
+            //_minBP
+            history.add(this.minBp);
+
+            //_maxBP
+            history.add(this.maxBp);
+            
+            //_refAllele
+            history.add(this.ref);
+            
+            //_altAllele
+            history.add(this.alt);
+            
+            //_strand
+            history.add(this.strand);
+            
+            return history;
+		}
+
+		// Data for a alleles is in Col 13 and is like "c.35G>A" 
+		private void computeAlleles(History history) {
+			if (history.size()>=12) {
+				if (history.get(12)!=null && !history.get(12).equals("")) {				
+					this.rawData = history.get(12);					
+					//USe this generic class from google-code "snp-normaliser" that parses HGVS nomenclature mutation like "c.123G>A"				
+					HGVS hgvs = new HGVS(this.rawData);				
+					this.ref = hgvs.getWildtype();
+					this.alt = hgvs.getMutation();
+				}
+			}
+		}	
+
+		// Data for a genome-postion is in Col 17 and is like "10:1234-1235" chr:minbp-maxbp
+		private void computeGenomePostion(History history) {
+			if (history.size()>=16) {
+				if (history.get(16)!=null && !history.get(16).equals("")) {				
+					//System.out.println(Arrays.asList(history));
+					this.rawData = history.get(16);
+					
+					//Chr
+					this.temp = rawData.substring(0, rawData.indexOf(":"));
+					this.chr = GenomicObjectUtils.computechr(this.temp);
+	
+					//minBP
+					this.minBp = this.rawData.substring(this.rawData.indexOf(":")+1, this.rawData.indexOf("-"));
+					
+					//maxBP
+					this.maxBp = this.rawData.substring(this.rawData.indexOf("-")+1, this.rawData.length());
+				}
+			} 			
+		}
+
+		// Data for strand is in Col 18 and is like "-" or "+"
+		private void computeStrand(History history) {
+			if (history.size()>=17) {
+				if (history.get(17)!=null && !history.get(17).equals("")) {			
+					this.strand = Character.toString(GenomicObjectUtils.getStrand(history.get(17)));
+				}
+			}			
+		}
+		
+	}
 }
