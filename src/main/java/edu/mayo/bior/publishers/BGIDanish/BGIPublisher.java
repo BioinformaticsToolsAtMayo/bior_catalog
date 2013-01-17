@@ -11,6 +11,11 @@ import com.tinkerpop.pipes.util.Pipeline;
 import edu.mayo.bior.publishers.Cosmic.CosmicPublisher;
 import edu.mayo.pipes.HeaderPipe;
 import edu.mayo.pipes.JSON.InjectIntoJsonPipe;
+import edu.mayo.pipes.JSON.inject.ColumnArrayInjector;
+import edu.mayo.pipes.JSON.inject.ColumnInjector;
+import edu.mayo.pipes.JSON.inject.Injector;
+import edu.mayo.pipes.JSON.inject.JsonType;
+import edu.mayo.pipes.JSON.inject.LiteralInjector;
 import edu.mayo.pipes.MergePipe;
 import edu.mayo.pipes.PrependStringPipe;
 import edu.mayo.pipes.PrintPipe;
@@ -74,14 +79,31 @@ public class BGIPublisher {
                                         CoreAttributes._minBP.toString(),
                                         CoreAttributes._maxBP.toString()
                                             };
-        InjectIntoJsonPipe inject = new InjectIntoJsonPipe(header);
+        Injector[] injectors = new Injector[] {
+            new ColumnInjector(1, "chromosomeID", JsonType.STRING),
+            new ColumnInjector(2, "genomic_position", JsonType.STRING),
+            new ColumnInjector(3, "index_of_major_allele", JsonType.STRING),
+            new ColumnInjector(4, "index_of_minor_allele", JsonType.STRING),
+            new ColumnInjector(5, "number_A", JsonType.STRING),
+            new ColumnInjector(6, "number_C", JsonType.STRING), 
+            new ColumnInjector(7, "number_G", JsonType.STRING),
+            new ColumnInjector(8, "number_T", JsonType.STRING),
+            new ColumnInjector(9, "estimatedMAF", JsonType.STRING),
+            new ColumnInjector(10, CoreAttributes._type.toString(), JsonType.STRING),
+            new ColumnInjector(11, CoreAttributes._landmark.toString(), JsonType.STRING),
+            new ColumnInjector(12, CoreAttributes._refAllele.toString(), JsonType.STRING),
+            new ColumnArrayInjector(13, CoreAttributes._altAlleles.toString(), JsonType.STRING, ","),
+            new ColumnInjector(14, CoreAttributes._minBP.toString(), JsonType.STRING),
+            new ColumnInjector(15, CoreAttributes._maxBP.toString(), JsonType.STRING)       			        			        			
+        };
+        InjectIntoJsonPipe inject = new InjectIntoJsonPipe(injectors);
         int[] cut = new int[] {1,2,3,4,5,6,7,8,9,10,12,13};
         int[] cut2 = new int[] {1};
         Pipe p = new Pipeline(new CatPipe(),
                              new HistoryInPipe(),
                              t,
                              inject,
-                             new HCutPipe(false, cut), 
+                             //new HCutPipe(false, cut), 
                              new MergePipe("\t"),
                              out);
         p.setStarts(Arrays.asList(rawDataFileFullpath));
