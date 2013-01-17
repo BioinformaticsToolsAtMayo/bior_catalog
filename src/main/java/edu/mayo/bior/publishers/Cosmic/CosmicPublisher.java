@@ -24,6 +24,7 @@ import edu.mayo.pipes.JSON.inject.ColumnInjector;
 import edu.mayo.pipes.JSON.inject.Injector;
 import edu.mayo.pipes.JSON.inject.JsonType;
 import edu.mayo.pipes.JSON.inject.LiteralInjector;
+import edu.mayo.pipes.PrintPipe;
 import edu.mayo.pipes.UNIX.CatGZPipe;
 import edu.mayo.pipes.UNIX.HeadPipe;
 import edu.mayo.pipes.bioinformatics.vocab.CoreAttributes;
@@ -47,9 +48,10 @@ public class CosmicPublisher {
     }
     
     public static void main(String[] args) {	 
-        CosmicPublisher publisher = new CosmicPublisher();
-        publisher.publish("/data/cosmic/v62/CosmicCompleteExport_v62_291112.tsv.gz", "/data/catalogs/cosmic");
+        CosmicPublisher publisher = new CosmicPublisher();      
+        publisher.publish("/data/cosmic/v62/CosmicCompleteExport_v62_291112.tsv.gz", "/data/catalogs/cosmic/v62");
         //publisher.publish("C:\\mayo\\bior\\cosmic\\CosmicCompleteExport_v62_291112.tsv.gz", "C:\\temp");
+
     }     
     
    /**
@@ -109,10 +111,12 @@ public class CosmicPublisher {
         System.out.println("Started loading Cosmic at: " + new Timestamp(new Date().getTime()));
         
         //String outfile = outputDir + "/" + catalogFile; 
-        String outfile = outputDir + "\\" + catalogFile;        
+        String outfile = outputDir + "/" + catalogFile;        
         System.out.println("Outputing File to: " + outfile);
         
-        processCosmicFile(rawDataFile, processedHeader, new WritePipe(outfile));
+        
+        processCosmicFile(rawDataFile, processedHeader, new PrintPipe());
+        //processCosmicFile(rawDataFile, processedHeader, new WritePipe(outfile));
     }    
     
    
@@ -138,6 +142,7 @@ public class CosmicPublisher {
         int[] cut = new int[] {3,4,5,6,7,8,9,10,11,12,14,15,16,19,20,21,22,23,24,25,26,28,29,32};
         
         Pipe<History,History> transform = new TransformFunctionPipe<History,History>( new CosmicTransformPipe() );
+
         
         Pipe p = new Pipeline(new CatGZPipe("gzip"),
         						new HeaderPipe(1),        						
@@ -149,9 +154,12 @@ public class CosmicPublisher {
         						load
         );
         p.setStarts(Arrays.asList(file));
-        for(int i=0; p.hasNext(); i++){
-        	//System.out.println("Val="+i);
-        	p.next();        	
+        for(int i=1; p.hasNext(); i++){
+            //System.out.println("Val="+i);
+            p.next();
+                     
+            //if(i>155) break;
+
         }
         System.out.println("COMPLETED loading Cosmic at: " + new Timestamp(new Date().getTime()));
     }
@@ -258,6 +266,12 @@ public class CosmicPublisher {
             //_strand
             history.add(this.strand);
                         
+            System.out.println(history.size());
+            if(history.size() < 33){
+                history.add("");
+            }
+            System.out.println(history.size());
+            
             return history;
 		}
 
