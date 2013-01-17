@@ -266,11 +266,6 @@ public class CosmicPublisher {
             //_strand
             history.add(this.strand);
                         
-            System.out.println(history.size());
-            if(history.size() < 33){
-                history.add("");
-            }
-            System.out.println(history.size());
             
             return history;
 		}
