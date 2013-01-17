@@ -94,7 +94,7 @@ public class CollapseHapMapVariantsPipe extends AbstractPipe<History,History> {
      *       After: "CHN":{"center":"perlegen","QC_code":"QC+",...}
      */
 	private History merge(History hist1, History hist2) {
-        String jsonMerged = m_queueUtil.addVariantToCurrent(getJson(hist1), getJson(hist2));
+        String jsonMerged = m_queueUtil.mergeHapMap(getJson(hist1), getJson(hist2));
         History newHist = (History)(hist1.clone());
         newHist.set(newHist.size()-1, jsonMerged);
         return newHist;

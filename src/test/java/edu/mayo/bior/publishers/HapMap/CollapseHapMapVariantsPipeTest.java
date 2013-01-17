@@ -154,8 +154,12 @@ public class CollapseHapMapVariantsPipeTest {
             
             String expectedJSON = mVariantMergedData.get(rsID); 
             
+            System.out.println("====");
+            System.out.println("Expected: " + expectedJSON);
+            System.out.println("Actual:   " + json);
+            
             assertEquals(expectedJSON, json);    		
-    	}    	
+    	}
     }
     
     /**
