@@ -39,7 +39,7 @@ import edu.mayo.util.HGVS;
 
 /**
  *
- * @author m089716
+ * @author Surendra Konathala
  */
 public class CosmicPublisher {
         public static void usage(){
@@ -55,7 +55,7 @@ public class CosmicPublisher {
    /**
     * Returns the HEADER columns from the raw data file
     */
-    public String[] getHeader(String rawDataFile) {    	
+    private String[] getHeader(String rawDataFile) {    	
     	String header="";
     	
         Pipe p = new Pipeline(new HeadPipe(1, new CatGZPipe("gzip")));
@@ -73,14 +73,6 @@ public class CosmicPublisher {
     }
     
     /**
-     * TODO
-     * 1. get header [done]
-     * 2. process each header element with "_" [done]
-     * 3. get value from col - 'CDS Mutation Syntax' which is like "c.35G>A",
-     *    parse it to retrieve REF and ALT
-     * 4. load them like in hapmappublish phase 1
-     * 4. parse the file and for each json value(header column add the values from raw file
-     * like gene_name="39443", Accesssion_number="ENSSSS" etc
      *  
      * Processes the header columns, replaces spaces within a column name to "_".
      * "Gene name" to "Gene_name"
@@ -104,9 +96,6 @@ public class CosmicPublisher {
         //converting array-list to string[]
         String[] strarray = processedHeader.toArray(new String[processedHeader.size()]);
         
-        //System.out.println("PH:\n\n"+Arrays.asList(strarray));
-        
-		//return strarray;
 		return processedHeader;
 	}    
     
@@ -118,11 +107,10 @@ public class CosmicPublisher {
         final String catalogFile = "cosmic.tsv";
         
         String[] header = getHeader(rawDataFile);
-        //String[] processedHeader = postProcessHeader(header);
         List<String> processedHeader = postProcessHeader(header);
-        System.out.println("Processed Header:\n"+Arrays.asList(processedHeader));
+        //System.out.println("Processed Header:\n"+Arrays.asList(processedHeader));
        
-        System.out.println("Started loading HapMap at: " + new Timestamp(new Date().getTime()));
+        System.out.println("Started loading Cosmic at: " + new Timestamp(new Date().getTime()));
         
         //String outfile = outputDir + "/" + catalogFile; 
         String outfile = outputDir + "\\" + catalogFile;        
@@ -156,7 +144,7 @@ public class CosmicPublisher {
         
         Pipe<History,History> transform = new TransformFunctionPipe<History,History>( new CosmicTransformPipe() );
 
-        HistoryInPipe hPipe = new HistoryInPipe(25);
+        HistoryInPipe hPipe = new HistoryInPipe();
         
         Pipe p = new Pipeline(new CatGZPipe("gzip"),
         						new HeaderPipe(1),        						
@@ -169,23 +157,24 @@ public class CosmicPublisher {
         );
         p.setStarts(Arrays.asList(file));
         for(int i=0; p.hasNext(); i++){
-            //p.next();
-        	System.out.println("Val="+i+" | "+p.next());
+        	//System.out.println("Val="+i);
+        	p.next();        	
          
             //if(i>155) break;
         }
+        System.out.println("COMPLETED loading Cosmic at: " + new Timestamp(new Date().getTime()));
     }
 
 	/**
 	 * 
-	 * @author m089716
+	 * @author Surendra Konathala
 	 *
 	 */
 	public class CosmicTransformPipe implements PipeFunction<History,History> {
 
 		/**
 		 * Columns in raw data file:
-			Gene name,
+			Col 1: Gene name,
 			Accession Number, 
 			HGNC ID, 
 			Sample name, 
@@ -209,7 +198,7 @@ public class CosmicPublisher {
 			Pubmed_PMID, 
 			Sample source, 
 			Tumour origin, 
-			Comments
+			Col 25: Comments
 		 */
 			
 		String rawData = "";
@@ -223,6 +212,23 @@ public class CosmicPublisher {
 		
 		@Override
 		public History compute(History history) {
+			/**
+			 * Make sure the history-in pipe always has the exact number of 
+			 * columns the raw data file. This is because, this history-in
+			 * pipe is used in "inject2json" which expects all columns to be there.
+			 * 
+			 * Also the reason this is being checked here is that 'Cosmic RawDataFile'
+			 * has some data on some columns missing. If data is missing, an empty string is
+			 * added in the file.. but if the last column "Comments" is missing
+			 * nothing is added and the history-in that is being returned is sent without the last column
+			 * and this fails at "inject2json" pipe since it expects all columns to be there.		 
+			 */
+			if (history.size()<25) {
+				int missingColumns = 25 - history.size();
+				for (int i=0;i<missingColumns;i++) {
+					history.add("");
+				}
+			}
 			
 			chr = Undefined.UNKNOWN.toString(); // DEFAULT
 			minBp = "0"; // DEFAULT
@@ -260,7 +266,7 @@ public class CosmicPublisher {
             
             //_strand
             history.add(this.strand);
-            
+                        
             return history;
 		}
 

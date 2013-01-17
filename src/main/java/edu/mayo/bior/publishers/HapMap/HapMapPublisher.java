@@ -113,7 +113,7 @@ public class HapMapPublisher {
     }
     
     private void processHapMapFile(String file, String chr, String population, List<String> header,  Pipe load) { 
-        HapMap2JSONPipe hmj = new HapMap2JSONPipe(population, chr, header); 
+        //HapMap2JSONPipe hmj = new HapMap2JSONPipe(population, chr, header); 
         String[] headers = new String[18];
         headers[0] = "rsNumber";
         headers[1] = "chrom";
@@ -135,15 +135,15 @@ public class HapMapPublisher {
         headers[17] = "population";//this is added via an append pipe
         Delim2JSONPipe delim2JSON = new Delim2JSONPipe(-1, false, headers, " ");
         
-        String[] paths = new String[3];
-        paths[0] = CoreAttributes._landmark.toString();
-        paths[1] = CoreAttributes._minBP.toString();
-        paths[2] = CoreAttributes._maxBP.toString();
-        
-        //note... need to get the population
-        
         //Pipe p = new Pipeline(new CatGZPipe("gzip"), new GrepEPipe("^rs#.*"), hmj, new SimpleDrillPipe(true, paths), new MergePipe("\t", true), load);
-        Pipe p = new Pipeline(new CatGZPipe("gzip"), new GrepEPipe("^rs#.*"), new AppendStringPipe(" " + population), new HistoryInPipe(), delim2JSON, new MergePipe("\t", true), new AppendStringPipe("\n"), load);
+        Pipe p = new Pipeline(new CatGZPipe("gzip"), 
+        						new GrepEPipe("^rs#.*"), 
+        						new AppendStringPipe(" " + population), 
+        						new HistoryInPipe(), 
+        						delim2JSON, 
+        						new MergePipe("\t", true), 
+        						new AppendStringPipe("\n"), 
+        						load);
         p.setStarts(Arrays.asList(new String[] {file}));
         for(int i=0; p.hasNext(); i++){
             p.next();

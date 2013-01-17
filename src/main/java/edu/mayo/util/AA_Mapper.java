@@ -3,15 +3,11 @@ package edu.mayo.util;
 import java.util.HashMap;
 import java.util.Map;
 
-
-	
 	
 	/**
 	 * A base class for extracting Mutations from text
 	 * 
-	 * @author William A. Baumgartner, Jr. <br>
-	 *         william.baumgartner@uchsc.edu
-	 * @version 1.0
+	 * Used by HGVS.java
 	 * 
 	 */
 
