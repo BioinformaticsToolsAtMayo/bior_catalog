@@ -4,34 +4,28 @@
  */
 package edu.mayo.bior.publishers.Cosmic;
 
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+
 import com.tinkerpop.pipes.Pipe;
 import com.tinkerpop.pipes.PipeFunction;
 import com.tinkerpop.pipes.transform.TransformFunctionPipe;
 import com.tinkerpop.pipes.util.Pipeline;
 
-import edu.mayo.bior.publishers.BGIDanish.BGIPublisher.BGIPipe;
-import edu.mayo.bior.publishers.HapMap.HapMap2JSONPipe;
-import edu.mayo.bior.publishers.HapMap.HapMapPublisher;
-import edu.mayo.pipes.AppendStringPipe;
 import edu.mayo.pipes.HeaderPipe;
-import edu.mayo.pipes.JSON.BioJavaRichSequence2JSON;
-import edu.mayo.pipes.JSON.Delim2JSONPipe;
-import edu.mayo.pipes.JSON.DrillPipe;
-import edu.mayo.pipes.JSON.InjectIntoJsonPipe;
-import edu.mayo.pipes.JSON.SimpleDrillPipe;
-import edu.mayo.pipes.DrainPipe;
 import edu.mayo.pipes.MergePipe;
-import edu.mayo.pipes.PrependStringPipe;
-import edu.mayo.pipes.PrintPipe;
-import edu.mayo.pipes.SplitPipe;
-import edu.mayo.pipes.UNIX.CatGZPipe;
-import edu.mayo.pipes.UNIX.CatPipe;
-import edu.mayo.pipes.UNIX.GrepEPipe;
-import edu.mayo.pipes.UNIX.GrepPipe;
-import edu.mayo.pipes.UNIX.HeadPipe;
-import edu.mayo.pipes.UNIX.LSPipe;
 import edu.mayo.pipes.WritePipe;
-import edu.mayo.pipes.bioinformatics.GenbankPipe;
+import edu.mayo.pipes.JSON.InjectIntoJsonPipe;
+import edu.mayo.pipes.JSON.inject.ColumnArrayInjector;
+import edu.mayo.pipes.JSON.inject.ColumnInjector;
+import edu.mayo.pipes.JSON.inject.Injector;
+import edu.mayo.pipes.JSON.inject.JsonType;
+import edu.mayo.pipes.JSON.inject.LiteralInjector;
+import edu.mayo.pipes.UNIX.CatGZPipe;
+import edu.mayo.pipes.UNIX.HeadPipe;
 import edu.mayo.pipes.bioinformatics.vocab.CoreAttributes;
 import edu.mayo.pipes.bioinformatics.vocab.Type;
 import edu.mayo.pipes.bioinformatics.vocab.Undefined;
@@ -42,15 +36,6 @@ import edu.mayo.pipes.history.HistoryInPipe;
 import edu.mayo.pipes.history.HistoryOutPipe;
 import edu.mayo.pipes.util.GenomicObjectUtils;
 import edu.mayo.util.HGVS;
-
-import java.sql.Timestamp;
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
@@ -152,18 +137,20 @@ public class CosmicPublisher {
      * 
      */
     private void processCosmicFile(String file, List<String> headerColumns, Pipe load) {
-    	//Add CoreAttributes
-    	headerColumns.add(CoreAttributes._type.toString());
-    	headerColumns.add(CoreAttributes._landmark.toString());
-    	headerColumns.add(CoreAttributes._minBP.toString());
-    	headerColumns.add(CoreAttributes._maxBP.toString());   	
-    	headerColumns.add(CoreAttributes._refAllele.toString());
-    	headerColumns.add(CoreAttributes._altAlleles.toString());
-    	headerColumns.add(CoreAttributes._strand.toString());    	
-    	
-    	String[] headerArray = headerColumns.toArray(new String[headerColumns.size()]);
+
+        Injector[] injectors = new Injector[]
+        		{
+        			new LiteralInjector(CoreAttributes._type.toString(), Type.VARIANT.toString(), JsonType.STRING),
+        			new ColumnInjector     (1, CoreAttributes._landmark.toString(),   JsonType.STRING),
+        			new ColumnInjector     (2, CoreAttributes._minBP.toString(),      JsonType.NUMBER),
+        			new ColumnInjector     (3, CoreAttributes._maxBP.toString(),      JsonType.NUMBER),
+        			new ColumnInjector     (4, CoreAttributes._strand.toString(),     JsonType.STRING),
+        			new ColumnInjector     (5, CoreAttributes._refAllele.toString(),  JsonType.STRING),
+        			new ColumnArrayInjector(6, CoreAttributes._altAlleles.toString(), JsonType.STRING, ","),
+        			new ColumnInjector     (7, CoreAttributes._id.toString(),         JsonType.STRING)        			        			        			
+        		};
         
-        InjectIntoJsonPipe injectCosmicDataAsJson = new InjectIntoJsonPipe(headerArray);
+        InjectIntoJsonPipe injectCosmicDataAsJson = new InjectIntoJsonPipe(8, injectors);
         
         int[] cut = new int[] {3,4,5,6,7,8,9,10,11,12,14,15,16,19,20,21,22,23,24,25,26,28,29,32};
         
