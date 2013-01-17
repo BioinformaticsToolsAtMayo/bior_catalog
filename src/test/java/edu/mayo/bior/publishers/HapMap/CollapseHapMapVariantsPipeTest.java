@@ -151,6 +151,7 @@ public class CollapseHapMapVariantsPipeTest {
             mPipeline.hasNext();
             History history = mPipeline.next();
             String json = getCompactJSON(history.get(history.size() - 1));
+//            String json = history.get(history.size() - 1);
             
             String expectedJSON = mVariantMergedData.get(rsID); 
             
