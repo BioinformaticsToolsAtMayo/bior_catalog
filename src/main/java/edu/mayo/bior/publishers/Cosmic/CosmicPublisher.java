@@ -48,8 +48,8 @@ public class CosmicPublisher {
     
     public static void main(String[] args) {	 
         CosmicPublisher publisher = new CosmicPublisher();
-        publisher.publish("C:\\mayo\\bior\\cosmic\\CosmicCompleteExport_v62_291112.tsv.gz", "C:\\temp");
-        //publisher.publish("C:\\mayo\\bior\\cosmic\\cosmic_mart_export.txt", "C:\\temp");        
+        publisher.publish("/data/cosmic/v62/CosmicCompleteExport_v62_291112.tsv.gz", "/data/catalogs/cosmic");
+        //publisher.publish("C:\\mayo\\bior\\cosmic\\CosmicCompleteExport_v62_291112.tsv.gz", "C:\\temp");
     }     
     
    /**
@@ -64,10 +64,6 @@ public class CosmicPublisher {
         	header = (String) p.next();
         	//System.out.println(header);        	
         }
-        
-        //System.out.println(header);
-    	//String[] val = header.split("\t");
-        //System.out.println(Arrays.asList(val));
         
         return header.split("\t");
     }
@@ -126,29 +122,26 @@ public class CosmicPublisher {
      */
     private void processCosmicFile(String file, List<String> headerColumns, Pipe load) {
 
-        Injector[] injectors = new Injector[]
-        		{
-        			new LiteralInjector(CoreAttributes._type.toString(), Type.VARIANT.toString(), JsonType.STRING),
-        			new ColumnInjector     (1, CoreAttributes._landmark.toString(),   JsonType.STRING),
-        			new ColumnInjector     (2, CoreAttributes._minBP.toString(),      JsonType.NUMBER),
-        			new ColumnInjector     (3, CoreAttributes._maxBP.toString(),      JsonType.NUMBER),
-        			new ColumnInjector     (4, CoreAttributes._strand.toString(),     JsonType.STRING),
-        			new ColumnInjector     (5, CoreAttributes._refAllele.toString(),  JsonType.STRING),
-        			new ColumnArrayInjector(6, CoreAttributes._altAlleles.toString(), JsonType.STRING, ","),
-        			new ColumnInjector     (7, CoreAttributes._id.toString(),         JsonType.STRING)        			        			        			
-        		};
+       	//Add CoreAttributes
+    	headerColumns.add(CoreAttributes._type.toString());
+    	headerColumns.add(CoreAttributes._landmark.toString());
+    	headerColumns.add(CoreAttributes._minBP.toString());
+    	headerColumns.add(CoreAttributes._maxBP.toString());   	
+    	headerColumns.add(CoreAttributes._refAllele.toString());
+    	headerColumns.add(CoreAttributes._altAlleles.toString());
+    	headerColumns.add(CoreAttributes._strand.toString());    	
+    	
+    	String[] headerArray = headerColumns.toArray(new String[headerColumns.size()]);
         
-        InjectIntoJsonPipe injectCosmicDataAsJson = new InjectIntoJsonPipe(8, injectors);
+        InjectIntoJsonPipe injectCosmicDataAsJson = new InjectIntoJsonPipe(headerArray);
         
         int[] cut = new int[] {3,4,5,6,7,8,9,10,11,12,14,15,16,19,20,21,22,23,24,25,26,28,29,32};
         
         Pipe<History,History> transform = new TransformFunctionPipe<History,History>( new CosmicTransformPipe() );
-
-        HistoryInPipe hPipe = new HistoryInPipe();
         
         Pipe p = new Pipeline(new CatGZPipe("gzip"),
         						new HeaderPipe(1),        						
-        						hPipe,        						
+        						new HistoryInPipe(),        						
         						transform,  
         						injectCosmicDataAsJson,
         						new HCutPipe(false, cut),
@@ -159,8 +152,6 @@ public class CosmicPublisher {
         for(int i=0; p.hasNext(); i++){
         	//System.out.println("Val="+i);
         	p.next();        	
-         
-            //if(i>155) break;
         }
         System.out.println("COMPLETED loading Cosmic at: " + new Timestamp(new Date().getTime()));
     }
