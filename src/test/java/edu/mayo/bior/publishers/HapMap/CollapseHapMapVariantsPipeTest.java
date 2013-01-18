@@ -42,12 +42,12 @@ public class CollapseHapMapVariantsPipeTest {
 	// Stored the non-merged rows, 1 row per population
 	// key    = rsID
 	// value  = List of 1 or more rows
-	private Map<String, List<String>> mVariantData = new HashMap<String, List<String>>();
+	private Map<String, List<String>> mInputVariants = new HashMap<String, List<String>>();
 
 	// Stores the merged JSON, not the entire row
 	// key    = rsID
 	// value  = merged JSON String
-	private Map<String, String> mVariantMergedData = new HashMap<String, String>();	
+	private Map<String, String> mMergedVariantsOut = new HashMap<String, String>();	
 
     @Before
     public void setUp() throws JsonIOException, JsonSyntaxException, IOException {
@@ -56,16 +56,16 @@ public class CollapseHapMapVariantsPipeTest {
     	
     	// rows from this file are extracted and stored in Lists by rsID
     	File dataFile = new File(dataFolder, "hapmap.sorted.liftover.first300.tsv");     	
-    	mVariantData.put("rs10399749", getLinesByStringMatch(dataFile, "rs10399749"));
-    	mVariantData.put("rs2691310",  getLinesByStringMatch(dataFile, "rs2691310"));
-    	mVariantData.put("rs2949420",  getLinesByStringMatch(dataFile, "rs2949420"));
-    	mVariantData.put("rs2949421",  getLinesByStringMatch(dataFile, "rs2949421"));
+    	mInputVariants.put("rs10399749", getLinesByStringMatch(dataFile, "rs10399749"));
+    	mInputVariants.put("rs2691310",  getLinesByStringMatch(dataFile, "rs2691310"));
+    	mInputVariants.put("rs2949420",  getLinesByStringMatch(dataFile, "rs2949420"));
+    	mInputVariants.put("rs2949421",  getLinesByStringMatch(dataFile, "rs2949421"));
     	
     	// load the merged data for each variant
-    	mVariantMergedData.put("rs10399749", loadJsonDocument(new File(dataFolder, "rs10399749_merged.json")));
-    	mVariantMergedData.put("rs2691310",  loadJsonDocument(new File(dataFolder, "rs2691310_merged.json")));
-    	mVariantMergedData.put("rs2949420",  loadJsonDocument(new File(dataFolder, "rs2949420_merged.json")));
-    	mVariantMergedData.put("rs2949421",  loadJsonDocument(new File(dataFolder, "rs2949421_merged.json")));
+    	mMergedVariantsOut.put("rs10399749", loadJsonDocument(new File(dataFolder, "rs10399749_merged.json")));
+    	mMergedVariantsOut.put("rs2691310",  loadJsonDocument(new File(dataFolder, "rs2691310_merged.json")));
+    	mMergedVariantsOut.put("rs2949420",  loadJsonDocument(new File(dataFolder, "rs2949420_merged.json")));
+    	mMergedVariantsOut.put("rs2949421",  loadJsonDocument(new File(dataFolder, "rs2949421_merged.json")));
     	
     	// pipes
     	HistoryInPipe 				historyIn	= new HistoryInPipe();
@@ -82,53 +82,42 @@ public class CollapseHapMapVariantsPipeTest {
     @After
     public void tearDown() {
     	mPipeline.reset();
-    	mVariantData.clear();
-    	mVariantMergedData.clear();
+    	mInputVariants.clear();
+    	mMergedVariantsOut.clear();
     }
     
     @Test
     public void testNoVariants() {
-    	String[] variantIDs = new String[] {};
-    	test(variantIDs);
+    	test(new String[0]);
     }
     
     @Test
-    public void testSingleVariantOnly() {
-
-    	String[] variantIDs;
-    	
+    public void testSingleVariantOnly1() {
     	// pass in 1 variant that has only 1 population
-    	variantIDs = new String[] {
-    		"rs2691310"  // has 1 population variant 
-    	};    	
-    	test(variantIDs);
-
+    	test("rs2691310");
+    }
+    
+    @Test
+    public void testSingleVariantOnly2() {
     	// pass in 1 variant that has multiple populations
-    	variantIDs = new String[] {
-        	"rs2949420",  // has 2 population variants
-        };        	
-        test(variantIDs);
+        test("rs2949420");
     }    
     
     @Test
-    public void testMultiplePopulationVariants() {
-    	
-    	String[] variantIDs;
-    	
-    	variantIDs = new String[] {
-    		"rs10399749", // has 4 population variants
-    		"rs2691310",  // has 1 population variant 
-    		"rs2949420",  // has 2 population variants
-    	};    	
-    	test(variantIDs);
-    	
-    	variantIDs = new String[] {
-        		"rs10399749", // has 4 population variants
+    public void testMultiplePopulationVariants1() {
+    	test( 	"rs10399749", // has 4 population variants
+        		"rs2691310",  // has 1 population variant 
+        		"rs2949420"   // has 2 population variants
+    	);
+    }
+    
+    @Test
+    public void testMultiplePopulationVariants2() {
+        test(   "rs10399749", // has 4 population variants
         		"rs2691310",  // has 1 population variant 
         		"rs2949420",  // has 2 population variants
         		"rs2949421"   // has 1 population variants
-        	};    	
-        test(variantIDs);    	
+        );    	
     }    
     
     /**
@@ -136,13 +125,15 @@ public class CollapseHapMapVariantsPipeTest {
      * 
      * @param variantIDs
      */
-    private void test(String[] variantIDs) {
+    private void test(String... variantIDs) {
     	// build up the lines of non-merged variant data
     	List<String> inputLines = new ArrayList<String>();    	
     	for (String rsID: variantIDs) {
-        	inputLines.addAll(mVariantData.get(rsID));    		
+        	inputLines.addAll(mInputVariants.get(rsID));    		
     	}
     	    	
+    	// Reset pipe
+    	mPipeline.reset();
 		// prime pipeline
         mPipeline.setStarts(inputLines);
         
@@ -153,7 +144,7 @@ public class CollapseHapMapVariantsPipeTest {
             String json = getCompactJSON(history.get(history.size() - 1));
 //            String json = history.get(history.size() - 1);
             
-            String expectedJSON = mVariantMergedData.get(rsID); 
+            String expectedJSON = mMergedVariantsOut.get(rsID); 
             
             System.out.println("====");
             System.out.println("Expected: " + expectedJSON);
