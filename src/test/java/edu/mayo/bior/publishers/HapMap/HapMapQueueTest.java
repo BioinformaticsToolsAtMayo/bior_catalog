@@ -33,11 +33,11 @@ public class HapMapQueueTest {
     public void tearDown() {
     }
 
-    private final String jsonVariant  = "{\"rsNumber\":\"rs10399749\",\"chrom\":\"chr1\",\"pos\":45162,\"strand\":\"+\",\"build\":\"ncbi_b36\",\"center\":\"perlegen\",\"protLSID\":\"urn:lsid:perlegen.hapmap.org:Protocol:Genotyping_1.0.0:2\",\"assayLSID\":\"urn:lsid:perlegen.hapmap.org:Assay:25761.5318498:1\",\"panelLSID\":\"urn:LSID:dcc.hapmap.org:Panel:Han_Chinese:2\",\"QC_code\":\"QC+\",\"refallele\":\"C\",\"refallele_freq\":1.0,\"refallele_count\":88,\"otherallele\":\"T\",\"otherallele_freq\":0,\"otherallele_count\":0,\"totalcount\":88,\"population\":\"CHB\", \"_type\":\"variant\", \"_landmark\":1, \"_minBP\":55299, \"_maxBP\":55299, \"_strand\":\"+\", \"_refAllele\":\"C\", \"_altAlleles\":\"T\", \"_id\":\"rs10399749\"}";
-    private final String jsonVariant2 = "{\"rsNumber\":\"rs10399749\",\"chrom\":\"chr1\",\"pos\":45162,\"strand\":\"+\",\"build\":\"ncbi_b36\",\"center\":\"perlegen\",\"protLSID\":\"urn:lsid:perlegen.hapmap.org:Protocol:Genotyping_1.0.0:2\",\"assayLSID\":\"urn:lsid:perlegen.hapmap.org:Assay:25761.5318498:1\",\"panelLSID\":\"urn:LSID:dcc.hapmap.org:Panel:Japanese:2\",\"QC_code\":\"QC+\",\"refallele\":\"C\",\"refallele_freq\":1.0,\"refallele_count\":88,\"otherallele\":\"T\",\"otherallele_freq\":0,\"otherallele_count\":0,\"totalcount\":88,\"population\":\"JPT\", \"_type\":\"variant\", \"_landmark\":1, \"_minBP\":55299, \"_maxBP\":55299, \"_strand\":\"+\", \"_refAllele\":\"C\", \"_altAlleles\":\"T\", \"_id\":\"rs10399749\"}";
-    private final String jsonVariant3 = "{\"rsNumber\":\"rs10399749\",\"chrom\":\"chr1\",\"pos\":45162,\"strand\":\"+\",\"build\":\"ncbi_b36\",\"center\":\"perlegen\",\"protLSID\":\"urn:lsid:perlegen.hapmap.org:Protocol:Genotyping_1.0.0:2\",\"assayLSID\":\"urn:lsid:perlegen.hapmap.org:Assay:25761.5318498:1\",\"panelLSID\":\"urn:LSID:dcc.hapmap.org:Panel:Yoruba-30-trios:1\",\"QC_code\":\"QC+\",\"refallele\":\"C\",\"refallele_freq\":1.0,\"refallele_count\":118,\"otherallele\":\"T\",\"otherallele_freq\":0,\"otherallele_count\":0,\"totalcount\":118,\"population\":\"YRI\", \"_type\":\"variant\", \"_landmark\":1, \"_minBP\":55299, \"_maxBP\":55299, \"_strand\":\"+\", \"_refAllele\":\"C\", \"_altAlleles\":\"T\", \"_id\":\"rs10399749\"}";
-    private final String jsonVariant4 = "{\"rsNumber\":\"rs2949420\",\"chrom\":\"chr1\",\"pos\":45257,\"strand\":\"+\",\"build\":\"ncbi_b36\",\"center\":\"sanger\",\"protLSID\":\"urn:lsid:illumina.hapmap.org:Protocol:Golden_Gate_1.0.0:1\",\"assayLSID\":\"urn:lsid:sanger.hapmap.org:Assay:4499502:1\",\"panelLSID\":\"urn:LSID:dcc.hapmap.org:Panel:Japanese:1\",\"QC_code\":\"QC+\",\"refallele\":\"T\",\"refallele_freq\":1.0,\"refallele_count\":88,\"otherallele\":\"A\",\"otherallele_freq\":0,\"otherallele_count\":0,\"totalcount\":88,\"population\":\"JPT\", \"_type\":\"variant\", \"_landmark\":1, \"_minBP\":55394, \"_maxBP\":55394, \"_strand\":\"+\", \"_refAllele\":\"T\", \"_altAlleles\":\"A\", \"_id\":\"rs2949420\"}";
-    private final String jsonVariant5 = "{\"rsNumber\":\"rs2949421\",\"chrom\":\"chr1\",\"pos\":45413,\"strand\":\"+\",\"build\":\"ncbi_b36\",\"center\":\"sanger\",\"protLSID\":\"urn:lsid:illumina.hapmap.org:Protocol:Golden_Gate_1.0.0:1\",\"assayLSID\":\"urn:lsid:sanger.hapmap.org:Assay:4322523:1\",\"panelLSID\":\"urn:LSID:dcc.hapmap.org:Panel:Yoruba-30-trios:1\",\"QC_code\":\"QC+\",\"refallele\":\"A\",\"refallele_freq\":0.032,\"refallele_count\":4,\"otherallele\":\"T\",\"otherallele_freq\":0.968,\"otherallele_count\":120,\"totalcount\":124,\"population\":\"YRI\", \"_type\":\"variant\", \"_landmark\":1, \"_minBP\":55550, \"_maxBP\":55550, \"_strand\":\"+\", \"_refAllele\":\"A\", \"_altAlleles\":\"T\", \"_id\":\"rs2949421\"}";
+    private final String jsonVariant  = "{\"rsNumber\":\"rs10399749\",\"chrom\":\"chr1\",\"pos\":45162,\"strand\":\"+\",\"build\":\"ncbi_b36\",\"center\":\"perlegen\",\"protLSID\":\"urn:lsid:perlegen.hapmap.org:Protocol:Genotyping_1.0.0:2\",\"assayLSID\":\"urn:lsid:perlegen.hapmap.org:Assay:25761.5318498:1\",\"panelLSID\":\"urn:LSID:dcc.hapmap.org:Panel:Han_Chinese:2\",\"QC_code\":\"QC+\",\"refallele\":\"C\",\"refallele_freq\":1.0,\"refallele_count\":88,\"otherallele\":\"T\",\"otherallele_freq\":0,\"otherallele_count\":0,\"totalcount\":88,\"population\":\"CHB\", \"_type\":\"variant\", \"_landmark\":\"1\", \"_minBP\":55299, \"_maxBP\":55299, \"_strand\":\"+\", \"_refAllele\":\"C\", \"_altAlleles\":\"T\", \"_id\":\"rs10399749\"}";
+    private final String jsonVariant2 = "{\"rsNumber\":\"rs10399749\",\"chrom\":\"chr1\",\"pos\":45162,\"strand\":\"+\",\"build\":\"ncbi_b36\",\"center\":\"perlegen\",\"protLSID\":\"urn:lsid:perlegen.hapmap.org:Protocol:Genotyping_1.0.0:2\",\"assayLSID\":\"urn:lsid:perlegen.hapmap.org:Assay:25761.5318498:1\",\"panelLSID\":\"urn:LSID:dcc.hapmap.org:Panel:Japanese:2\",\"QC_code\":\"QC+\",\"refallele\":\"C\",\"refallele_freq\":1.0,\"refallele_count\":88,\"otherallele\":\"T\",\"otherallele_freq\":0,\"otherallele_count\":0,\"totalcount\":88,\"population\":\"JPT\", \"_type\":\"variant\", \"_landmark\":\"1\", \"_minBP\":55299, \"_maxBP\":55299, \"_strand\":\"+\", \"_refAllele\":\"C\", \"_altAlleles\":\"T\", \"_id\":\"rs10399749\"}";
+    private final String jsonVariant3 = "{\"rsNumber\":\"rs10399749\",\"chrom\":\"chr1\",\"pos\":45162,\"strand\":\"+\",\"build\":\"ncbi_b36\",\"center\":\"perlegen\",\"protLSID\":\"urn:lsid:perlegen.hapmap.org:Protocol:Genotyping_1.0.0:2\",\"assayLSID\":\"urn:lsid:perlegen.hapmap.org:Assay:25761.5318498:1\",\"panelLSID\":\"urn:LSID:dcc.hapmap.org:Panel:Yoruba-30-trios:1\",\"QC_code\":\"QC+\",\"refallele\":\"C\",\"refallele_freq\":1.0,\"refallele_count\":118,\"otherallele\":\"T\",\"otherallele_freq\":0,\"otherallele_count\":0,\"totalcount\":118,\"population\":\"YRI\", \"_type\":\"variant\", \"_landmark\":\"1\", \"_minBP\":55299, \"_maxBP\":55299, \"_strand\":\"+\", \"_refAllele\":\"C\", \"_altAlleles\":\"T\", \"_id\":\"rs10399749\"}";
+    private final String jsonVariant4 = "{\"rsNumber\":\"rs2949420\",\"chrom\":\"chr1\",\"pos\":45257,\"strand\":\"+\",\"build\":\"ncbi_b36\",\"center\":\"sanger\",\"protLSID\":\"urn:lsid:illumina.hapmap.org:Protocol:Golden_Gate_1.0.0:1\",\"assayLSID\":\"urn:lsid:sanger.hapmap.org:Assay:4499502:1\",\"panelLSID\":\"urn:LSID:dcc.hapmap.org:Panel:Japanese:1\",\"QC_code\":\"QC+\",\"refallele\":\"T\",\"refallele_freq\":1.0,\"refallele_count\":88,\"otherallele\":\"A\",\"otherallele_freq\":0,\"otherallele_count\":0,\"totalcount\":88,\"population\":\"JPT\", \"_type\":\"variant\", \"_landmark\":\"1\", \"_minBP\":55394, \"_maxBP\":55394, \"_strand\":\"+\", \"_refAllele\":\"T\", \"_altAlleles\":\"A\", \"_id\":\"rs2949420\"}";
+    private final String jsonVariant5 = "{\"rsNumber\":\"rs2949421\",\"chrom\":\"chr1\",\"pos\":45413,\"strand\":\"+\",\"build\":\"ncbi_b36\",\"center\":\"sanger\",\"protLSID\":\"urn:lsid:illumina.hapmap.org:Protocol:Golden_Gate_1.0.0:1\",\"assayLSID\":\"urn:lsid:sanger.hapmap.org:Assay:4322523:1\",\"panelLSID\":\"urn:LSID:dcc.hapmap.org:Panel:Yoruba-30-trios:1\",\"QC_code\":\"QC+\",\"refallele\":\"A\",\"refallele_freq\":0.032,\"refallele_count\":4,\"otherallele\":\"T\",\"otherallele_freq\":0.968,\"otherallele_count\":120,\"totalcount\":124,\"population\":\"YRI\", \"_type\":\"variant\", \"_landmark\":\"1\", \"_minBP\":55550, \"_maxBP\":55550, \"_strand\":\"+\", \"_refAllele\":\"A\", \"_altAlleles\":\"T\", \"_id\":\"rs2949421\"}";
 
     private final String jsonSimple  = "{\"_landmark\":\"chr1\",\"_refAllele\":\"C\",\"A\":1,\"B\":2,\"population\":\"Rochestefarian\",\"C\":3}";
 
@@ -46,7 +46,7 @@ public class HapMapQueueTest {
     public void testBasicRollup() {
     	HapMapQueue q = new HapMapQueue();
     	String expected = "{\"_landmark\":\"chr1\",\"_refAllele\":\"C\",\"Rochestefarian\":{\"A\":1,\"B\":2,\"C\":3}}";
-    	String actual   = q.constructFromOne(jsonSimple);
+    	String actual   = q.collapsePopulation(jsonSimple);
     	assertEquals(expected, actual);
     }
     
@@ -56,8 +56,8 @@ public class HapMapQueueTest {
     @Test
     public void testMergeHapMap() {
         HapMapQueue hmq = new HapMapQueue();
-        String line1 = hmq.constructFromOne(jsonVariant);
-        String line2 = hmq.constructFromOne(jsonVariant2);
+        String line1 = hmq.collapsePopulation(jsonVariant);
+        String line2 = hmq.collapsePopulation(jsonVariant2);
         String expected = "{\"rsNumber\":\"rs10399749\",\"chrom\":\"chr1\",\"pos\":45162,\"strand\":\"+\",\"build\":\"ncbi_b36\",\"refallele\":\"C\",\"otherallele\":\"T\","
         		+ "\"_type\":\"variant\",\"_landmark\":\"1\",\"_minBP\":55299,\"_maxBP\":55299,\"_strand\":\"+\",\"_refAllele\":\"C\",\"_altAlleles\":\"T\",\"_id\":\"rs10399749\","
         		+ "\"CHB\":{\"center\":\"perlegen\",\"protLSID\":\"urn:lsid:perlegen.hapmap.org:Protocol:Genotyping_1.0.0:2\",\"assayLSID\":\"urn:lsid:perlegen.hapmap.org:Assay:25761.5318498:1\",\"panelLSID\":\"urn:LSID:dcc.hapmap.org:Panel:Han_Chinese:2\",\"QC_code\":\"QC+\",\"refallele_freq\":1.0,\"refallele_count\":88,\"otherallele_freq\":0,\"otherallele_count\":0,\"totalcount\":88},"
@@ -76,7 +76,7 @@ public class HapMapQueueTest {
         HapMapQueue instance = new HapMapQueue();
         String expResult = "{\"rsNumber\":\"rs10399749\",\"chrom\":\"chr1\",\"pos\":45162,\"strand\":\"+\",\"build\":\"ncbi_b36\",\"refallele\":\"C\",\"otherallele\":\"T\",\"_type\":\"variant\",\"_landmark\":\"1\",\"_minBP\":55299,\"_maxBP\":55299,\"_strand\":\"+\",\"_refAllele\":\"C\",\"_altAlleles\":\"T\",\"_id\":\"rs10399749\",\"CHB\":{"
         		+ "\"center\":\"perlegen\",\"protLSID\":\"urn:lsid:perlegen.hapmap.org:Protocol:Genotyping_1.0.0:2\",\"assayLSID\":\"urn:lsid:perlegen.hapmap.org:Assay:25761.5318498:1\",\"panelLSID\":\"urn:LSID:dcc.hapmap.org:Panel:Han_Chinese:2\",\"QC_code\":\"QC+\",\"refallele_freq\":1.0,\"refallele_count\":88,\"otherallele_freq\":0,\"otherallele_count\":0,\"totalcount\":88}}";
-        String result = instance.constructFromOne(jsonVariant);
+        String result = instance.collapsePopulation(jsonVariant);
         assertEquals(expResult, result);
     }
     
@@ -84,7 +84,7 @@ public class HapMapQueueTest {
     public void testConstructFromOneSimple() {
         HapMapQueue instance = new HapMapQueue();
         String expResult = "{\"_landmark\":\"chr1\",\"_refAllele\":\"C\",\"Rochestefarian\":{\"A\":1,\"B\":2,\"C\":3}}";
-        String result = instance.constructFromOne(jsonSimple);
+        String result = instance.collapsePopulation(jsonSimple);
         assertEquals(expResult, result);
     }
     
@@ -101,7 +101,7 @@ public class HapMapQueueTest {
         
         //test strings and landmarks
         none = new JsonObject();
-        JsonObject landmark = new JsonParser().parse("{\""+CoreAttributes._landmark.toString()+"\": 22}").getAsJsonObject();
+        JsonObject landmark = new JsonParser().parse("{\""+CoreAttributes._landmark.toString()+"\":\"22\"}").getAsJsonObject();
         JsonElement jlandmark = landmark.get(CoreAttributes._landmark.toString());
         JsonObject withlandmark = hmq.addElegant(none, CoreAttributes._landmark.toString(), jlandmark);
         assertEquals("{\""+CoreAttributes._landmark.toString()+"\":\"22\"}", withlandmark.toString());
