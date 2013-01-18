@@ -6,6 +6,14 @@
 	"build":"ncbi_b36",
 	"refallele":"C",
 	"otherallele":"A",
+	"_type":"variant",
+    "_landmark":"1",
+    "_minBP":56981,
+    "_maxBP":56981,
+    "_strand":"+",
+    "_refAllele":"C",
+    "_altAlleles":["A"],
+    "_id":"rs2691310",
 	"YRI":{
 		"center":"sanger",
 		"protLSID":"urn:lsid:illumina.hapmap.org:Protocol:Golden_Gate_1.0.0:1",
@@ -17,10 +25,5 @@
 		"otherallele_freq":0,
 		"otherallele_count":0,
 		"totalcount":126
-	},
-	"_landmark":"1",
-	"_rsId":"rs2691310",
-	"_minBP":56981,
-	"_maxBP":56981,
-	"_strand":"+"	
+	}
 }
