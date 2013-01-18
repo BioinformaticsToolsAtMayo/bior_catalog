@@ -8,6 +8,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.gson.JsonPrimitive;
 import com.tinkerpop.pipes.util.Pipeline;
 import edu.mayo.pipes.PrintPipe;
 import edu.mayo.pipes.bioinformatics.vocab.CoreAttributes;
@@ -52,7 +53,7 @@ public class HapMapQueue {
     private Gson gson = new Gson();
 
     
-    public String constructFromOne(String jsonVariant){           
+    public String collapsePopulation(String jsonVariant){           
         JsonObject dom = parser.parse(jsonVariant).getAsJsonObject();
         List<JsonObject> extractCommon = extractCommon(dom);
         JsonObject common = extractCommon.get(0);
@@ -65,6 +66,9 @@ public class HapMapQueue {
 
     /**
      * Takes a JSON string representing a variant, merges with another
+     * <b>WARNING: When merging json variants with multiple populations,
+     *             if the 2nd json parameter contains more than one population, they will be lost!  
+     *             Make sure the json with multiple populations is the first parameter</b> 
      * <b>Both must already have their populations collapsed (by calling constructFromOne()</b> 
      * @return 
      */
@@ -73,9 +77,9 @@ public class HapMapQueue {
     	if(variantJson1.equals("{}")){
             mergedVariant = variantJson2;
         }else {
-        	// Pull out the population from the second variant and add to first variant's DOM
             JsonObject dom1 = parser.parse(variantJson1).getAsJsonObject();
 
+        	// Pull out the population from the second variant and add to first variant's DOM
             JsonObject dom2 = parser.parse(variantJson2).getAsJsonObject();
             List<JsonObject> domList2 = extractCommon(dom2);
             if( domList2.size() <= 1 || ! domList2.iterator().hasNext())
@@ -114,32 +118,22 @@ public class HapMapQueue {
     }
     
     public JsonObject addElegant(JsonObject jo, String key, JsonElement value){
-    	String valStr = getJsonElementValAsString(value);
-    	
-    	// If _landmark core attribute, then treat as a string rather than integer
-    	// since we will still have "X" and "Y"
-    	boolean isLandmark = key.equals(CoreAttributes._landmark.toString());
-    	if(JSONUtil.isInt(valStr) && ! isLandmark){ 
-            jo.addProperty(key, value.getAsInt());
-        }else if(JSONUtil.isDouble(valStr) && ! isLandmark){ 
-            jo.addProperty(key, value.getAsDouble());
-        }else if(valStr.startsWith("{") && valStr.endsWith("}")) {
-        	jo.add(key, value);
-        }else {
-        	jo.addProperty(key, valStr);
-        }
-        return jo;
+    	if(value.isJsonPrimitive()) {
+    		JsonPrimitive v = (JsonPrimitive)value;
+    		if(v.isString()) // Landmark should fall under here because the number will be quoted
+    			jo.addProperty(key, v.getAsString());
+    		else if(v.isBoolean())
+    			jo.addProperty(key, v.getAsBoolean());
+    		else if(v.isNumber()) {
+    			if(JSONUtil.isInt(v.getAsString()))
+    				jo.addProperty(key, v.getAsInt());
+    			else
+    				jo.addProperty(key, v.getAsDouble());
+    		}
+    	} else
+    		jo.add(key, value);
+    	return jo;
     }
     
-    private String getJsonElementValAsString(JsonElement value) {
-    	// Try using the getAsString() method - this sometimes errors out as in the case of nested JSON
-    	String valStr = value.toString();
-    	try {
-    		valStr = value.getAsString();
-    	} catch(UnsupportedOperationException e) {
-    		// If we get this exception, leave valStr as value.toString()
-    		// This will happen in the case of a nested value such as A:{B:1}
-    	}
-    	return valStr;
-    }
+
 }
