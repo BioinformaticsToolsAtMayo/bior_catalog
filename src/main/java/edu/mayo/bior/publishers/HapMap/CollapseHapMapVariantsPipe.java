@@ -60,7 +60,8 @@ public class CollapseHapMapVariantsPipe extends AbstractPipe<History,History> {
         else if( ! starts.hasNext() )
         	return m_queue;
 
-    	History output = (History)(this.starts.next().clone());
+        History input  = (History)this.starts.next();
+    	History output = (History)(input.clone());
 
     	tierJsonColumn(output);
 
@@ -69,7 +70,7 @@ public class CollapseHapMapVariantsPipe extends AbstractPipe<History,History> {
         	m_queue = output;
         	return processNextStart();
         } else if( isSameVariant(output, m_queue) ) {
-        	m_queue = merge(output, m_queue);
+        	m_queue = merge(m_queue, output);
         	return processNextStart();
         } else {  // Variants are different, so can return the one in the queue
         	History temp = m_queue;
@@ -85,7 +86,7 @@ public class CollapseHapMapVariantsPipe extends AbstractPipe<History,History> {
      *  	"A":1,"B":2,"population":"CHN","QcCode":"QC+","refAllele":"T"    becomes:
      *   	"A":1,"B":2,"CHN":{"QcCode":"QC+","refAllele":"T"}    */
 	private void tierJsonColumn(History output) {
-        String tieredJsonVariant = m_queueUtil.constructFromOne(getJson(output));
+        String tieredJsonVariant = m_queueUtil.collapsePopulation(getJson(output));
         output.set(output.size()-1, tieredJsonVariant);
 	}
 
