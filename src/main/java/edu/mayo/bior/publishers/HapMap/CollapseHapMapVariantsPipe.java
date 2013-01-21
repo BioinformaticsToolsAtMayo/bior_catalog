@@ -56,9 +56,12 @@ public class CollapseHapMapVariantsPipe extends AbstractPipe<History,History> {
     	// If the queue is empty and there is no input data, then throw exception to end pipe
         if( m_queue == null  && ! starts.hasNext() )
         	throw new NoSuchElementException("No more data - ending pipe...");
-        // Else, if there is no more input, then just return the queue
-        else if( ! starts.hasNext() )
-        	return m_queue;
+        // Else, if there is no more input, then just return the queue (but empty the queue so next time it will be empty and we will end the loop)
+        else if( ! starts.hasNext() ) {
+        	History temp = m_queue;
+        	m_queue = null;
+        	return temp;
+        }
 
         History input  = (History)this.starts.next();
     	History output = (History)(input.clone());
