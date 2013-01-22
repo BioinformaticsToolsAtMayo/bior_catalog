@@ -29,7 +29,6 @@ public class HapMapPublisherPhase2Test {
 	}
 
 	private void assertFilesEqual(File expectedFile, File actualResultsFile) throws IOException {
-		assertEquals("File sizes not equal.  ", expectedFile.length(), actualResultsFile.length());
 		BufferedReader expected = new BufferedReader(new FileReader(expectedFile));
 		BufferedReader actual = new BufferedReader(new FileReader(actualResultsFile));
 		String lineExpected = "";
@@ -39,6 +38,7 @@ public class HapMapPublisherPhase2Test {
 			assertEquals("Line " + line + " different between expected and actual.", lineExpected, lineActual);
 			line++;
 		}
+		assertEquals("File sizes not equal.  ", expectedFile.length(), actualResultsFile.length());
 	}
 
 }
