@@ -68,15 +68,17 @@ public class HapMapPublisherPhase2 {
         Pipeline p = new Pipeline(
         	new CatPipe(), 
         	new HistoryInPipe(),
+        	// Cut out empty columns
         	new HCutPipe(new int[] {2,3,6,8}),
         	drill,                //construct the golden attributes
         	replaceChr,
         	inject,               //inject the golden attributes into the json
-        	new HCutPipe(new int[] {1,2,3,4,5,6,7}),
+        	// Cut out all columns except chrom, start, end, json
+        	new HCutPipe(new int[] {4,5,6,7}),
         	new CollapseHapMapVariantsPipe(),
-//        	new PrintPipe()
-        	new MergePipe("\t", true),
-        	new WritePipe(outFile, false)
+        	new MergePipe("\t", false),
+        	new WritePipe(outFile, false, true),
+        	new PrintPipe()
         	);
         p.setStarts(Arrays.asList(inFile));
         while(p.hasNext()){
