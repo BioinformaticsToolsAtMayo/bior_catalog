@@ -56,7 +56,7 @@ java -cp $BIOR_CATALOG_HOME/conf:$BIOR_CATALOG_HOME/lib/* edu.mayo.bior.publishe
 echo 'Do we need to sort here before compressing and building tabix?????'
 
 echo 'Compressing the catalog, Phase 5/6...'
-bgzip ${outDir}/scratch/hapmap.collapsedJson.tsv > ${outDir}/allele_freqs.grc37.tsv.bgz
+bgzip -c ${outDir}/scratch/hapmap.collapsedJson.tsv > ${outDir}/allele_freqs.grc37.tsv.bgz
 ### java -cp $BIOR_CATALOG_HOME/conf:$BIOR_CATALOG_HOME/lib/* edu.mayo.bior.indexer.cmd.BuildBgzip ${outDir}/scratch/hapmap.collapsedJson.tsv  ${outDir}/allele_freqs.tsv.bgz
 
 echo 'Building Tabix Index, Phase 6/6...'
