@@ -55,7 +55,7 @@ public class CosmicPublisher {
         //publisher.publish("C:\\mayo\\bior\\cosmic\\CosmicCompleteExport_v62_291112.tsv.gz", "C:\\temp");
         
         if(args.length >= 1){ 
-            publisher.publish(args[1], args[2] + "/scratch/", new WritePipe("cosmic.tsv"));
+            publisher.publish(args[0], args[1] + "/scratch/", new WritePipe("cosmic.tsv"));
         }else{
             usage();
             System.exit(1);
