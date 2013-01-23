@@ -8,6 +8,7 @@
 # Print each line that is executed (-x), and exit if any command fails (-e)
 #set -x -e
 set -e
+echo $BIOR_CATALOG_HOME
 source $BIOR_CATALOG_HOME/setupEnv.sh
 
 
@@ -37,7 +38,7 @@ echo "Create tabix index on the bgzip file..."
 tabix -s 1 -b 2 -e 3  $targetCatalogDir/cosmic.tsv.bgz
 
 #------------------------------------------------------------------------------------------
-# Remove the temporary files
+# Remove the temporary genes.tsv file that NCBIGenePublisher created
 #------------------------------------------------------------------------------------------
 echo "Remove temp files..."
 rm $targetCatalogDir/cosmic.tsv
