@@ -47,14 +47,17 @@ public class BGIPublisher {
     
     public static void main(String[] args) {	 
         BGIPublisher publisher = new BGIPublisher();
-        Pipe out = new Pipeline(new AppendStringPipe("\n"), new WritePipe("/tmp/LuCAMP_200exomeFinal_hg19.tsv"));
+        //Pipe out = new Pipeline(new AppendStringPipe("\n"), new WritePipe("/tmp/LuCAMP_200exomeFinal_hg19.tsv"));
         //publisher.publish("/data/BGI/hg19/LuCAMP_200exomeFinal_hg19.txt", out);
 //        System.out.println(args.length);
         final String catalogFile = "LuCAMP_200exomeFinal.tsv";   
-        if(args.length >= 1){ 
-            String outfile = args[1] + "/" + catalogFile;
-            System.out.println("Outputing File to: " + outfile);     
-            publisher.publish(args[0], new WritePipe("LuCAMP_200exomeFinal_hg19.txt"));
+        if(args.length >= 2){ 
+            String outfile = args[2];
+            String infile = args[1];
+            System.out.println("Input File: " + infile);
+            System.out.println("Outputing File to: " + outfile);  
+            Pipe out = new Pipeline(new AppendStringPipe("\n"), new WritePipe(outfile));
+            publisher.publish(infile, out);
             
         }else{
             usage();
@@ -109,7 +112,9 @@ public class BGIPublisher {
                              inject,
                              new HCutPipe(false, cut), 
                              new MergePipe("\t"),
-                             out);
+                             //new PrintPipe()
+                             out
+                );
         p.setStarts(Arrays.asList(rawDataFileFullpath));
         for(int i=0;p.hasNext();i++){
             p.next();
