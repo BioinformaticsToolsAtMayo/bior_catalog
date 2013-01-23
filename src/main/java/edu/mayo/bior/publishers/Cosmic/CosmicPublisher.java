@@ -55,7 +55,7 @@ public class CosmicPublisher {
         //publisher.publish("C:\\mayo\\bior\\cosmic\\CosmicCompleteExport_v62_291112.tsv.gz", "C:\\temp");
         
         if(args.length >= 1){ 
-            publisher.publish(args[0], args[1] + "/scratch/", new WritePipe("cosmic.tsv"));
+            publisher.publish(args[0], args[1] + "/scratch/");
         }else{
             usage();
             System.exit(1);
@@ -67,7 +67,7 @@ public class CosmicPublisher {
      *
      * 
      */
-    public void publish(String rawDataFile, String outputDir, Pipe catalogWritePipe) {
+    public void publish(String rawDataFile, String outputDir) {
         //final String catalogFile = "cosmic.tsv";
         
         String[] header = getHeader(rawDataFile);
@@ -82,7 +82,7 @@ public class CosmicPublisher {
         
         
         //processCosmicFile(rawDataFile, processedHeader, new PrintPipe());
-        processCosmicFile(rawDataFile, processedHeader, catalogWritePipe);
+        processCosmicFile(rawDataFile, processedHeader, new WritePipe(outputDir + "cosmic.tsv"));
         
         System.out.println("COMPLETED loading Cosmic at: " + new Timestamp(new Date().getTime()));
     }    
