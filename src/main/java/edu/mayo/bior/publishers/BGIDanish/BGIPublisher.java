@@ -112,8 +112,8 @@ public class BGIPublisher {
                              inject,
                              new HCutPipe(false, cut), 
                              new MergePipe("\t"),
-                             //new PrintPipe()
-                             out
+                             new PrintPipe()
+                             //out
                 );
         p.setStarts(Arrays.asList(rawDataFileFullpath));
         for(int i=0;p.hasNext();i++){
