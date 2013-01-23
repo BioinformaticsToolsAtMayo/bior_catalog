@@ -27,10 +27,7 @@ import edu.mayo.pipes.UNIX.GrepPipe;
 import edu.mayo.pipes.UNIX.LSPipe;
 import edu.mayo.pipes.history.HistoryInPipe;
 
-/**
- *
- * @author m102417 Daniel Quest,  Michael Meiners
- */
+/** @author m102417 Daniel Quest,  Michael Meiners */
 public class HapMapPublisher {
     public static void usage(){
         System.out.println("usage: HapMapPublisher <rawDataDir> <hapmapTsvOutfile>");
