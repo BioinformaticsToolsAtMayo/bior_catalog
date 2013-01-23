@@ -77,8 +77,8 @@ public class HapMapPublisherPhase2 {
         	new HCutPipe(new int[] {4,5,6,7}),
         	new CollapseHapMapVariantsPipe(),
         	new MergePipe("\t", false),
-        	new WritePipe(outFile, false, true),
-        	new PrintPipe()
+        	new WritePipe(outFile, false, true)
+        	//new PrintPipe()
         	);
         p.setStarts(Arrays.asList(inFile));
         while(p.hasNext()){
