@@ -42,7 +42,7 @@ fi
 ##e.g. /data/ucsc/exe/macOSX.i386
 
 echo 'Running HapMap Publisher Phase 1/6...';
-#java -cp $BIOR_CATALOG_HOME/conf:$BIOR_CATALOG_HOME/lib/* edu.mayo.bior.publishers.HapMap.HapMapPublisher $0 $@ 
+#java -cp $BIOR_CATALOG_HOME/conf:$BIOR_CATALOG_HOME/lib/* edu.mayo.bior.publishers.HapMap.HapMapPublisher $hapmapDir $outDir/scratch/hapmap.tsv 
 
 echo 'Converting hapmap.tsv to sorted gff, Phase 2/6...';
 #cat ${outDir}/scratch/hapmap.tsv | bior_drill.sh -k -p chrom -p source -p type -p pos -p pos -p score -p strand -p phase | grep -v ^# | sort -k1,1 -k4,4n > ${outDir}/scratch/hapmap.sorted.tsv
