@@ -8,8 +8,6 @@
 # Print each line that is executed (-x), and exit if any command fails (-e)
 #set -x -e
 set -e
-source $BIOR_CATALOG_HOME/setupEnv.sh
-
 
 #------------------------------------------------------------------------------------------
 # Given a raw data files (*.gbs.txt) build JSON data file (which contains position + JSON)
@@ -18,15 +16,14 @@ rawDataDir=$1
 targetCatalogDir=$2
 
 echo "Build JSON from raw data files"
-echo "Target directory: $targetCatalogDir"
-java -cp $BIOR_CATALOG_HOME/conf:$BIOR_CATALOG_HOME/lib/* edu.mayo.bior.publishers.BGIDanish.BGIPublisher $rawDataDir  $targetCatalogDir
+java -cp $BIOR_CATALOG_HOME/conf:$BIOR_CATALOG_HOME/lib/* edu.mayo.bior.publishers.BGIDanish.BGIPublisher $0 $@
 
 
 #------------------------------------------------------------------------------------------
 # Sort the JSON data file by columns 1 (chr-string), 2 (minBP-numeric), and 3 (maxBP-numeric), and bgzip it
 #------------------------------------------------------------------------------------------
 echo "Sort and bgzip the genes JSON data file..."
-sort -k 1,1 -k 2,2n -k 3,3n  $targetCatalogDir/LuCAMP_200exomeFinal.tsv  |  bgzip >  $targetCatalogDir/LuCAMP_200exomeFinal.tsv.bgz
+#sort -k 1,1 -k 2,2n -k 3,3n  $targetCatalogDir/LuCAMP_200exomeFinal.tsv  |  bgzip >  $targetCatalogDir/LuCAMP_200exomeFinal.tsv.bgz
 
 
 #------------------------------------------------------------------------------------------
@@ -34,12 +31,12 @@ sort -k 1,1 -k 2,2n -k 3,3n  $targetCatalogDir/LuCAMP_200exomeFinal.tsv  |  bgzi
 # s = landmark, b = begin position, e = end position
 #------------------------------------------------------------------------------------------
 echo "Create tabix index on the bgzip file..."
-tabix -s 1 -b 2 -e 3  $targetCatalogDir/LuCAMP_200exomeFinal.tsv.bgz
+#tabix -s 1 -b 2 -e 3  $targetCatalogDir/LuCAMP_200exomeFinal.tsv.bgz
 
 #------------------------------------------------------------------------------------------
 # Remove the temporary genes.tsv file that NCBIGenePublisher created
 #------------------------------------------------------------------------------------------
 echo "Remove temp files..."
-rm $targetCatalogDir/LuCAMP_200exomeFinal.tsv
+#rm $targetCatalogDir/LuCAMP_200exomeFinal.tsv
 
 echo "DONE."
