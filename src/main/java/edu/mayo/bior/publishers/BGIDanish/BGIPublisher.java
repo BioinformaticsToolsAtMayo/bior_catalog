@@ -52,8 +52,8 @@ public class BGIPublisher {
 //        System.out.println(args.length);
         final String catalogFile = "LuCAMP_200exomeFinal.tsv";   
         if(args.length >= 2){ 
-            String outfile = args[2];
-            String infile = args[1];
+            String outfile = args[1];
+            String infile = args[0];
             System.out.println("Input File: " + infile);
             System.out.println("Outputing File to: " + outfile);  
             Pipe out = new Pipeline(new AppendStringPipe("\n"), new WritePipe(outfile));
