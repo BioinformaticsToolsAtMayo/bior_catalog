@@ -48,7 +48,7 @@ public class BGIPublisher {
     public static void main(String[] args) {	 
         BGIPublisher publisher = new BGIPublisher();
         Pipe out = new Pipeline(new AppendStringPipe("\n"), new WritePipe("/tmp/LuCAMP_200exomeFinal_hg19.tsv"));
-        publisher.publish("/data/BGI/hg19/LuCAMP_200exomeFinal_hg19.txt", out);
+        //publisher.publish("/data/BGI/hg19/LuCAMP_200exomeFinal_hg19.txt", out);
 //        System.out.println(args.length);
         final String catalogFile = "LuCAMP_200exomeFinal.tsv";   
         if(args.length >= 1){ 
