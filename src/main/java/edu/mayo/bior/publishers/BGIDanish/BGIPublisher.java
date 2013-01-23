@@ -9,6 +9,7 @@ import com.tinkerpop.pipes.PipeFunction;
 import com.tinkerpop.pipes.transform.TransformFunctionPipe;
 import com.tinkerpop.pipes.util.Pipeline;
 import edu.mayo.bior.publishers.Cosmic.CosmicPublisher;
+import edu.mayo.pipes.AppendStringPipe;
 import edu.mayo.pipes.HeaderPipe;
 import edu.mayo.pipes.JSON.InjectIntoJsonPipe;
 import edu.mayo.pipes.JSON.inject.ColumnArrayInjector;
@@ -41,27 +42,29 @@ import java.util.Date;
  */
 public class BGIPublisher {
     public static void usage(){
-        System.out.println("usage: BGIPublisher <rawDataFile> <catalogOutputDir>");
+        System.out.println("usage: BGIPublisher <rawDataFile> <rawOutputFile>");
     }
     
     public static void main(String[] args) {	 
         BGIPublisher publisher = new BGIPublisher();
-        //publisher.publish("/data/BGI/hg19/LuCAMP_200exomeFinal_hg19.txt", "/tmp", new PrintPipe());
+        Pipe out = new Pipeline(new AppendStringPipe("\n"), new WritePipe("/tmp/LuCAMP_200exomeFinal_hg19.tsv"));
+        publisher.publish("/data/BGI/hg19/LuCAMP_200exomeFinal_hg19.txt", out);
 //        System.out.println(args.length);
+        final String catalogFile = "LuCAMP_200exomeFinal.tsv";   
         if(args.length >= 1){ 
-            publisher.publish(args[1], args[2] + "/scratch/", new WritePipe("/tmp/LuCAMP_200exomeFinal_hg19.txt"));
+            String outfile = args[1] + "/" + catalogFile;
+            System.out.println("Outputing File to: " + outfile);     
+            publisher.publish(args[0], new WritePipe("LuCAMP_200exomeFinal_hg19.txt"));
+            
         }else{
             usage();
             System.exit(1);
         }
     } 
     
-    public void publish(String rawDataFileFullpath, String outputDir, Pipe out) {
-        final String catalogFile = "LuCAMP_200exomeFinal.tsv";
+    public void publish(String rawDataFileFullpath, Pipe out) {
         double start = System.currentTimeMillis();
-        System.out.println("Started loading HapMap at: " + new Timestamp(new Date().getTime()));
-        String outfile = outputDir + "/" + catalogFile;
-        System.out.println("Outputing File to: " + outfile);
+        System.out.println("Started loading BGI at: " + new Timestamp(new Date().getTime()));
         Pipe<History,History> t = new TransformFunctionPipe<History,History>( new BGIPipe() );
         String[] header = new String[] {
                                         "chromosomeID",
