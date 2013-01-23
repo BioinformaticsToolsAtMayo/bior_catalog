@@ -4,20 +4,6 @@
  */
 package edu.mayo.bior.publishers.HapMap;
 
-import com.tinkerpop.pipes.Pipe;
-import com.tinkerpop.pipes.util.Pipeline;
-import edu.mayo.bior.publishers.NCBIGene.NCBIGenePublisher;
-import edu.mayo.pipes.*;
-import edu.mayo.pipes.JSON.BioJavaRichSequence2JSON;
-import edu.mayo.pipes.JSON.Delim2JSONPipe;
-import edu.mayo.pipes.JSON.SimpleDrillPipe;
-import edu.mayo.pipes.UNIX.*;
-import edu.mayo.pipes.bioinformatics.GenbankPipe;
-import edu.mayo.pipes.bioinformatics.vocab.CoreAttributes;
-import edu.mayo.pipes.history.HistoryInPipe;
-import edu.mayo.pipes.history.HistoryOutPipe;
-import edu.mayo.pipes.util.GenomicObjectUtils;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.sql.Timestamp;
@@ -26,6 +12,20 @@ import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import com.tinkerpop.pipes.Pipe;
+import com.tinkerpop.pipes.util.Pipeline;
+
+import edu.mayo.pipes.AppendStringPipe;
+import edu.mayo.pipes.MergePipe;
+import edu.mayo.pipes.SplitPipe;
+import edu.mayo.pipes.WritePipe;
+import edu.mayo.pipes.JSON.Delim2JSONPipe;
+import edu.mayo.pipes.UNIX.CatGZPipe;
+import edu.mayo.pipes.UNIX.GrepEPipe;
+import edu.mayo.pipes.UNIX.GrepPipe;
+import edu.mayo.pipes.UNIX.LSPipe;
+import edu.mayo.pipes.history.HistoryInPipe;
 
 /**
  *
