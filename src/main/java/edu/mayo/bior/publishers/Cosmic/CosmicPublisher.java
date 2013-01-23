@@ -53,7 +53,7 @@ public class CosmicPublisher {
         CosmicPublisher publisher = new CosmicPublisher();      
         //publisher.publish("/data/cosmic/v62/CosmicCompleteExport_v62_291112.tsv.gz", "/data/catalogs/cosmic/v62");
         //publisher.publish("C:\\mayo\\bior\\cosmic\\CosmicCompleteExport_v62_291112.tsv.gz", "C:\\temp");
-        
+                
         if(args.length >= 1){ 
             publisher.publish(args[0], args[1] + "/scratch/");
         }else{
@@ -81,7 +81,6 @@ public class CosmicPublisher {
         System.out.println("Outputing File to: " + outputDir + "cosmic.tsv");
                 
         //processCosmicFile(rawDataFile, processedHeader, new PrintPipe());
-        //processCosmicFile(rawDataFile, processedHeader, new WritePipe(outputDir + "cosmic.tsv"));
         processCosmicFile(rawDataFile, processedHeader, new WritePipe(outfile));
         
         System.out.println("COMPLETED loading Cosmic at: " + new Timestamp(new Date().getTime()));
@@ -166,12 +165,10 @@ public class CosmicPublisher {
         						load
         );
         p.setStarts(Arrays.asList(file));
-        for(int i=1; p.hasNext(); i++){
+        for(int i=0; p.hasNext(); i++){
             //System.out.println("Val="+i);
-            p.next();
-                     
-            //if(i>155) break;
-
+            p.next();                     
+            //if(i>20950) break;
         }
         
     }
@@ -294,10 +291,15 @@ public class CosmicPublisher {
 			if (history.size()>=12) {
 				if (history.get(12)!=null && !history.get(12).equals("")) {
 					this.rawData = history.get(12);					
-					//USe this generic class from google-code "snp-normaliser" that parses HGVS nomenclature mutation like "c.123G>A"				
-					HGVS hgvs = new HGVS(this.rawData);					
-					this.ref = hgvs.getWildtype();					
-					this.alt[0] = hgvs.getMutation();
+					//USe this generic class from google-code "snp-normaliser" that parses HGVS nomenclature mutation like "c.123G>A"
+					if (this.rawData.contains("?")) {
+						//System.out.println("BAD");
+						//some data in cosmis raw file has invalid CDSMutations like "c.?", this avoid them
+					} else {
+						HGVS hgvs = new HGVS(this.rawData);						
+						this.ref = hgvs.getWildtype();					
+						this.alt[0] = hgvs.getMutation();
+					}
 				}
 			}
 		}	
