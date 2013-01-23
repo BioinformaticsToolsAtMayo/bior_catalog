@@ -19,7 +19,7 @@ then
 fi
 
 # Print each line that is executed (-x), and exit if any command fails (-e)
-set -e
+set -e -x
 
 echo "Checking if environment variables are set..."
 if [ -z "$BIOR_CATALOG_HOME" ] && [ "${BIOR_CATALOG_HOME+x}" = "x" ]; then
@@ -42,10 +42,10 @@ fi
 ##e.g. /data/ucsc/exe/macOSX.i386
 
 echo 'Running HapMap Publisher Phase 1/6...';
-#java -cp $BIOR_CATALOG_HOME/conf:$BIOR_CATALOG_HOME/lib/* edu.mayo.bior.publishers.HapMap.HapMapPublisher $hapmapDir $outDir/scratch/hapmap.tsv 
+java -cp $BIOR_CATALOG_HOME/conf:$BIOR_CATALOG_HOME/lib/* edu.mayo.bior.publishers.HapMap.HapMapPublisher $hapmapDir $outDir/scratch/hapmap.tsv 
 
 echo 'Converting hapmap.tsv to sorted gff, Phase 2/6...';
-#cat ${outDir}/scratch/hapmap.tsv | bior_drill.sh -k -p chrom -p source -p type -p pos -p pos -p score -p strand -p phase | grep -v ^# | sort -k1,1 -k4,4n > ${outDir}/scratch/hapmap.sorted.tsv
+cat ${outDir}/scratch/hapmap.tsv | bior_drill.sh -k -p chrom -p source -p type -p pos -p pos -p score -p strand -p phase | grep -v ^# | sort -k1,1 -k4,4n > ${outDir}/scratch/hapmap.sorted.tsv
 
 echo 'Performing liftOver, Phase 3/6...'
 $UCSC_TOOLS_HOME/liftOver -gff ${outDir}/scratch/hapmap.sorted.tsv  $UCSC_TOOLS_HOME/hg18toHg19.over.chain ${outDir}/scratch/hapmap.sorted.liftover.tsv ${outDir}/scratch/unmapped.tsv
