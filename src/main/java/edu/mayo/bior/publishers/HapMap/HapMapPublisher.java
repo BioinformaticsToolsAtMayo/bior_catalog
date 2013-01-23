@@ -49,16 +49,8 @@ public class HapMapPublisher {
     
 
     public void publish(String rawDataDir, String outfile) throws FileNotFoundException {
-    	verifyDirExists(rawDataDir);
+    	verifyInputDirAndOutputFile(rawDataDir, outfile);
     	
-    	// outfile should NOT be a directory
-    	if(new File(outfile).exists() && new File(outfile).isDirectory())
-    		throw new FileNotFoundException("Output file must be a file, not a directory: " + outfile);
-
-        // Delete the file if it already exists so we start with an empty file
-    	if(new File(outfile).exists())
-    		new File(outfile).delete();
-
     	double start = System.currentTimeMillis();
     	System.out.println("Started loading HapMap at: " + new Timestamp(new Date().getTime()));
         System.out.println("Outputing File to: " + outfile);
@@ -91,12 +83,25 @@ public class HapMapPublisher {
     }
     
 	/** Verify that the rawDataDir exists and is a directory */
-	private void verifyDirExists(String rawDataDir) throws FileNotFoundException {
+	private void verifyInputDirAndOutputFile(String rawDataDir, String outfile) throws FileNotFoundException {
     	if( ! new File(rawDataDir).exists() || ! new File(rawDataDir).isDirectory() ) {
     		String msg = "Input directory does not exist or is not a directory: " + rawDataDir;
     		System.err.println(msg);
     		throw new FileNotFoundException(msg);
     	}
+    	
+    	// outfile should NOT be a directory
+    	if(new File(outfile).exists() && new File(outfile).isDirectory())
+    		throw new FileNotFoundException("Output file must be a file, not a directory: " + outfile);
+    	
+    	// outfile's parent directory must exist
+    	File outputDir = new File(outfile).getParentFile();
+    	if(! outputDir.exists())
+    		throw new FileNotFoundException("The parent directory for the output file does not exist: " + outputDir);
+    	
+        // Delete the file if it already exists so we start with an empty file
+    	if(new File(outfile).exists())
+    		new File(outfile).delete();
     }
 	
     public List<String> computeColumns(String filename, String directory) throws Exception{
