@@ -68,7 +68,7 @@ public class CosmicPublisher {
      * 
      */
     public void publish(String rawDataFile, String outputDir) {
-        //final String catalogFile = "cosmic.tsv";
+        final String catalogFile = "cosmic.tsv";
         
         String[] header = getHeader(rawDataFile);
         List<String> processedHeader = postProcessHeader(header);
@@ -77,12 +77,12 @@ public class CosmicPublisher {
         System.out.println("Started loading Cosmic at: " + new Timestamp(new Date().getTime()));
         
         //String outfile = outputDir + "\\" + catalogFile; 
-        //String outfile = outputDir + "/" + catalogFile;        
+        String outfile = outputDir + catalogFile;        
         System.out.println("Outputing File to: " + outputDir + "cosmic.tsv");
-        
-        
+                
         //processCosmicFile(rawDataFile, processedHeader, new PrintPipe());
-        processCosmicFile(rawDataFile, processedHeader, new WritePipe(outputDir + "cosmic.tsv"));
+        //processCosmicFile(rawDataFile, processedHeader, new WritePipe(outputDir + "cosmic.tsv"));
+        processCosmicFile(rawDataFile, processedHeader, new WritePipe(outfile));
         
         System.out.println("COMPLETED loading Cosmic at: " + new Timestamp(new Date().getTime()));
     }    
