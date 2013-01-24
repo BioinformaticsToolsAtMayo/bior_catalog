@@ -168,7 +168,7 @@ public class CosmicPublisher {
         for(int i=0; p.hasNext(); i++){
             //System.out.println("Val="+i);
             p.next();                     
-            //if(i>20950) break;
+            //if(i>500) break;
         }
         
     }
@@ -286,23 +286,29 @@ public class CosmicPublisher {
             return history;
 		}
 
-		// Data for a alleles is in Col 13 and is like "c.35G>A" 
-		private void computeAlleles(History history) {			
-			if (history.size()>=12) {
-				if (history.get(12)!=null && !history.get(12).equals("")) {
-					this.rawData = history.get(12);					
-					//USe this generic class from google-code "snp-normaliser" that parses HGVS nomenclature mutation like "c.123G>A"
-					if (this.rawData.contains("?")) {
-						//System.out.println("BAD");
-						//some data in cosmis raw file has invalid CDSMutations like "c.?", this avoid them
-					} else {
-						HGVS hgvs = new HGVS(this.rawData);						
-						this.ref = hgvs.getWildtype();					
-						this.alt[0] = hgvs.getMutation();
-					}
-				}
-			}
-		}	
+		 // Data for a alleles is in Col 13 and is like "c.35G>A"
+        private void computeAlleles(History history) {
+                if (history.size()>=12) {
+                        if (history.get(12)!=null && !history.get(12).equals("")) {
+                                this.rawData = history.get(12);
+                                //USe this generic class from google-code "snp-normaliser" that parses HGVS nomenclature mutation like "c.123G>A"
+                                if (this.rawData.contains("?")) {
+                                        //System.out.println("BAD");
+                                        //some data in cosmis raw file has invalid CDSMutations like "c.?", this avoid them
+                                } else {
+                                        HGVS hgvs = new HGVS(this.rawData);
+                                        if (hgvs.getWildtype()!=null){
+                                                this.ref = hgvs.getWildtype();
+                                        }
+
+                                        if (hgvs.getMutation()!=null){
+                                                this.alt[0] = hgvs.getMutation();
+                                        }
+                                }
+                        }
+                }
+        }
+
 
 		// Data for a genome-postion is in Col 17 and is like "10:1234-1235" chr:minbp-maxbp
 		private void computeGenomePostion(History history) {
