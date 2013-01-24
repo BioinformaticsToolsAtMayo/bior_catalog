@@ -204,10 +204,10 @@ public class CosmicPublisher {
 			Mutation AA, 
 			Mutation Description, 
 			Mutation zygosity, 
-			* 17: Mutation NCBI36 genome position, [value: 12:12345:12346.. get chr, and positions]
-			* 18: Mutation NCBI36 strand, 
-			Mutation GRCh37 genome position, [col 19]
-			Mutation GRCh37 strand, 
+			Mutation NCBI36 genome position, 
+			Mutation NCBI36 strand, 
+			* 19: Mutation GRCh37 genome position, [value: 12:12345:12346.. get chr, and positions]
+			* 20: Mutation GRCh37 strand, 
 			Mutation somatic status, 
 			Pubmed_PMID, 
 			Sample source, 
@@ -311,14 +311,14 @@ public class CosmicPublisher {
         }
 
 
-		// Data for a genome-postion is in Col 17 and is like "10:1234-1235" chr:minbp-maxbp
+		// Data for a genome-postion is in Col 19 and is like "10:1234-1235" chr:minbp-maxbp
 		private void computeGenomePostion(History history) {
 			//System.out.println(history.size());
-			if (history.size()>=16) {
+			if (history.size()>=18) {
 				//System.out.println(Arrays.asList(history));
-				if (history.get(16)!=null && !history.get(16).equals("")) {				
+				if (history.get(18)!=null && !history.get(18).equals("")) {				
 					
-					this.rawData = history.get(16);
+					this.rawData = history.get(18);
 					
 					//Chr
 					this.temp = rawData.substring(0, rawData.indexOf(":"));					
@@ -335,9 +335,9 @@ public class CosmicPublisher {
 
 		// Data for strand is in Col 18 and is like "-" or "+"
 		private void computeStrand(History history) {
-			if (history.size()>=17) {
-				if (history.get(17)!=null && !history.get(17).equals("")) {			
-					this.strand = Character.toString(GenomicObjectUtils.getStrand(history.get(17)));
+			if (history.size()>=19) {
+				if (history.get(19)!=null && !history.get(19).equals("")) {			
+					this.strand = Character.toString(GenomicObjectUtils.getStrand(history.get(19)));
 				}
 			}			
 		}
