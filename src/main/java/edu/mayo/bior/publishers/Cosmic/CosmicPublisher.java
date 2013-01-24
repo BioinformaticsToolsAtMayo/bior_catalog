@@ -135,7 +135,7 @@ public class CosmicPublisher {
 
     	//String[] headerArray = headerColumns.toArray(new String[headerColumns.size()]);
     	    	
-    	Injector[] injectors = new Injector[32];
+    	Injector[] injectors = new Injector[33];
     	
     	for(int i=0;i<headerColumns.size();i++) {    		
     		injectors[i] =  new ColumnInjector(i+1, headerColumns.get(i), JsonType.STRING);
@@ -148,6 +148,7 @@ public class CosmicPublisher {
     	injectors[29] = new ColumnInjector(30, CoreAttributes._minBP.toString(), JsonType.NUMBER);
     	injectors[30] = new ColumnInjector(31, CoreAttributes._maxBP.toString(), JsonType.NUMBER);
     	injectors[31] = new ColumnInjector(32, CoreAttributes._strand.toString(), JsonType.STRING);
+    	injectors[32] = new LiteralInjector(CoreAttributes._id.toString(),".",JsonType.STRING);
     	
         InjectIntoJsonPipe injectCosmicDataAsJson = new InjectIntoJsonPipe(true, injectors);
         
