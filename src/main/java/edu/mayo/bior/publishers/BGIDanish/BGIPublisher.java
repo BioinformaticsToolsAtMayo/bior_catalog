@@ -26,6 +26,7 @@ import edu.mayo.pipes.UNIX.LSPipe;
 import edu.mayo.pipes.WritePipe;
 import edu.mayo.pipes.bioinformatics.vocab.CoreAttributes;
 import edu.mayo.pipes.bioinformatics.vocab.Type;
+import edu.mayo.pipes.bioinformatics.vocab.Undefined;
 import edu.mayo.pipes.history.HCutPipe;
 import edu.mayo.pipes.history.History;
 import edu.mayo.pipes.history.HistoryInPipe;
@@ -101,7 +102,8 @@ public class BGIPublisher {
             new ColumnInjector(12, CoreAttributes._refAllele.toString(), JsonType.STRING),
             new ColumnArrayInjector(13, CoreAttributes._altAlleles.toString(), JsonType.STRING, ","),
             new ColumnInjector(14, CoreAttributes._minBP.toString(), JsonType.NUMBER),
-            new ColumnInjector(15, CoreAttributes._maxBP.toString(), JsonType.NUMBER)       			        			        			
+            new ColumnInjector(15, CoreAttributes._maxBP.toString(), JsonType.NUMBER),
+            new LiteralInjector(CoreAttributes._id.toString(),".",JsonType.STRING)
         };
         InjectIntoJsonPipe inject = new InjectIntoJsonPipe(true, injectors);
         int[] cut = new int[] {1,2,3,4,5,6,7,8,9,10,12,13};
