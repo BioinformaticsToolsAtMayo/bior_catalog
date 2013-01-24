@@ -19,7 +19,7 @@ then
 fi
 
 # Print each line that is executed (-x), and exit if any command fails (-e)
-set -e -x
+set -e
 
 echo "Checking if environment variables are set..."
 if [ -z "$BIOR_CATALOG_HOME" ] && [ "${BIOR_CATALOG_HOME+x}" = "x" ]; then
