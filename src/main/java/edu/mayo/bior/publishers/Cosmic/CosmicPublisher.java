@@ -183,9 +183,50 @@ public class CosmicPublisher {
     	return ctp;
     }
 
+    /**
+     * This methood is used to retrieve the REF Allele from NCBIGenome at a position.
+     * In Cosmic raw data file, REF and ALT are retrieved from column:CDS Mutation
+     * and this is represented using a HGVS nomenclature.. "c.123G>T"
+     * but there are some cases where this data is like "c.123_124>T" where REF is missing.
+     * This method below is used to retrieve REF win cases like above. 
+     */
+    Pipe pipeline = null;
+    Bed2SequencePipe bed2sequencePipe = null;
+    public String getBasePairAtPosition(String landmark, String minBP, String maxBP) {
+        ArrayList<String> in = new ArrayList<String>();
+        in.add(landmark);
+        in.add(minBP);
+        in.add(maxBP);
+        String result = "";
+        
+        try {
+	        if(bed2sequencePipe == null){
+	            SystemProperties sysprop = new SystemProperties();
+	            //seq = new Bed2SequencePipe(sysprop.get("hs_complete_genome_catalog"));
+	            bed2sequencePipe = new Bed2SequencePipe("/data/catalogs/NCBIGenome/GRCh37.p10/hs_ref_genome.fa.tsv.bgz");
+	            pipeline = new Pipeline(bed2sequencePipe);
+	        }
+	        bed2sequencePipe.reset();
+	        pipeline.reset();
+	        
+	        pipeline.setStarts(Arrays.asList(in));
+	        
+	        if (pipeline.hasNext()) {
+	        	ArrayList<String> out = (ArrayList<String>) pipeline.next();
+	        	result = out.get(3); 
+	        }
+        } catch(Exception e) {
+        	result = "";        	
+        	System.err.println(e.getMessage());
+        	e.printStackTrace();
+	    }
+        
+        return result;
+    }
+
 	/**
-	 * 
-	 * @author Surendra Konathala
+	 * Transforms history/data from raw file into core-attributes and adds them as additional columns to the raw file again.
+	 * These are used to build the last JSN column. These additionally added columns are dropped using "HCut Pipe"
 	 *
 	 */
 	public class CosmicTransformPipe implements PipeFunction<History,History> {
@@ -260,11 +301,11 @@ public class CosmicPublisher {
 			//_type
             history.add(Type.VARIANT.toString());
             
-            //Compute REF, ALT
-            this.computeAlleles(history);
-
             //Compute CHR, MINBP, MAXBP
             this.computeGenomePostion(history);
+            
+            //Compute REF, ALT
+            this.computeAlleles(history);
             
             //Compute Strand
             this.computeStrand(history);
@@ -291,30 +332,7 @@ public class CosmicPublisher {
             return history;
 		}
 
-		 // Data for a alleles is in Col 13 and is like "c.35G>A"
-        private void computeAlleles(History history) {
-                if (history.size()>=12) {
-                        if (history.get(12)!=null && !history.get(12).equals("")) {
-                                this.rawData = history.get(12);
-                                //USe this generic class from google-code "snp-normaliser" that parses HGVS nomenclature mutation like "c.123G>A"
-                                if (this.rawData.contains("?")) {
-                                        //System.out.println("BAD");
-                                        //some data in cosmis raw file has invalid CDSMutations like "c.?", this avoid them
-                                } else {
-                                        HGVS hgvs = new HGVS(this.rawData);
-                                        if (hgvs.getWildtype()!=null){
-                                                this.ref = hgvs.getWildtype();
-                                        }
-
-                                        if (hgvs.getMutation()!=null){
-                                                this.alt[0] = hgvs.getMutation();
-                                        }
-                                }
-                        }
-                }
-        }
-
-
+		
 		// Data for a genome-postion is in Col 19 and is like "10:1234-1235" chr:minbp-maxbp
 		private void computeGenomePostion(History history) {
 			//System.out.println(history.size());
@@ -337,6 +355,35 @@ public class CosmicPublisher {
 			} 			
 		}
 
+		
+		// Data for a alleles is in Col 13 and is like "c.35G>A"
+        private void computeAlleles(History history) {
+                if (history.size()>=12) {
+                        if (history.get(12)!=null && !history.get(12).equals("")) {
+                                this.rawData = history.get(12);
+                                //USe this generic class from google-code "snp-normaliser" that parses HGVS nomenclature mutation like "c.123G>A"
+                                if (this.rawData.contains("?")) {
+                                        //System.out.println("BAD");
+                                        //some data in cosmis raw file has invalid CDSMutations like "c.?", this avoid them
+                                } else {
+                                        HGVS hgvs = new HGVS(this.rawData);
+                                        if (hgvs.getWildtype()==null) {
+                                        	String val = getBasePairAtPosition(this.chr, this.minBp, this.maxBp);	
+                                        	System.out.println("************************Value="+val);
+                                        } else {
+                                        	this.ref = hgvs.getWildtype();
+                                        }
+                                        
+                                        if (hgvs.getMutation()!=null){
+                                                this.alt[0] = hgvs.getMutation();
+                                        }
+                                }
+                        }
+                }
+        }
+
+
+
 		// Data for strand is in Col 18 and is like "-" or "+"
 		private void computeStrand(History history) {
 			if (history.size()>=19) {
@@ -348,24 +395,5 @@ public class CosmicPublisher {
 		
 	}
         
-        Pipe p = null;
-        Bed2SequencePipe seq = null;
-        public String getBPatPos(String landmark, String minBP, String maxBP) throws IOException{
-            ArrayList<String> in = new ArrayList<String>();
-            in.add(landmark);
-            in.add(minBP);
-            in.add(maxBP);
-            if(seq == null){
-                SystemProperties sysprop = new SystemProperties();
-                //seq = new Bed2SequencePipe(sysprop.get("hs_complete_genome_catalog"));
-                seq = new Bed2SequencePipe("/data/catalogs/NCBIGenome/GRCh37.p10/hs_ref_genome.fa.tsv.bgz");
-                p = new Pipeline(seq);
-            }
-            seq.reset();
-            p.reset();
-            p.setStarts(Arrays.asList(in));
-            ArrayList<String> out = (ArrayList<String>) p.next();
-            return out.get(3);
-        }
         
 }
