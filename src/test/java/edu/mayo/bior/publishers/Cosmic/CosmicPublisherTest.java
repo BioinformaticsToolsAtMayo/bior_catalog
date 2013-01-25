@@ -19,11 +19,11 @@ public class CosmicPublisherTest {
     
     
     
-       @Test
+       //@Test
        public void testgetBPatPos() throws IOException{
            System.out.println("Testing getBPatPos... Make sure your sys.properties is set up to include hs_complete_genome_catalog and that catalog is on your path");
            CosmicPublisher cp = new CosmicPublisher(); 
-           String bPatPos = cp.getBPatPos("9", "133748282", "133748283");
+           String bPatPos = cp.getBasePairAtPosition("9", "133748282", "133748283");
            System.out.println(bPatPos);
        }
 }
