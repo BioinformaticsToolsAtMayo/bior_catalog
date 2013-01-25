@@ -27,8 +27,10 @@ import edu.mayo.pipes.JSON.inject.Injector;
 import edu.mayo.pipes.JSON.inject.JsonType;
 import edu.mayo.pipes.JSON.inject.LiteralInjector;
 import edu.mayo.pipes.PrintPipe;
+import edu.mayo.pipes.SplitPipe;
 import edu.mayo.pipes.UNIX.CatGZPipe;
 import edu.mayo.pipes.UNIX.HeadPipe;
+import edu.mayo.pipes.bioinformatics.sequence.Bed2SequencePipe;
 import edu.mayo.pipes.bioinformatics.vocab.CoreAttributes;
 import edu.mayo.pipes.bioinformatics.vocab.Type;
 import edu.mayo.pipes.bioinformatics.vocab.Undefined;
@@ -38,7 +40,9 @@ import edu.mayo.pipes.history.History;
 import edu.mayo.pipes.history.HistoryInPipe;
 import edu.mayo.pipes.history.HistoryOutPipe;
 import edu.mayo.pipes.util.GenomicObjectUtils;
+import edu.mayo.pipes.util.SystemProperties;
 import edu.mayo.util.HGVS;
+import java.io.IOException;
 
 /**
  *
@@ -343,4 +347,25 @@ public class CosmicPublisher {
 		}
 		
 	}
+        
+        Pipe p = null;
+        Bed2SequencePipe seq = null;
+        public String getBPatPos(String landmark, String minBP, String maxBP) throws IOException{
+            ArrayList<String> in = new ArrayList<String>();
+            in.add(landmark);
+            in.add(minBP);
+            in.add(maxBP);
+            if(seq == null){
+                SystemProperties sysprop = new SystemProperties();
+                //seq = new Bed2SequencePipe(sysprop.get("hs_complete_genome_catalog"));
+                seq = new Bed2SequencePipe("/data/catalogs/NCBIGenome/GRCh37.p10/hs_ref_genome.fa.tsv.bgz");
+                p = new Pipeline(seq);
+            }
+            seq.reset();
+            p.reset();
+            p.setStarts(Arrays.asList(in));
+            ArrayList<String> out = (ArrayList<String>) p.next();
+            return out.get(3);
+        }
+        
 }
