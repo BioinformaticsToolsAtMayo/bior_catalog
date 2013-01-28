@@ -62,7 +62,7 @@ public class BuildNcbiCatalog {
 	}
 	
 	private void initEnv() throws IOException {
-		String currentDir = new File(".").getAbsolutePath();
+		String currentDir = new File(".").getCanonicalPath();
 		String userDir = System.getProperty("user.dir");
 		
 		System.getenv().put("BASEDIR", currentDir);
