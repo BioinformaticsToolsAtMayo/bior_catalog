@@ -44,12 +44,11 @@ fi
 echo 'Running HapMap Publisher - Step 1/7...';
 java -cp $BIOR_CATALOG_HOME/conf:$BIOR_CATALOG_HOME/lib/* edu.mayo.bior.publishers.HapMap.HapMapPublisher $hapmapDir $outDir/scratch/hapmap.1.tsv 
 
-echo 'Converting hapmap.tsv to sorted gff - Step 2/7...';
-cat ${outDir}/scratch/hapmap.1.tsv | bior_drill -k -p chrom -p source -p type -p pos -p pos -p score -p strand -p phase | grep -v ^# | sort -k1,1 -k4,4n > ${outDir}/scratch/hapmap.2.sorted.tsv
+echo 'Converting hapmap.tsv to gff - Step 2/7...';
+cat ${outDir}/scratch/hapmap.1.tsv | bior_drill -k -p chrom -p source -p type -p pos -p pos -p score -p strand -p phase | grep -v ^#  > ${outDir}/scratch/hapmap.2.tsv
 
 echo 'Performing liftOver - Step 3/7...'
-echo 'NOTE: After liftover, the records may not necessarily be sorted anymore'
-$UCSC_TOOLS_HOME/liftOver -gff ${outDir}/scratch/hapmap.2.sorted.tsv  $UCSC_TOOLS_HOME/hg18toHg19.over.chain ${outDir}/scratch/hapmap.3.liftover.tsv ${outDir}/scratch/hapmap.3.unmapped.tsv
+$UCSC_TOOLS_HOME/liftOver -gff ${outDir}/scratch/hapmap.2.tsv  $UCSC_TOOLS_HOME/hg18toHg19.over.chain ${outDir}/scratch/hapmap.3.liftover.tsv ${outDir}/scratch/hapmap.3.unmapped.tsv
 
 echo 'Sorting the records again after liftover - Step 4/7'
 sort -k1,1 -k4,4n -k5,5n ${outDir}/scratch/hapmap.3.liftover.tsv  >  ${outDir}/scratch/hapmap.4.liftover.sorted.tsv 
