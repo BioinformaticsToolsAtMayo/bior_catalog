@@ -57,7 +57,7 @@ public class CosmicPublisher {
         CosmicPublisher publisher = new CosmicPublisher();      
         //publisher.publish("/data/cosmic/v62/CosmicCompleteExport_v62_291112.tsv.gz", "/data/catalogs/cosmic/v62");
         //publisher.publish("C:\\mayo\\bior\\cosmic\\CosmicCompleteExport_v62_291112.tsv.gz", "C:\\temp");
-                
+               
         if(args.length >= 1){ 
             publisher.publish(args[0], args[1] + "/scratch/");
         }else{
@@ -170,10 +170,11 @@ public class CosmicPublisher {
         						load
         );
         p.setStarts(Arrays.asList(file));
+        
         for(int i=0; p.hasNext(); i++){
-            //System.out.println("Val="+i);
+            //System.out.println("Row="+i);
             p.next();                     
-            //if(i>500) break;
+            //if(i>160) break;
         }
         
     }
@@ -294,9 +295,10 @@ public class CosmicPublisher {
 			chr = "";
 			minBp = ""; // DEFAULT
 			maxBp = ""; // DEFAULT
-			ref = ""; // DEFAULT
+			ref = "N"; // DEFAULT
 			alt = new String[1]; // DEFAULT
-			strand = ""; // DEFAULT
+			this.alt[0] = "N";//DEFAULT
+			strand = "."; // DEFAULT
 			
 			//_type
             history.add(Type.VARIANT.toString());
@@ -358,30 +360,37 @@ public class CosmicPublisher {
 		
 		// Data for a alleles is in Col 13 and is like "c.35G>A"
         private void computeAlleles(History history) {
-                if (history.size()>=12) {
-                        if (history.get(12)!=null && !history.get(12).equals("")) {
-                                this.rawData = history.get(12);
-                                //USe this generic class from google-code "snp-normaliser" that parses HGVS nomenclature mutation like "c.123G>A"
-                                if (this.rawData.contains("?")) {
-                                        //System.out.println("BAD");
-                                        //some data in cosmis raw file has invalid CDSMutations like "c.?", this avoid them
-                                } else {
-                                        HGVS hgvs = new HGVS(this.rawData);
-                                        if (hgvs.getWildtype()==null) {
-                                        	String val = getBasePairAtPosition(this.chr, this.minBp, this.maxBp);	
-                                        	System.out.println("************************Value="+val);
-                                        } else {
-                                        	this.ref = hgvs.getWildtype();
-                                        }
-                                        
-                                        if (hgvs.getMutation()!=null){
-                                                this.alt[0] = hgvs.getMutation();
-                                        }
-                                }
-                        }
-                }
-        }
+        	if (history.size()>=12) {
+        		 if (history.get(12)!=null && !history.get(12).equals("")) {
+                	 this.rawData = history.get(12);
+                     //USe this generic class from google-code "snp-normaliser" that parses HGVS nomenclature mutation like "c.123G>A"
+                	 if (this.rawData.contains("?") || this.rawData.contains("ins") || this.rawData.contains("del") ) {
+                    	 //some data in cosmic raw file has invalid CDSMutations like "c.?", "c.?_?ins?" etc
+                        this.ref = "N";
+                        this.alt[0] = "N";
+                     } else {
+                    	 //System.out.println("*********************************:"+this.rawData);
+                         HGVS hgvs = new HGVS(this.rawData);
 
+                         if (hgvs.getWildtype()==null || hgvs.getWildtype().equals("null")) {
+                         	 String val = getBasePairAtPosition(this.chr, this.minBp, this.maxBp);
+                             
+                             if (val.length()>0) {
+                            	 this.ref = val.substring(0,1);
+                                 this.maxBp = this.minBp; //
+                             } else {
+                            	 //System.out.println("----Not null:"+hgvs.getWildtype());
+                                 this.ref = hgvs.getWildtype();
+                             }
+                         }    	
+                         
+                         if (hgvs.getMutation()!=null){
+                        	 this.alt[0] = hgvs.getMutation();
+                         } 
+                     }
+        		 }
+        	 } 
+        }
 
 
 		// Data for strand is in Col 18 and is like "-" or "+"
