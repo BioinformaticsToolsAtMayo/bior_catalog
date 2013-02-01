@@ -12,8 +12,10 @@ import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 
+import com.google.common.base.CharMatcher;
 import com.tinkerpop.pipes.Pipe;
 import com.tinkerpop.pipes.PipeFunction;
+import com.tinkerpop.pipes.transform.IdentityPipe;
 import com.tinkerpop.pipes.transform.TransformFunctionPipe;
 import com.tinkerpop.pipes.util.Pipeline;
 
@@ -49,6 +51,7 @@ import java.io.IOException;
  * @author Surendra Konathala
  */
 public class CosmicPublisher {
+	
     public static void usage(){
         System.out.println("usage: CosmicPublisher <rawDataFile> <catalogOutputDir>");
     }
@@ -157,6 +160,7 @@ public class CosmicPublisher {
         InjectIntoJsonPipe injectCosmicDataAsJson = new InjectIntoJsonPipe(true, injectors);
         
         int[] cut = new int[] {3,4,5,6,7,8,9,10,11,12,14,15,16,19,20,21,22,23,24,25,26,28,29,32};
+        //int[] cut = new int[] {3,4,5,6,7,8,9,10,11,14,15,16,20,21,22,23,24,25,26,28,29,32};
         
         Pipe<History,History> transform = new TransformFunctionPipe<History,History>( new CosmicTransformPipe() );
         
@@ -174,7 +178,7 @@ public class CosmicPublisher {
         for(int i=0; p.hasNext(); i++){
             //System.out.println("Row="+i);
             p.next();                     
-            //if(i>160) break;
+            //if(i>200000) break;
         }
         
     }
@@ -203,8 +207,9 @@ public class CosmicPublisher {
         try {
 	        if(bed2sequencePipe == null){
 	            SystemProperties sysprop = new SystemProperties();
-	            //seq = new Bed2SequencePipe(sysprop.get("hs_complete_genome_catalog"));
+	            //bed2sequencePipe = new Bed2SequencePipe(sysprop.get("hs_complete_genome_catalog"));
 	            bed2sequencePipe = new Bed2SequencePipe("/data/catalogs/NCBIGenome/GRCh37.p10/hs_ref_genome.fa.tsv.bgz");
+	            //bed2sequencePipe = new Bed2SequencePipe("C:\\mayo\\bior\\ncbigenome\\hs_ref_genome.fa.tsv.bgz");
 	            pipeline = new Pipeline(bed2sequencePipe);
 	        }
 	        bed2sequencePipe.reset();
@@ -212,10 +217,10 @@ public class CosmicPublisher {
 	        
 	        pipeline.setStarts(Arrays.asList(in));
 	        
-	        if (pipeline.hasNext()) {
+	        //if (pipeline.hasNext()) {
 	        	ArrayList<String> out = (ArrayList<String>) pipeline.next();
 	        	result = out.get(3); 
-	        }
+	        //}
         } catch(Exception e) {
         	result = "";        	
         	System.err.println(e.getMessage());
@@ -269,6 +274,8 @@ public class CosmicPublisher {
 		String ref = "";
 		String[] alt;
 		String strand = "";		
+	
+		final String NUCLEOTIDES = "ACTG";
 		
 		@Override
 		public History compute(History history) {
@@ -331,6 +338,8 @@ public class CosmicPublisher {
             //_strand
             history.add(this.strand);
             
+            //System.out.println(Arrays.asList(history));
+            
             return history;
 		}
 
@@ -358,6 +367,7 @@ public class CosmicPublisher {
 		}
 
 		
+		/*
 		// Data for a alleles is in Col 13 and is like "c.35G>A"
         private void computeAlleles(History history) {
         	if (history.size()>=12) {
@@ -390,10 +400,90 @@ public class CosmicPublisher {
                      }
         		 }
         	 } 
+        }*/
+
+
+		// Data for a alleles is in Col 13 and is like "c.35G>A"
+        private void computeAlleles(History history) {
+        	if (history.size()>=12) {
+        		 if (history.get(12)!=null && !history.get(12).equals("")) {
+                	 this.rawData = history.get(12);
+                	 
+                	 /**
+                	  * Cases: 
+                	  * 1: c.123C>T -- valid
+                	  * 2: c.123insT or c.123delT  -- valid
+                	  * 3: c.?_?insA or c.?_?delA  -- valid
+                	  * 4: c.?ins? -- invalid
+                	  * 5. c.? -- invalid
+                	  */
+                	 
+                	 HGVS hgvs = new HGVS(this.rawData);
+                	 System.out.println("-------Rawdata:"+rawData+"---HGVS:"+hgvs);
+                	 
+                	 String snpType;
+                	 
+                	 if (this.rawData.contains("ins")) {
+    					 snpType = "ins";
+    				 } else if (this.rawData.contains("del")) {
+    					 snpType = "del";
+    				 }
+                	 
+                	 //if (this.rawData.contains("?")) {
+                		 if (this.rawData.contains("ins") || this.rawData.contains("del")) {
+                			 System.out.println("Ins or Del:"+hgvs.getWildtype() +" && "+hgvs.getMutation());
+                			 //System.out.println("1:"+CharMatcher.anyOf(hgvs.getWildtype()).matchesAnyOf(NUCLEOTIDES));
+                			 //System.out.println("2:"+CharMatcher.anyOf(hgvs.getMutation()).matchesAnyOf(NUCLEOTIDES));
+                			 
+                			 //if (CharMatcher.anyOf(hgvs.getWildtype()).matchesAnyOf(NUCLEOTIDES)) {
+                			//	 this.ref = hgvs.getWildtype();
+                			//	 System.out.println("REFF:"+this.ref);
+                			 //} 
+                			 
+                			 if (CharMatcher.anyOf(hgvs.getMutation()).matchesAnyOf(NUCLEOTIDES)) {
+                				 // ALT is found. now get REF
+                				 String tmpAlt = hgvs.getMutation();
+                				 
+                				 String refval = getBasePairAtPosition(this.chr, this.minBp, this.maxBp);
+                                 
+                                 if (refval.length()>0) {
+                                	 this.ref = refval.substring(0,1);
+                                     this.maxBp = this.minBp; //
+                                 
+                                     //if "ins"
+                                     this.alt[0] = refval + tmpAlt;
+                                 
+                                     //if "del"
+                                     this.alt[0] = tmpAlt + refval;
+                                     
+                                     //System.out.println("REFA:"+this.ref+"--ALTA:"+this.alt[0]);                                     
+                			 	}
+                			 }
+                		 } else {
+                	 //}
+                	 
+		                	 if (hgvs.getWildtype()!=null) {
+		                		 //System.out.println("Pass 2:REF:"+hgvs.getWildtype());
+		                		 if (CharMatcher.anyOf(hgvs.getWildtype()).matchesAnyOf(NUCLEOTIDES)) {
+		            				 this.ref = hgvs.getWildtype();
+		            				 //System.out.println("Pass 2.2:REFF:"+this.ref);
+		            			 }
+		                	 }
+		                	 
+		                	 if (hgvs.getMutation()!=null){
+		                    	 //System.out.println("Pass 2:ALT:"+hgvs.getMutation());
+	                			 if (CharMatcher.anyOf(hgvs.getMutation()).matchesAnyOf(NUCLEOTIDES)) {
+	                				 this.alt[0] = hgvs.getMutation();
+	                				 //System.out.println("Pass 2.2:ALT:"+this.alt[0]);
+	                			 }
+
+		                     } 
+                		 }
+        		 }
+        	 } 
         }
-
-
-		// Data for strand is in Col 18 and is like "-" or "+"
+        
+        // Data for strand is in Col 18 and is like "-" or "+"
 		private void computeStrand(History history) {
 			if (history.size()>=19) {
 				if (history.get(19)!=null && !history.get(19).equals("")) {			
