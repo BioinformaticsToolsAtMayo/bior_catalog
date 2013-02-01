@@ -139,9 +139,6 @@ public class CosmicPublisher {
      * 
      */
     private void processCosmicFile(String file, List<String> headerColumns, Pipe load) {
-
-    	//String[] headerArray = headerColumns.toArray(new String[headerColumns.size()]);
-    	    	
     	Injector[] injectors = new Injector[33];
     	
     	for(int i=0;i<headerColumns.size();i++) {    		
@@ -160,7 +157,6 @@ public class CosmicPublisher {
         InjectIntoJsonPipe injectCosmicDataAsJson = new InjectIntoJsonPipe(true, injectors);
         
         int[] cut = new int[] {3,4,5,6,7,8,9,10,11,12,14,15,16,19,20,21,22,23,24,25,26,28,29,32};
-        //int[] cut = new int[] {3,4,5,6,7,8,9,10,11,14,15,16,20,21,22,23,24,25,26,28,29,32};
         
         Pipe<History,History> transform = new TransformFunctionPipe<History,History>( new CosmicTransformPipe() );
         
@@ -365,44 +361,7 @@ public class CosmicPublisher {
 				}
 			} 			
 		}
-
 		
-		/*
-		// Data for a alleles is in Col 13 and is like "c.35G>A"
-        private void computeAlleles(History history) {
-        	if (history.size()>=12) {
-        		 if (history.get(12)!=null && !history.get(12).equals("")) {
-                	 this.rawData = history.get(12);
-                     //USe this generic class from google-code "snp-normaliser" that parses HGVS nomenclature mutation like "c.123G>A"
-                	 if (this.rawData.contains("?") || this.rawData.contains("ins") || this.rawData.contains("del") ) {
-                    	 //some data in cosmic raw file has invalid CDSMutations like "c.?", "c.?_?ins?" etc
-                        this.ref = "N";
-                        this.alt[0] = "N";
-                     } else {
-                    	 //System.out.println("*********************************:"+this.rawData);
-                         HGVS hgvs = new HGVS(this.rawData);
-
-                         if (hgvs.getWildtype()==null || hgvs.getWildtype().equals("null")) {
-                         	 String val = getBasePairAtPosition(this.chr, this.minBp, this.maxBp);
-                             
-                             if (val.length()>0) {
-                            	 this.ref = val.substring(0,1);
-                                 this.maxBp = this.minBp; //
-                             } else {
-                            	 //System.out.println("----Not null:"+hgvs.getWildtype());
-                                 this.ref = hgvs.getWildtype();
-                             }
-                         }    	
-                         
-                         if (hgvs.getMutation()!=null){
-                        	 this.alt[0] = hgvs.getMutation();
-                         } 
-                     }
-        		 }
-        	 } 
-        }*/
-
-
 		// Data for a alleles is in Col 13 and is like "c.35G>A"
         private void computeAlleles(History history) {
         	if (history.size()>=12) {
@@ -419,60 +378,54 @@ public class CosmicPublisher {
                 	  */
                 	 
                 	 HGVS hgvs = new HGVS(this.rawData);
-                	 System.out.println("-------Rawdata:"+rawData+"---HGVS:"+hgvs);
                 	 
                 	 String snpType = "";
-                	 
                 	 if (this.rawData.contains("ins")) {
     					 snpType = "ins";
     				 } else if (this.rawData.contains("del")) {
     					 snpType = "del";
     				 }
                 	 
-            		 if (this.rawData.contains("ins") || this.rawData.contains("del")) {
-            			 System.out.println("Ins or Del:"+hgvs.getWildtype() +" && "+hgvs.getMutation());
-            			 
-            			 if (CharMatcher.anyOf(hgvs.getMutation()).matchesAnyOf(NUCLEOTIDES)) {
-            				 // ALT is found. now get REF
-            				 String tmpAlt = hgvs.getMutation();
-            				 String refval = "";
-            				 
-            				 if (snpType.equals("ins")) {            					 
-            					 refval = getBasePairAtPosition(this.chr, this.minBp, this.maxBp);
-            					 
-            					 if (refval.length()>0) {
-                                	 this.ref = refval.substring(0,1);
-                                     this.maxBp = this.minBp; //
-                                     this.alt[0] = refval + tmpAlt; //
-            					 }          					 
-            				 } else if (snpType.equals("del")) {
-            					 //if "deletion", we need to check the REF one position before
-            					 Double tmpMinBp = new Double(this.minBp);
-            					 double tVal = tmpMinBp - 1; 
-            					 refval = getBasePairAtPosition(this.chr, String.valueOf(tVal), String.valueOf(tVal));
+                	 if (this.rawData.contains("ins") || this.rawData.contains("del")) {
+                         //System.out.println("Ins or Del:"+hgvs.getWildtype() +" && "+hgvs.getMutation());
 
-            					 if (refval.length()>0) {
-                                	 this.alt[0] = refval.substring(0,1);
-                                     this.ref = refval.substring(0,1) + tmpAlt; //
-                                	 this.minBp = String.valueOf(tVal);
-                                     this.maxBp = String.valueOf(tVal); //
-            					 }
-            				 }
-            		 	}
+                         if (CharMatcher.anyOf(hgvs.getMutation()).matchesAnyOf(NUCLEOTIDES)) {
+                        	 // ALT is found. now get REF
+                             String tmpAlt = hgvs.getMutation();
+                             String refval = "";
+
+                             if (snpType.equals("ins")) {
+                            	 refval = getBasePairAtPosition(this.chr, this.minBp, this.maxBp);
+
+                                 if (refval.length()>0) {
+                                     this.ref = refval;
+                                     this.maxBp = this.minBp; //
+                                     this.alt[0] = this.ref + tmpAlt; //
+                                 }
+                             } else if (snpType.equals("del")) {
+                                	 //if "deletion", we need to check the REF one position before
+                                     Integer tmpMinBp = new Integer(this.minBp);
+                                     int tVal = tmpMinBp.intValue() - 1;
+                                     refval = getBasePairAtPosition(this.chr, String.valueOf(tVal), String.valueOf(tVal));
+
+                                     if (refval.length()>0) {
+                                    	 this.alt[0] = refval;
+                                    	 this.ref = refval + tmpAlt; //
+                                    	 this.minBp = String.valueOf(tVal);
+                                    	 this.maxBp = String.valueOf(tVal); //
+                                     }
+                             }
+                         }
             		 } else {                	 
 	                	 if (hgvs.getWildtype()!=null) {
-	                		 //System.out.println("Pass 2:REF:"+hgvs.getWildtype());
 	                		 if (CharMatcher.anyOf(hgvs.getWildtype()).matchesAnyOf(NUCLEOTIDES)) {
 	            				 this.ref = hgvs.getWildtype();
-	            				 //System.out.println("Pass 2.2:REFF:"+this.ref);
 	            			 }
 	                	 }
 	                	 
 	                	 if (hgvs.getMutation()!=null){
-	                    	 //System.out.println("Pass 2:ALT:"+hgvs.getMutation());
                 			 if (CharMatcher.anyOf(hgvs.getMutation()).matchesAnyOf(NUCLEOTIDES)) {
                 				 this.alt[0] = hgvs.getMutation();
-                				 //System.out.println("Pass 2.2:ALT:"+this.alt[0]);
                 			 }
 	                     } 
                 	}
