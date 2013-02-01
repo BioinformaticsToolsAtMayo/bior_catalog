@@ -421,7 +421,7 @@ public class CosmicPublisher {
                 	 HGVS hgvs = new HGVS(this.rawData);
                 	 System.out.println("-------Rawdata:"+rawData+"---HGVS:"+hgvs);
                 	 
-                	 String snpType;
+                	 String snpType = "";
                 	 
                 	 if (this.rawData.contains("ins")) {
     					 snpType = "ins";
@@ -429,56 +429,53 @@ public class CosmicPublisher {
     					 snpType = "del";
     				 }
                 	 
-                	 //if (this.rawData.contains("?")) {
-                		 if (this.rawData.contains("ins") || this.rawData.contains("del")) {
-                			 System.out.println("Ins or Del:"+hgvs.getWildtype() +" && "+hgvs.getMutation());
-                			 //System.out.println("1:"+CharMatcher.anyOf(hgvs.getWildtype()).matchesAnyOf(NUCLEOTIDES));
-                			 //System.out.println("2:"+CharMatcher.anyOf(hgvs.getMutation()).matchesAnyOf(NUCLEOTIDES));
-                			 
-                			 //if (CharMatcher.anyOf(hgvs.getWildtype()).matchesAnyOf(NUCLEOTIDES)) {
-                			//	 this.ref = hgvs.getWildtype();
-                			//	 System.out.println("REFF:"+this.ref);
-                			 //} 
-                			 
-                			 if (CharMatcher.anyOf(hgvs.getMutation()).matchesAnyOf(NUCLEOTIDES)) {
-                				 // ALT is found. now get REF
-                				 String tmpAlt = hgvs.getMutation();
-                				 
-                				 String refval = getBasePairAtPosition(this.chr, this.minBp, this.maxBp);
-                                 
-                                 if (refval.length()>0) {
+            		 if (this.rawData.contains("ins") || this.rawData.contains("del")) {
+            			 System.out.println("Ins or Del:"+hgvs.getWildtype() +" && "+hgvs.getMutation());
+            			 
+            			 if (CharMatcher.anyOf(hgvs.getMutation()).matchesAnyOf(NUCLEOTIDES)) {
+            				 // ALT is found. now get REF
+            				 String tmpAlt = hgvs.getMutation();
+            				 String refval = "";
+            				 
+            				 if (snpType.equals("ins")) {            					 
+            					 refval = getBasePairAtPosition(this.chr, this.minBp, this.maxBp);
+            					 
+            					 if (refval.length()>0) {
                                 	 this.ref = refval.substring(0,1);
                                      this.maxBp = this.minBp; //
-                                 
-                                     //if "ins"
-                                     this.alt[0] = refval + tmpAlt;
-                                 
-                                     //if "del"
-                                     this.alt[0] = tmpAlt + refval;
-                                     
-                                     //System.out.println("REFA:"+this.ref+"--ALTA:"+this.alt[0]);                                     
-                			 	}
-                			 }
-                		 } else {
-                	 //}
-                	 
-		                	 if (hgvs.getWildtype()!=null) {
-		                		 //System.out.println("Pass 2:REF:"+hgvs.getWildtype());
-		                		 if (CharMatcher.anyOf(hgvs.getWildtype()).matchesAnyOf(NUCLEOTIDES)) {
-		            				 this.ref = hgvs.getWildtype();
-		            				 //System.out.println("Pass 2.2:REFF:"+this.ref);
-		            			 }
-		                	 }
-		                	 
-		                	 if (hgvs.getMutation()!=null){
-		                    	 //System.out.println("Pass 2:ALT:"+hgvs.getMutation());
-	                			 if (CharMatcher.anyOf(hgvs.getMutation()).matchesAnyOf(NUCLEOTIDES)) {
-	                				 this.alt[0] = hgvs.getMutation();
-	                				 //System.out.println("Pass 2.2:ALT:"+this.alt[0]);
-	                			 }
+                                     this.alt[0] = refval + tmpAlt; //
+            					 }          					 
+            				 } else if (snpType.equals("del")) {
+            					 //if "deletion", we need to check the REF one position before
+            					 Double tmpMinBp = new Double(this.minBp);
+            					 double tVal = tmpMinBp - 1; 
+            					 refval = getBasePairAtPosition(this.chr, String.valueOf(tVal), String.valueOf(tVal));
 
-		                     } 
-                		 }
+            					 if (refval.length()>0) {
+                                	 this.alt[0] = refval.substring(0,1);
+                                     this.ref = refval.substring(0,1) + tmpAlt; //
+                                	 this.minBp = String.valueOf(tVal);
+                                     this.maxBp = String.valueOf(tVal); //
+            					 }
+            				 }
+            		 	}
+            		 } else {                	 
+	                	 if (hgvs.getWildtype()!=null) {
+	                		 //System.out.println("Pass 2:REF:"+hgvs.getWildtype());
+	                		 if (CharMatcher.anyOf(hgvs.getWildtype()).matchesAnyOf(NUCLEOTIDES)) {
+	            				 this.ref = hgvs.getWildtype();
+	            				 //System.out.println("Pass 2.2:REFF:"+this.ref);
+	            			 }
+	                	 }
+	                	 
+	                	 if (hgvs.getMutation()!=null){
+	                    	 //System.out.println("Pass 2:ALT:"+hgvs.getMutation());
+                			 if (CharMatcher.anyOf(hgvs.getMutation()).matchesAnyOf(NUCLEOTIDES)) {
+                				 this.alt[0] = hgvs.getMutation();
+                				 //System.out.println("Pass 2.2:ALT:"+this.alt[0]);
+                			 }
+	                     } 
+                	}
         		 }
         	 } 
         }
