@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.commons.lang.NumberUtils;
 import org.apache.commons.lang.StringUtils;
 
 import com.google.common.base.CharMatcher;
@@ -388,8 +389,9 @@ public class CosmicPublisher {
                 	 
                 	 if (this.rawData.contains("ins") || this.rawData.contains("del")) {
                          //System.out.println("Ins or Del:"+hgvs.getWildtype() +" && "+hgvs.getMutation());
-
-                         if (CharMatcher.anyOf(hgvs.getMutation()).matchesAnyOf(NUCLEOTIDES)) {
+                		 //We check only "getMutation here because in Cosmic, if 'ins' or 'del' is included in CDS Mutation, it includes only ALT value.. 
+                		 // like 'c.123insA' or 'c.123delG'. Below we are are trying to get the REF from ALT values.
+                         if (hgvs.getMutation()!=null && CharMatcher.anyOf(hgvs.getMutation()).matchesAnyOf(NUCLEOTIDES)) {
                         	 // ALT is found. now get REF
                              String tmpAlt = hgvs.getMutation();
                              String refval = "";
@@ -404,6 +406,7 @@ public class CosmicPublisher {
                                  }
                              } else if (snpType.equals("del")) {
                                 	 //if "deletion", we need to check the REF one position before
+                            	 if (!this.minBp.equals("") && NumberUtils.isNumber(this.minBp)) {
                                      Integer tmpMinBp = new Integer(this.minBp);
                                      int tVal = tmpMinBp.intValue() - 1;
                                      refval = getBasePairAtPosition(this.chr, String.valueOf(tVal), String.valueOf(tVal));
@@ -414,6 +417,7 @@ public class CosmicPublisher {
                                     	 this.minBp = String.valueOf(tVal);
                                     	 this.maxBp = String.valueOf(tVal); //
                                      }
+                            	 }
                              }
                          }
             		 } else {                	 
