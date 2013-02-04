@@ -16,7 +16,7 @@ rawDataDir=$1
 targetCatalogDir=$2
 
 echo "Build JSON from raw data files"
-java -cp $BIOR_CATALOG_HOME/conf:$BIOR_CATALOG_HOME/lib/* edu.mayo.bior.publishers.BGIDanish.BGIPublisher $0 $@
+java -cp $BIOR_CATALOG_HOME/conf:$BIOR_CATALOG_HOME/lib/* edu.mayo.bior.publishers.BGIDanish.BGIPublisher $@
 
 
 #------------------------------------------------------------------------------------------
