@@ -363,78 +363,68 @@ public class CosmicPublisher {
 			} 			
 		}
 		
-		// Data for a alleles is in Col 13 and is like "c.35G>A"
-        private void computeAlleles(History history) {
-        	if (history.size()>=12) {
-        		 if (history.get(12)!=null && !history.get(12).equals("")) {
+        // Data for a alleles is in Col 13 and is like "c.35G>A"
+		private void computeAlleles(History history) {
+			if (history.size()>=12) {
+                 if (history.get(12)!=null && !history.get(12).equals("")) {
                 	 this.rawData = history.get(12);
                 	 
-                	 /**
-                	  * Cases: 
-                	  * 1: c.123C>T -- valid
-                	  * 2: c.123insT or c.123delT  -- valid
-                	  * 3: c.?_?insA or c.?_?delA  -- valid
-                	  * 4: c.?ins? -- invalid
-                	  * 5. c.? -- invalid
-                	  */
-                	 
                 	 HGVS hgvs = new HGVS(this.rawData);
-                	 
+
                 	 String snpType = "";
                 	 if (this.rawData.contains("ins")) {
-    					 snpType = "ins";
-    				 } else if (this.rawData.contains("del")) {
-    					 snpType = "del";
-    				 }
-                	 
+                		 snpType = "ins";
+                     } else if (this.rawData.contains("del")) {
+                    	 snpType = "del";
+                     }
+
                 	 if (this.rawData.contains("ins") || this.rawData.contains("del")) {
-                         //System.out.println("Ins or Del:"+hgvs.getWildtype() +" && "+hgvs.getMutation());
-                		 //We check only "getMutation here because in Cosmic, if 'ins' or 'del' is included in CDS Mutation, it includes only ALT value.. 
-                		 // like 'c.123insA' or 'c.123delG'. Below we are are trying to get the REF from ALT values.
-                         if (hgvs.getMutation()!=null && CharMatcher.anyOf(hgvs.getMutation()).matchesAnyOf(NUCLEOTIDES)) {
-                        	 // ALT is found. now get REF
-                             String tmpAlt = hgvs.getMutation();
-                             String refval = "";
+                		 //System.out.println("Ins or Del:"+hgvs.getWildtype() +" && "+hgvs.getMutation());
 
-                             if (snpType.equals("ins")) {
-                            	 refval = getBasePairAtPosition(this.chr, this.minBp, this.maxBp);
-
-                                 if (refval.length()>0) {
-                                     this.ref = refval;
-                                     this.maxBp = this.minBp; //
-                                     this.alt[0] = this.ref + tmpAlt; //
-                                 }
-                             } else if (snpType.equals("del")) {
-                                	 //if "deletion", we need to check the REF one position before
-                            	 if (!this.minBp.equals("") && NumberUtils.isNumber(this.minBp)) {
-                                     Integer tmpMinBp = new Integer(this.minBp);
-                                     int tVal = tmpMinBp.intValue() - 1;
-                                     refval = getBasePairAtPosition(this.chr, String.valueOf(tVal), String.valueOf(tVal));
-
-                                     if (refval.length()>0) {
-                                    	 this.alt[0] = refval;
-                                    	 this.ref = refval + tmpAlt; //
-                                    	 this.minBp = String.valueOf(tVal);
-                                    	 this.maxBp = String.valueOf(tVal); //
-                                     }
-                            	 }
-                             }
-                         }
-            		 } else {                	 
-	                	 if (hgvs.getWildtype()!=null) {
-	                		 if (CharMatcher.anyOf(hgvs.getWildtype()).matchesAnyOf(NUCLEOTIDES)) {
-	            				 this.ref = hgvs.getWildtype();
-	            			 }
+	                	 if (hgvs.getMutation()!=null && CharMatcher.anyOf(hgvs.getMutation()).matchesAnyOf(NUCLEOTIDES)) {
+	                         // ALT is found. now get REF
+	                		 String tmpAlt = hgvs.getMutation();
+	                		 String refval = "";
+	
+	                		 if (snpType.equals("ins")) {
+	                			 refval = getBasePairAtPosition(this.chr, this.minBp, this.maxBp);
+	
+	                			 if (refval.length()>0) {
+	                				 this.ref = refval;
+	                				 this.maxBp = this.minBp; //
+	                				 this.alt[0] = this.ref + tmpAlt; //
+	                			 }
+	                		 } else if (snpType.equals("del")) {
+	                			 //if "deletion", we need to check the REF one position before
+	                			 if (!this.minBp.equals("") && NumberUtils.isNumber(this.minBp)) {
+	                				 Integer tmpMinBp = new Integer(this.minBp);
+	                				 int tVal = tmpMinBp.intValue() - 1;
+	                				 refval = getBasePairAtPosition(this.chr, String.valueOf(tVal), String.valueOf(tVal));
+	
+	                				 if (refval.length()>0) {
+	                					 this.alt[0] = refval;
+	                					 this.ref = refval + tmpAlt; //
+	                					 this.minBp = String.valueOf(tVal);
+	                					 this.maxBp = String.valueOf(tVal); //
+	                				 }
+	                			 }
+	                		 }
 	                	 }
-	                	 
-	                	 if (hgvs.getMutation()!=null){
-                			 if (CharMatcher.anyOf(hgvs.getMutation()).matchesAnyOf(NUCLEOTIDES)) {
-                				 this.alt[0] = hgvs.getMutation();
-                			 }
-	                     } 
-                	}
-        		 }
-        	 } 
+                	 } else {
+                		 if (hgvs.getWildtype()!=null) {
+                             if (CharMatcher.anyOf(hgvs.getWildtype()).matchesAnyOf(NUCLEOTIDES)) {
+                            	 this.ref = hgvs.getWildtype();
+                             }
+                		 }
+
+                		 if (hgvs.getMutation()!=null){
+                             if (CharMatcher.anyOf(hgvs.getMutation()).matchesAnyOf(NUCLEOTIDES)) {
+                            	 this.alt[0] = hgvs.getMutation();
+                             }
+                		 }
+                	 }
+                 }
+			}
         }
         
         // Data for strand is in Col 18 and is like "-" or "+"
