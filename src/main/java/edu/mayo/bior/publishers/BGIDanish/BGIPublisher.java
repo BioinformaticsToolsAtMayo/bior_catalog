@@ -86,7 +86,7 @@ public class BGIPublisher {
                              new HCutPipe(false, new int[] {2,3,6,7,8,9,10,11,12,13,14,15,16,17,18,19} ), 
                              new MergePipe("\t"),
                          	 // Write to file: Don't append to file;  Add newlines to each line
-                             new WritePipe(outfile, false, true),
+                             new WritePipe(outfile, false, true)
                              //new PrintPipe()
                 );
         p.setStarts(Arrays.asList(rawDataFileFullpath));
