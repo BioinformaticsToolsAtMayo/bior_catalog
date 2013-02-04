@@ -157,7 +157,7 @@ public class CosmicPublisher {
     	
         InjectIntoJsonPipe injectCosmicDataAsJson = new InjectIntoJsonPipe(true, injectors);
         
-        int[] cut = new int[] {3,4,5,6,7,8,9,10,11,12,14,15,16,19,20,21,22,23,24,25,26,28,29,32};
+        int[] cut = new int[] {1,2,3,4,5,6,7,8,9,10,11,12,14,15,16,19,20,21,22,23,24,25,26,28,29,32};
         
         Pipe<History,History> transform = new TransformFunctionPipe<History,History>( new CosmicTransformPipe() );
         
@@ -295,10 +295,10 @@ public class CosmicPublisher {
 				}
 			}
 			
-			//chr = Undefined.UNKNOWN.toString(); // DEFAULT
-			chr = "";
-			minBp = ""; // DEFAULT
-			maxBp = ""; // DEFAULT
+			chr = Undefined.UNKNOWN.toString(); // DEFAULT
+			//chr = "";
+			minBp = "0"; // DEFAULT
+			maxBp = "0"; // DEFAULT
 			ref = "N"; // DEFAULT
 			alt = new String[1]; // DEFAULT
 			this.alt[0] = "N";//DEFAULT
@@ -380,34 +380,38 @@ public class CosmicPublisher {
 
                 	 if (this.rawData.contains("ins") || this.rawData.contains("del")) {
                 		 //System.out.println("Ins or Del:"+hgvs.getWildtype() +" && "+hgvs.getMutation());
-
+                		 // We check only "getMutation here because in Cosmic, if 'ins' or 'del' is included in CDS Mutation, it includes only ALT value.. 
+                		 // like 'c.123insA' or 'c.123delG'. Below we are are trying to get the REF from ALT values.
+	
 	                	 if (hgvs.getMutation()!=null && CharMatcher.anyOf(hgvs.getMutation()).matchesAnyOf(NUCLEOTIDES)) {
-	                         // ALT is found. now get REF
-	                		 String tmpAlt = hgvs.getMutation();
-	                		 String refval = "";
-	
-	                		 if (snpType.equals("ins")) {
-	                			 refval = getBasePairAtPosition(this.chr, this.minBp, this.maxBp);
-	
-	                			 if (refval.length()>0) {
-	                				 this.ref = refval;
-	                				 this.maxBp = this.minBp; //
-	                				 this.alt[0] = this.ref + tmpAlt; //
-	                			 }
-	                		 } else if (snpType.equals("del")) {
-	                			 //if "deletion", we need to check the REF one position before
-	                			 if (!this.minBp.equals("") && NumberUtils.isNumber(this.minBp)) {
-	                				 Integer tmpMinBp = new Integer(this.minBp);
-	                				 int tVal = tmpMinBp.intValue() - 1;
-	                				 refval = getBasePairAtPosition(this.chr, String.valueOf(tVal), String.valueOf(tVal));
-	
-	                				 if (refval.length()>0) {
-	                					 this.alt[0] = refval;
-	                					 this.ref = refval + tmpAlt; //
-	                					 this.minBp = String.valueOf(tVal);
-	                					 this.maxBp = String.valueOf(tVal); //
-	                				 }
-	                			 }
+	                		 
+	                		 if (!this.minBp.equals("") && !this.minBp.equals("0") && NumberUtils.isNumber(this.minBp)) {
+	                			 
+		                		 String tmpAlt = hgvs.getMutation();
+		                		 String refval = "";
+		
+		                		 if (snpType.equals("ins")) {
+		                			 refval = getBasePairAtPosition(this.chr, this.minBp, this.maxBp);
+		
+		                			 if (refval.length()>0) {
+		                				 this.ref = refval;
+		                				 this.maxBp = this.minBp; //
+		                				 this.alt[0] = this.ref + tmpAlt; //
+		                			 }
+		                		 } else if (snpType.equals("del")) {
+		                			 //if "deletion", we need to check the REF one position before
+		                			 
+		                				 Integer tmpMinBp = new Integer(this.minBp);
+		                				 int tVal = tmpMinBp.intValue() - 1;
+		                				 refval = getBasePairAtPosition(this.chr, String.valueOf(tVal), String.valueOf(tVal));
+		
+		                				 if (refval.length()>0) {
+		                					 this.alt[0] = refval;
+		                					 this.ref = refval + tmpAlt; //
+		                					 this.minBp = String.valueOf(tVal);
+		                					 this.maxBp = String.valueOf(tVal); //
+		                				 }
+		                		}
 	                		 }
 	                	 }
                 	 } else {
