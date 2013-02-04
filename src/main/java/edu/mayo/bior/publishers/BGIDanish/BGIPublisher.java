@@ -33,10 +33,14 @@ public class BGIPublisher {
     public static void usage(){
         System.out.println("usage: BGIPublisher <rawDataFile> <rawOutputFile>");
         System.out.println("<rawDataFile> should be of the following format:");
-        System.out.println("###chr	.	.	minBP	maxBP	majIdx	minIdx	As	Cs	Gs	Ts	Freqs	minBpOrig	RefAllele	isInDbSNP");
+        System.out.println("###chr	.	.	minBP	maxBP	majIdx	minIdx	As	Cs	Gs	Ts	Freqs	minBpOrigMaf	minBpOrigGenotype	RefAllele	isInDbSNP");
         System.out.println("chr1	.	.	69428	69428	3	2	0	7	86	1871	\"0.073021\"	59291	T	0");
     }
     
+    int totalLines = 0;
+    int numRefNotMajor = 0;
+    int numRefNotMajorOrMinor = 0;
+    int numRefNotMajorOrMinorAndMajorIsNotMinor = 0;
     
     public static void main(String[] args) {	 
         BGIPublisher publisher = new BGIPublisher();
@@ -60,7 +64,7 @@ public class BGIPublisher {
         InjectIntoJsonPipe inject = new InjectIntoJsonPipe(true, new Injector[] {
             new ColumnInjector(1, "chromosomeID", JsonType.STRING),
             new ColumnInjector(4, "genomic_position", JsonType.STRING),
-            new ColumnInjector(13,"genomic_position_original", JsonType.STRING),
+            new ColumnInjector(13,"genomic_position_preLiftOver", JsonType.STRING),
             new ColumnInjector(6, "index_of_major_allele", JsonType.NUMBER),
             new ColumnInjector(7, "index_of_minor_allele", JsonType.NUMBER),
             new ColumnInjector(8, "number_A", JsonType.NUMBER),
@@ -93,6 +97,10 @@ public class BGIPublisher {
         while(p.hasNext()) {
             p.next();
         }
+        System.out.println("Total lines: " + totalLines);
+        System.out.println("Num occurrences where ref is not the major allele: " + numRefNotMajor);
+        System.out.println("Num occurrences where ref is neither the major nor minor allele " + numRefNotMajorOrMinor);
+        System.out.println("Num occurrences where ref is neither the major nor minor allele, and the major is not the minor " + numRefNotMajorOrMinorAndMajorIsNotMinor);
         double end = System.currentTimeMillis();
         System.out.println("Total runtime: " + (end-start)/1000.0 + " sec");
     }
@@ -106,7 +114,10 @@ public class BGIPublisher {
             
             //_altAllele
             String ref = h.get(14);
-            String altsJson = getAltAllelesJson(ref, Integer.parseInt(h.get(7)), Integer.parseInt(h.get(8)), Integer.parseInt(h.get(9)), Integer.parseInt(h.get(10)));
+            String major = decode(h.get(5));
+            String minor = decode(h.get(6));
+            //String altsJson = getAltAllelesJson(ref, Integer.parseInt(h.get(7)), Integer.parseInt(h.get(8)), Integer.parseInt(h.get(9)), Integer.parseInt(h.get(10)));
+            String altsJson = getAltAllelesFromMajorMinor(ref, major, minor);
             h.add(altsJson);
             
             // isInDbSNP - convert to true/false (instead of 0/1)
@@ -118,6 +129,20 @@ public class BGIPublisher {
             if( ! h.get(12).equals(h.get(13)) )
             	throw new IllegalArgumentException("The minBP from the maf does NOT match the minBP from the genotype file!");
             
+            if( ! ref.equals(major) ) {
+            	numRefNotMajor++;
+            }
+            if( ! ref.equals(major) && ! ref.equals(minor)) {
+            	//System.out.println(h);
+            	numRefNotMajorOrMinor++;
+            }
+            if( ! ref.equals(major) && ! ref.equals(minor) && ! major.equals(minor)) {
+            	//System.out.println(h);
+            	numRefNotMajorOrMinorAndMajorIsNotMinor++;
+            }
+            
+            totalLines++;
+
             return h;
         }
 
@@ -134,28 +159,50 @@ public class BGIPublisher {
             }
             return null;
         }
-
+    	
+    	/** Get the alt alleles as a comma-separated string.
+    	 *  Check the ref against the major and minor alleles.  
+    	 *  If either is different from the ref, add it.
+    	 *  ------------
+    	 *  Some stats from full BGI file:
+    	 *  Total lines: 121858
+    	 *  Num occurrences where ref is not the major allele: 15750
+    	 *  Num occurrences where ref is neither the major nor minor allele 804
+    	 *  Num occurrences where ref is neither the major nor minor allele, and the major is not the minor 701
+    	 */
+    	private String getAltAllelesFromMajorMinor(String refAllele, String majorAllele, String minorAllele) {
+    		String alts = "";
+    		if( ! refAllele.equals(majorAllele) )
+    			alts += majorAllele + ",";
+    		if( ! refAllele.equals(minorAllele) )
+    			alts += minorAllele;
+    		
+    		if(alts.endsWith(",")) 
+    			alts = alts.substring(0, alts.length()-1);
+    		return alts;
+    	}
+    	
         /** Get the alt alleles as a comma-separated string.  
          *  Check the # of As, Cs, Gs, Ts - if any are non-zero AND are NOT the ref allele, add them to list */ 
-        private String getAltAllelesJson(String refAllele, int numAs, int numCs, int numGs, int numTs) {
-        	String alts = "";
-        	
-        	if( ! "A".equals(refAllele) && numAs > 0 )
-        		alts += "A,";
-        	
-        	if( ! "C".equals(refAllele) && numCs > 0 )
-        		alts += "C,";
-        	
-        	if( ! "G".equals(refAllele) && numGs > 0 )
-        		alts += "G,";
-
-        	if( ! "T".equals(refAllele) && numTs > 0 )
-        		alts += "T";
-        		
-        	if(alts.endsWith(","))
-        		alts = alts.substring(0,alts.length()-1);
-        	return  alts;
-        }
+//        private String getAltAllelesFromCounts(String refAllele, int numAs, int numCs, int numGs, int numTs) {
+//        	String alts = "";
+//        	
+//        	if( ! "A".equals(refAllele) && numAs > 0 )
+//        		alts += "A,";
+//        	
+//        	if( ! "C".equals(refAllele) && numCs > 0 )
+//        		alts += "C,";
+//        	
+//        	if( ! "G".equals(refAllele) && numGs > 0 )
+//        		alts += "G,";
+//
+//        	if( ! "T".equals(refAllele) && numTs > 0 )
+//        		alts += "T";
+//        		
+//        	if(alts.endsWith(","))
+//        		alts = alts.substring(0,alts.length()-1);
+//        	return  alts;
+//        }
     }
     
 }
