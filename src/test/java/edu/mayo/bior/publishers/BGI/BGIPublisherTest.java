@@ -24,6 +24,7 @@ import edu.mayo.pipes.WritePipe;
 import edu.mayo.pipes.JSON.tabix.SameVariantPipe;
 import edu.mayo.pipes.UNIX.CatPipe;
 import edu.mayo.pipes.UNIX.GrepEPipe;
+import edu.mayo.pipes.bioinformatics.VCF2VariantPipe;
 import edu.mayo.pipes.history.HistoryInPipe;
 import edu.mayo.pipes.history.HistoryOutPipe;
 
@@ -59,7 +60,7 @@ public class BGIPublisherTest {
 		final String BGI_CHR17_SAME_VAR_OUTPUT_TSV   = "src/test/resources/testData/bgi/bgi.chr17.catalog.sameVariant.output.tsv";
 		final String BGI_CHR17_SAME_VAR_EXPECTED_TSV = "src/test/resources/testData/bgi/bgi.chr17.catalog.sameVariant.expected.tsv";
 		final String BGI_CHR17_BGZ                 = new File("src/test/resources/testData/bgi/bgi.catalog.chr17.bgz").getCanonicalPath();
-		final String DBSNP_IN = "src/test/resources/testData/bgi/dbSNPS_overlap_BRCA1.vcf.json";
+		final String DBSNP_IN = "src/test/resources/testData/bgi/dbSNPS_overlap_BRCA1.vcf";
 		
 		System.out.println("exists?: " + new File(BGI_CHR17_BGZ).exists());
 		System.out.println("dbsnp path: " + BGI_CHR17_BGZ);
@@ -68,6 +69,7 @@ public class BGIPublisherTest {
 		Pipeline pipe = new Pipeline(
 				new CatPipe(),
 				new HistoryInPipe(),
+				new VCF2VariantPipe(),
 				new SameVariantPipe(BGI_CHR17_BGZ),
 				new HistoryOutPipe(),
 				new GrepEPipe("\\{\\}"), // Remove any lines with a blank json object for the SameVariantPipe output
