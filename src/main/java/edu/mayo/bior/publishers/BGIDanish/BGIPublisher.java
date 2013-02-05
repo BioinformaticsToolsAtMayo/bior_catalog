@@ -65,7 +65,9 @@ public class BGIPublisher {
     	public static final int ChromLongOrig		= 16;
     	public static final int Alts				= 17;
     	public static final int EstimatedMajorAlleleFrequency = 18;
-    	public static final int BgiJson				= 19;
+    	public static final int CalculatedMinorAlleleFrequency = 19;
+    	public static final int CalculatedMajorAlleleFrequency = 20;
+    	public static final int BgiJson				= 21;
     }
     
     public static void main(String[] args) {	 
@@ -100,6 +102,8 @@ public class BGIPublisher {
             new ColumnInjector(1+Col.TCount,		"number_T", 					JsonType.NUMBER),
             new ColumnInjector(1+Col.EstimatedMinorAlleleFrequency,	"estimated_minor_allele_freq", JsonType.NUMBER),
             new ColumnInjector(1+Col.EstimatedMajorAlleleFrequency,	"estimated_major_allele_freq", JsonType.NUMBER),
+            new ColumnInjector(1+Col.CalculatedMinorAlleleFrequency,"calculated_minor_allele_freq", JsonType.NUMBER),
+            new ColumnInjector(1+Col.CalculatedMajorAlleleFrequency,"calculated_major_allele_freq", JsonType.NUMBER),
             new ColumnInjector(1+Col.IsInDbSnp, 	"is_in_dbSNP", 					JsonType.NUMBER),
             new ColumnInjector(1+Col.ChromShort, 	CoreAttributes._landmark.toString(), JsonType.STRING),
             new ColumnInjector(1+Col.RefAllele,		CoreAttributes._refAllele.toString(), JsonType.STRING),
@@ -132,7 +136,9 @@ public class BGIPublisher {
                             		 1+Col.IsInDbSnp,
                             		 1+Col.ChromLongOrig,
                             		 1+Col.Alts,
-                            		 1+Col.EstimatedMajorAlleleFrequency
+                            		 1+Col.EstimatedMajorAlleleFrequency,
+                            		 1+Col.CalculatedMinorAlleleFrequency,
+                            		 1+Col.CalculatedMajorAlleleFrequency
                              } ), 
                              new MergePipe("\t"),
                          	 // Write to file: Don't append to file;  Add newlines to each line
@@ -172,18 +178,25 @@ public class BGIPublisher {
             String altsJson = getAltAllelesFromMajorMinor(ref, major, minor);
             h.add(altsJson);
             
-            // Compute the Estimated MAJOR Allele Frequency
-//            double[] countsACGT = new double[] {
-//            		Double.parseDouble(h.get(Col.ACount)),
-//            		Double.parseDouble(h.get(Col.CCount)),
-//            		Double.parseDouble(h.get(Col.GCount)),
-//            		Double.parseDouble(h.get(Col.TCount))
-//            };
-//            int majorIdx = Integer.parseInt(h.get(Col.MajorIndex));
-            double minorAlleleFreq = Double.parseDouble(h.get(Col.EstimatedMinorAlleleFrequency));
-//            double majorAlleleFreq = countsACGT[majorIdx] / (countsACGT[0] + countsACGT[1] + countsACGT[2] + countsACGT[3]);
-            double majorAlleleFreq = 1 - minorAlleleFreq;
-            h.add("" + majorAlleleFreq);
+            // Create Estimated MAJOR Allele Frequency
+            double estMinorAlleleFreq = Double.parseDouble(h.get(Col.EstimatedMinorAlleleFrequency));
+            double estMajorAlleleFreq = 1 - estMinorAlleleFreq;
+            h.add("" + estMajorAlleleFreq);
+            
+            // Compute CALCULATED Minor Allele Frequency  and CALCULATED Major Allele Frequency
+            double[] countsACGT = new double[] {
+            		Double.parseDouble(h.get(Col.ACount)),
+            		Double.parseDouble(h.get(Col.CCount)),
+            		Double.parseDouble(h.get(Col.GCount)),
+            		Double.parseDouble(h.get(Col.TCount))
+            };
+            int majorIdx = Integer.parseInt(h.get(Col.MajorIndex));
+            int minorIdx = Integer.parseInt(h.get(Col.MinorIndex));
+            double sumCounts = countsACGT[0] + countsACGT[1] + countsACGT[2] + countsACGT[3];
+            double calcMinorAlleleFreq = countsACGT[minorIdx] / sumCounts;
+            double calcMajorAlleleFreq = countsACGT[majorIdx] / sumCounts;
+            h.add("" + calcMinorAlleleFreq);
+            h.add("" + calcMajorAlleleFreq);
             
             // Throw an exception if the minBP column from the original maf file (col 12) 
             // does NOT match the minBP column from the original genotype file (col 13)
