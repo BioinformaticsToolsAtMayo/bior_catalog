@@ -42,6 +42,31 @@ public class BGIPublisher {
     int numRefNotMajorOrMinor = 0;
     int numRefNotMajorOrMinorAndMajorIsNotMinor = 0;
     
+    private class Col {
+    	// Columns passed in:
+    	// NOTE: The first column (ChromLong) will be modified and changed to a short representation ("chr17" -> "17")
+    	public static final int ChromShort 	= 0;
+    	public static final int Dot1 		= 1;
+    	public static final int Dot2 		= 2;
+    	public static final int MinBPAfterLiftOver = 3;
+    	public static final int MaxBPAfterLiftOver = 4;
+    	public static final int MajorIndex	= 5;
+    	public static final int MinorIndex	= 6;
+    	public static final int ACount		= 7;
+    	public static final int CCount		= 8;
+    	public static final int GCount		= 9;
+    	public static final int TCount		= 10;
+    	public static final int EstimatedMaf= 11;
+    	public static final int MinBpOrigMaf= 12;
+    	public static final int MinBpOrigGen= 13;
+    	public static final int RefAllele	= 14;
+    	public static final int IsInDbSnp	= 15;
+    	// Columns that will be added:
+    	public static final int ChromLongOrig=16;
+    	public static final int Alts		= 17;
+    	public static final int BgiJson		= 19;
+    }
+    
     public static void main(String[] args) {	 
         BGIPublisher publisher = new BGIPublisher();
         // Ex:  publisher.publish("/data/BGI/hg19/LuCAMP_200exomeFinal_hg19.txt", "/tmp/LuCAMP_200exomeFinal_hg19.tsv");
@@ -62,23 +87,24 @@ public class BGIPublisher {
         System.out.println("Started loading BGI at: " + new Timestamp(new Date().getTime()));
         Pipe<History,History> xformPipe = new TransformFunctionPipe<History,History>( new BGIPipe() );
         InjectIntoJsonPipe inject = new InjectIntoJsonPipe(true, new Injector[] {
-            new ColumnInjector(1, "chromosomeID", JsonType.STRING),
-            new ColumnInjector(4, "genomic_position", JsonType.STRING),
-            new ColumnInjector(13,"genomic_position_preLiftOver", JsonType.STRING),
-            new ColumnInjector(6, "index_of_major_allele", JsonType.NUMBER),
-            new ColumnInjector(7, "index_of_minor_allele", JsonType.NUMBER),
-            new ColumnInjector(8, "number_A", JsonType.NUMBER),
-            new ColumnInjector(9, "number_C", JsonType.NUMBER), 
-            new ColumnInjector(10,"number_G", JsonType.NUMBER),
-            new ColumnInjector(11,"number_T", JsonType.NUMBER),
-            new ColumnInjector(12, "estimatedMAF", JsonType.STRING),
-            new ColumnInjector(19, "isInDbSNP", JsonType.STRING),
-            new ColumnInjector(17, CoreAttributes._landmark.toString(), JsonType.STRING),
-            new ColumnInjector(15, CoreAttributes._refAllele.toString(), JsonType.STRING),
-            new ColumnArrayInjector(18, CoreAttributes._altAlleles.toString(), JsonType.STRING, ","),
+        	// Columns are 1-based (so adding the 1)
+            new ColumnInjector(1+Col.ChromLongOrig,	"chromosomeID", 				JsonType.STRING),
+            new ColumnInjector(1+Col.MinBpOrigMaf,	"genomic_position", 			JsonType.STRING),
+            new ColumnInjector(1+Col.MinBPAfterLiftOver,"genomic_position_after_liftOver", JsonType.STRING),
+            new ColumnInjector(1+Col.MajorIndex, 	"index_of_major_allele", 		JsonType.NUMBER),
+            new ColumnInjector(1+Col.MinorIndex,	"index_of_minor_allele", 		JsonType.NUMBER),
+            new ColumnInjector(1+Col.ACount,		"number_A", 					JsonType.NUMBER),
+            new ColumnInjector(1+Col.CCount, 		"number_C", 					JsonType.NUMBER), 
+            new ColumnInjector(1+Col.GCount,		"number_G", 					JsonType.NUMBER),
+            new ColumnInjector(1+Col.TCount,		"number_T", 					JsonType.NUMBER),
+            new ColumnInjector(1+Col.EstimatedMaf,	"estimatedMAF", 				JsonType.STRING),
+            new ColumnInjector(1+Col.IsInDbSnp, 	"isInDbSNP", 					JsonType.NUMBER),
+            new ColumnInjector(1+Col.ChromShort, 	CoreAttributes._landmark.toString(), JsonType.STRING),
+            new ColumnInjector(1+Col.RefAllele,		CoreAttributes._refAllele.toString(), JsonType.STRING),
+            new ColumnArrayInjector(1+Col.Alts,		CoreAttributes._altAlleles.toString(), JsonType.STRING, ","),
             //some checking on hg19 shows it to be one based not zero based
-            new ColumnInjector(4, CoreAttributes._minBP.toString(), JsonType.NUMBER),
-            new ColumnInjector(5, CoreAttributes._maxBP.toString(), JsonType.NUMBER),
+            new ColumnInjector(1+Col.MinBPAfterLiftOver, CoreAttributes._minBP.toString(), JsonType.NUMBER),
+            new ColumnInjector(1+Col.MaxBPAfterLiftOver, CoreAttributes._maxBP.toString(), JsonType.NUMBER),
         	new LiteralInjector(CoreAttributes._type.toString(), Type.VARIANT.toString(), JsonType.STRING),
             new LiteralInjector(CoreAttributes._id.toString(),".",JsonType.STRING)
         });
@@ -87,7 +113,24 @@ public class BGIPublisher {
                              new HistoryInPipe(),
                              xformPipe,
                              inject,
-                             new HCutPipe(false, new int[] {2,3,6,7,8,9,10,11,12,13,14,15,16,17,18,19} ), 
+                             // Columns to remove - 1 based
+                             new HCutPipe(false, new int[] {
+                            		 1+Col.Dot1,
+                            		 1+Col.Dot2,
+                            		 1+Col.MajorIndex,
+                            		 1+Col.MinorIndex,
+                            		 1+Col.ACount,
+                            		 1+Col.CCount,
+                            		 1+Col.GCount,
+                            		 1+Col.TCount,
+                            		 1+Col.EstimatedMaf,
+                            		 1+Col.MinBpOrigMaf,
+                            		 1+Col.MinBpOrigGen,
+                            		 1+Col.RefAllele,
+                            		 1+Col.IsInDbSnp,
+                            		 1+Col.ChromLongOrig,
+                            		 1+Col.Alts,
+                             } ), 
                              new MergePipe("\t"),
                          	 // Write to file: Don't append to file;  Add newlines to each line
                              new WritePipe(outfile, false, true)
@@ -107,26 +150,28 @@ public class BGIPublisher {
     
     public class BGIPipe implements PipeFunction<History,History>{
         @Override
-        /** Add on extra columns that we will then inject into the JSON object */
+        /** Add on extra columns that we will then inject into the JSON object 
+         *  NOTE:  History indexes are 0-based */
         public History compute(History h) {
             //_landmark
-            h.add(  GenomicObjectUtils.computechr(h.get(0) ));
+        	// NOTE: First column starts out as a long chrom, but we convert it to short
+        	String chromLong  = h.get(Col.ChromShort);
+        	String chromShort = GenomicObjectUtils.computechr(chromLong);
+            h.add(chromLong);
+            // Change the first column to be the short version ("17" vs "chr17")
+            h.set(Col.ChromShort, chromShort);
             
             //_altAllele
-            String ref = h.get(14);
-            String major = decode(h.get(5));
-            String minor = decode(h.get(6));
+            String ref = h.get(Col.RefAllele);
+            String major = decode(h.get(Col.MajorIndex));
+            String minor = decode(h.get(Col.MinorIndex));
             //String altsJson = getAltAllelesJson(ref, Integer.parseInt(h.get(7)), Integer.parseInt(h.get(8)), Integer.parseInt(h.get(9)), Integer.parseInt(h.get(10)));
             String altsJson = getAltAllelesFromMajorMinor(ref, major, minor);
             h.add(altsJson);
             
-            // isInDbSNP - convert to true/false (instead of 0/1)
-            String isInDbSNP0or1 = h.get(15);
-            h.add("" + "1".equals(isInDbSNP0or1));
-            
             // Throw an exception if the minBP column from the original maf file (col 12) 
             // does NOT match the minBP column from the original genotype file (col 13)
-            if( ! h.get(12).equals(h.get(13)) )
+            if( ! h.get(Col.MinBpOrigMaf).equals(h.get(Col.MinBpOrigGen)) )
             	throw new IllegalArgumentException("The minBP from the maf does NOT match the minBP from the genotype file!");
             
             if( ! ref.equals(major) ) {
