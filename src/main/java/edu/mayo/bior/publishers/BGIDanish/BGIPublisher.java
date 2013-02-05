@@ -145,8 +145,8 @@ public class BGIPublisher {
         }
         System.out.println("Total lines: " + totalLines);
         System.out.println("Num occurrences where ref is not the major allele: " + numRefNotMajor);
-        System.out.println("Num occurrences where ref is neither the major nor minor allele " + numRefNotMajorOrMinor);
-        System.out.println("Num occurrences where ref is neither the major nor minor allele, and the major is not the minor " + numRefNotMajorOrMinorAndMajorIsNotMinor);
+        System.out.println("Num occurrences where ref is neither the major nor minor allele: " + numRefNotMajorOrMinor);
+        System.out.println("Num occurrences where ref is neither the major nor minor allele, and the major is not the minor: " + numRefNotMajorOrMinorAndMajorIsNotMinor);
         double end = System.currentTimeMillis();
         System.out.println("Total runtime: " + (end-start)/1000.0 + " sec");
     }
