@@ -30,7 +30,8 @@ import edu.mayo.pipes.history.HistoryOutPipe;
 public class BGIPublisherTest {
 	
 	@Test
-	public void chrYBuild() throws IOException {
+	/** Test out a chromosome that is non-numeric */
+	public void nonNumericChrom() throws IOException {
 		final String BGI_CHRY_INPUT_TSV  = "src/test/resources/testData/bgi/bgi.chrY.input.tsv";
 		final String BGI_CHRY_OUTPUT_TSV = "src/test/resources/testData/bgi/bgi.chrY.catalog.output.tsv";
 		final String BGI_CHRY_EXPECTED_TSV="src/test/resources/testData/bgi/bgi.chrY.catalog.expected.tsv";
@@ -57,7 +58,7 @@ public class BGIPublisherTest {
 		// Test against SameVariant
 		final String BGI_CHR17_SAME_VAR_OUTPUT_TSV   = "src/test/resources/testData/bgi/bgi.chr17.catalog.sameVariant.output.tsv";
 		final String BGI_CHR17_SAME_VAR_EXPECTED_TSV = "src/test/resources/testData/bgi/bgi.chr17.catalog.sameVariant.expected.tsv";
-		final String BGI_CHR17_BGZ                 = new File("src/test/resources/testData/bgi/bgi.chr17.catalog.output.tsv.bgz").getCanonicalPath();
+		final String BGI_CHR17_BGZ                 = new File("src/test/resources/testData/bgi/bgi.catalog.chr17.bgz").getCanonicalPath();
 		final String DBSNP_IN = "src/test/resources/testData/bgi/dbSNPS_overlap_BRCA1.vcf.json";
 		
 		System.out.println("exists?: " + new File(BGI_CHR17_BGZ).exists());
@@ -70,7 +71,9 @@ public class BGIPublisherTest {
 				new SameVariantPipe(BGI_CHR17_BGZ),
 				new HistoryOutPipe(),
 				new GrepEPipe("\\{\\}"), // Remove any lines with a blank json object for the SameVariantPipe output
-				new WritePipe(BGI_CHR17_SAME_VAR_OUTPUT_TSV, false, true) );
+				new WritePipe(BGI_CHR17_SAME_VAR_OUTPUT_TSV, false, true) 
+				//new PrintPipe()
+				);
         pipe.setStarts(Arrays.asList(DBSNP_IN));
 		while(pipe.hasNext()) {
 			pipe.next();
