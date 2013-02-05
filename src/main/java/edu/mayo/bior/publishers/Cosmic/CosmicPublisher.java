@@ -394,11 +394,13 @@ public class CosmicPublisher {
 		                		 String refval = "";
 		
 		                		 if (snpType.equals("ins")) {
-		                			 refval = getBasePairAtPosition(this.chr, this.minBp, this.maxBp);
+		                			 //refval = getBasePairAtPosition(this.chr, this.minBp, this.maxBp);
+		                			 refval = getBasePairAtPosition(this.chr, this.maxBp, this.maxBp);
 		
 		                			 if (refval.length()>0) {
 		                				 this.ref = refval;
-		                				 this.maxBp = this.minBp; //
+		                				 //this.maxBp = this.minBp; //
+		                				 this.minBp = this.maxBp; //		            
 		                				 this.alt[0] = this.ref + tmpAlt; //
 		                			 }
 		                		 } else if (snpType.equals("del")) {
