@@ -64,10 +64,12 @@ public class BGIPublisher {
     	// Columns that will be added:
     	public static final int ChromLongOrig		= 16;
     	public static final int Alts				= 17;
-    	public static final int EstimatedMajorAlleleFrequency = 18;
-    	public static final int CalculatedMinorAlleleFrequency = 19;
-    	public static final int CalculatedMajorAlleleFrequency = 20;
-    	public static final int BgiJson				= 21;
+    	public static final int MajorAllele			= 18;
+    	public static final int MinorAllele			= 19;
+    	public static final int EstimatedMajorAlleleFrequency 	= 20;
+    	public static final int CalculatedMinorAlleleFrequency 	= 21;
+    	public static final int CalculatedMajorAlleleFrequency 	= 22;
+    	public static final int BgiJson				= 23;
     }
     
     public static void main(String[] args) {	 
@@ -100,6 +102,8 @@ public class BGIPublisher {
             new ColumnInjector(1+Col.CCount, 		"number_C", 					JsonType.NUMBER), 
             new ColumnInjector(1+Col.GCount,		"number_G", 					JsonType.NUMBER),
             new ColumnInjector(1+Col.TCount,		"number_T", 					JsonType.NUMBER),
+            new ColumnInjector(1+Col.MajorAllele,	"major_allele",					JsonType.STRING),
+            new ColumnInjector(1+Col.MinorAllele,	"minor_allele", 				JsonType.STRING),
             new ColumnInjector(1+Col.EstimatedMinorAlleleFrequency,	"estimated_minor_allele_freq", JsonType.NUMBER),
             new ColumnInjector(1+Col.EstimatedMajorAlleleFrequency,	"estimated_major_allele_freq", JsonType.NUMBER),
             new ColumnInjector(1+Col.CalculatedMinorAlleleFrequency,"calculated_minor_allele_freq", JsonType.NUMBER),
@@ -136,6 +140,8 @@ public class BGIPublisher {
                             		 1+Col.IsInDbSnp,
                             		 1+Col.ChromLongOrig,
                             		 1+Col.Alts,
+                            		 1+Col.MajorAllele,
+                            		 1+Col.MinorAllele,
                             		 1+Col.EstimatedMajorAlleleFrequency,
                             		 1+Col.CalculatedMinorAlleleFrequency,
                             		 1+Col.CalculatedMajorAlleleFrequency
@@ -177,6 +183,10 @@ public class BGIPublisher {
             //String altsJson = getAltAllelesJson(ref, Integer.parseInt(h.get(7)), Integer.parseInt(h.get(8)), Integer.parseInt(h.get(9)), Integer.parseInt(h.get(10)));
             String altsJson = getAltAllelesFromMajorMinor(ref, major, minor);
             h.add(altsJson);
+            
+            // Add Major and Minor Alleles
+            h.add(major);
+            h.add(minor);
             
             // Create Estimated MAJOR Allele Frequency
             double estMinorAlleleFreq = Double.parseDouble(h.get(Col.EstimatedMinorAlleleFrequency));
