@@ -28,7 +28,7 @@ zcat $rawDir/LuCAMP_200exomeFinal.maf.gz | sort -k1,1 -k2,2n  > $scratch/1.maf.s
 echo "Combine the MAF and genotype files..."
 echo -e "###chr\t.\t.\tminBP\tmaxBP\tmajIdx\tminIdx\tAs\tCs\tGs\tTs\tAlleleFreqs\tminBpPreLiftoverMaf\tminBpPreLiftoverGenotype\tRefAllele\tisInDbSNP"  >  $scratch/2.mafPlusRef.tsv
 paste  $scratch/1.maf.sorted.tsv  $scratch/1.genotype.part.sorted.tsv  \
-  | awk -F \\t '{print $1 FS "." FS "." FS $2 FS $2 FS $3 FS $4 FS $5 FS $6 FS $7 FS $8 FS "\""$9"\"" FS $2 FS $11 FS $12 FS $13}'  \
+  | awk -F \\t '{print $1 FS "." FS "." FS $2 FS $2 FS $3 FS $4 FS $5 FS $6 FS $7 FS $8 FS $9 FS $2 FS $11 FS $12 FS $13}'  \
   >>  $scratch/2.mafPlusRef.tsv
 
 ### Liftover the BGI minBP & maxBP hg18 to hg19
