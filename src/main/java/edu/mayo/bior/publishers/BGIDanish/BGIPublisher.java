@@ -95,7 +95,7 @@ public class BGIPublisher {
         	// Columns are 1-based (so adding the 1)
             new ColumnInjector(1+Col.ChromLongOrig,	"chromosome_id", 				JsonType.STRING),
             new ColumnInjector(1+Col.MinBpOrigMaf,	"genomic_position", 			JsonType.NUMBER),
-            new ColumnInjector(1+Col.MinBPAfterLiftOver,"genomic_position_after_liftOver", JsonType.NUMBER),
+            //new ColumnInjector(1+Col.MinBPAfterLiftOver,"genomic_position_after_liftOver", JsonType.NUMBER),
             new ColumnInjector(1+Col.MajorIndex, 	"index_of_major_allele", 		JsonType.NUMBER),
             new ColumnInjector(1+Col.MajorAllele,	"major_allele",					JsonType.STRING),
             new ColumnInjector(1+Col.MinorIndex,	"index_of_minor_allele", 		JsonType.NUMBER),
