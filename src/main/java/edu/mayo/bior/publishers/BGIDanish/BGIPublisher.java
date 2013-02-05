@@ -173,14 +173,16 @@ public class BGIPublisher {
             h.add(altsJson);
             
             // Compute the Estimated MAJOR Allele Frequency
-            double[] countsACGT = new double[] {
-            		Double.parseDouble(h.get(Col.ACount)),
-            		Double.parseDouble(h.get(Col.CCount)),
-            		Double.parseDouble(h.get(Col.GCount)),
-            		Double.parseDouble(h.get(Col.TCount))
-            };
-            int majorIdx = Integer.parseInt(h.get(Col.MajorIndex));
-            double majorAlleleFreq = countsACGT[majorIdx] / (countsACGT[0] + countsACGT[1] + countsACGT[2] + countsACGT[3]);
+//            double[] countsACGT = new double[] {
+//            		Double.parseDouble(h.get(Col.ACount)),
+//            		Double.parseDouble(h.get(Col.CCount)),
+//            		Double.parseDouble(h.get(Col.GCount)),
+//            		Double.parseDouble(h.get(Col.TCount))
+//            };
+//            int majorIdx = Integer.parseInt(h.get(Col.MajorIndex));
+            double minorAlleleFreq = Double.parseDouble(h.get(Col.EstimatedMinorAlleleFrequency));
+//            double majorAlleleFreq = countsACGT[majorIdx] / (countsACGT[0] + countsACGT[1] + countsACGT[2] + countsACGT[3]);
+            double majorAlleleFreq = 1 - minorAlleleFreq;
             h.add("" + majorAlleleFreq);
             
             // Throw an exception if the minBP column from the original maf file (col 12) 
