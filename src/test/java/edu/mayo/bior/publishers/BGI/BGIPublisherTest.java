@@ -19,6 +19,7 @@ import com.google.common.io.Files;
 import com.tinkerpop.pipes.util.Pipeline;
 
 import edu.mayo.bior.publishers.BGIDanish.BGIPublisher;
+import edu.mayo.bior.utils.CatalogUtils;
 import edu.mayo.pipes.PrintPipe;
 import edu.mayo.pipes.WritePipe;
 import edu.mayo.pipes.JSON.tabix.SameVariantPipe;
@@ -40,7 +41,7 @@ public class BGIPublisherTest {
 		// Create the output catalog for chrY from input text file
 		new BGIPublisher().publish(BGI_CHRY_INPUT_TSV, BGI_CHRY_OUTPUT_TSV);
 
-		assertFileEquals(BGI_CHRY_EXPECTED_TSV, BGI_CHRY_OUTPUT_TSV);
+		CatalogUtils.assertFileEquals(BGI_CHRY_EXPECTED_TSV, BGI_CHRY_OUTPUT_TSV);
 	}
 	
 	@Test 
@@ -51,7 +52,7 @@ public class BGIPublisherTest {
 		final String BGI_CHR17_EXPECTED_TSV = "src/test/resources/testData/bgi/bgi.chr17.catalog.expected.tsv";
 		// Create the output catalog for chr17 from input text file
 		new BGIPublisher().publish(BGI_CHR17_INPUT_TSV, BGI_CHR17_OUTPUT_TSV);
-		assertFileEquals(BGI_CHR17_EXPECTED_TSV, BGI_CHR17_OUTPUT_TSV);
+		CatalogUtils.assertFileEquals(BGI_CHR17_EXPECTED_TSV, BGI_CHR17_OUTPUT_TSV);
 	}
 	
 	@Test
@@ -80,7 +81,7 @@ public class BGIPublisherTest {
 		while(pipe.hasNext()) {
 			pipe.next();
 		}
-		assertFileEquals(BGI_CHR17_SAME_VAR_EXPECTED_TSV, BGI_CHR17_SAME_VAR_OUTPUT_TSV);
+		CatalogUtils.assertFileEquals(BGI_CHR17_SAME_VAR_EXPECTED_TSV, BGI_CHR17_SAME_VAR_OUTPUT_TSV);
 	}
 	
 	/** Test out the String.matches() method that is the basis for GrepPipe and GrepEPipe
@@ -96,17 +97,4 @@ public class BGIPublisherTest {
 		assertFalse(str.matches(".*?something.*?"));
 	}
 	
-	private void assertFileEquals(String fileExpected, String fileActual) throws IOException {
-		List<String> linesExpected = Files.readLines(new File(fileExpected), Charset.forName("UTF-8"));
-		List<String> linesActual   = Files.readLines(new File(fileActual), Charset.forName("UTF-8"));
-		assertEquals("Not the same # of lines in each file.  ", linesExpected.size(), linesActual.size());
-		for(int i = 0; i < Math.max(linesExpected.size(), linesActual.size()); i++) {
-			assertEquals("Line " + (i+1) + " not equal: ", linesExpected.get(i), linesActual.get(i));
-		}
-		
-		// Verify that the number of lines in the input equals the # of lines in the output catalog (one variant in to each variant out)
-		assertEquals( "There should be the same number of variants in the output as were in the input.  ",
-				Files.readLines(new File(fileExpected), Charset.forName("UTF-8")).size(),
-				Files.readLines(new File(fileActual), Charset.forName("UTF-8")).size() );
-	}
 }
