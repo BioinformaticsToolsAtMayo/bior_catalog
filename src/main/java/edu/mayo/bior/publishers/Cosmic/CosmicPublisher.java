@@ -157,7 +157,10 @@ public class CosmicPublisher {
     	
         InjectIntoJsonPipe injectCosmicDataAsJson = new InjectIntoJsonPipe(true, injectors);
         
-        int[] cut = new int[] {1,2,3,4,5,6,7,8,9,10,11,12,14,15,16,19,20,21,22,23,24,25,26,28,29,32};
+        // The final catalog file will have "landmark<tab>minbp<tab>maxbp<tab>JSON string"
+         // Writing only columns 27: landmark/chr; 30: minbp; 31: maxbp to the final catalog file. 
+        // The JSON string with all values from the raw file will be appended to the above. 
+        int[] cut = new int[] {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,28,29,32};
         
         Pipe<History,History> transform = new TransformFunctionPipe<History,History>( new CosmicTransformPipe() );
         
