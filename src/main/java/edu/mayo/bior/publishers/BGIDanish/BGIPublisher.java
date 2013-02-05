@@ -27,7 +27,7 @@ import edu.mayo.pipes.history.HistoryInPipe;
 import edu.mayo.pipes.util.GenomicObjectUtils;
 
 /**
- * @author m102417
+ * @author Daniel Quest, Michael Meiners
  */
 public class BGIPublisher {
     public static void usage(){
@@ -45,26 +45,27 @@ public class BGIPublisher {
     private class Col {
     	// Columns passed in:
     	// NOTE: The first column (ChromLong) will be modified and changed to a short representation ("chr17" -> "17")
-    	public static final int ChromShort 	= 0;
-    	public static final int Dot1 		= 1;
-    	public static final int Dot2 		= 2;
-    	public static final int MinBPAfterLiftOver = 3;
-    	public static final int MaxBPAfterLiftOver = 4;
-    	public static final int MajorIndex	= 5;
-    	public static final int MinorIndex	= 6;
-    	public static final int ACount		= 7;
-    	public static final int CCount		= 8;
-    	public static final int GCount		= 9;
-    	public static final int TCount		= 10;
-    	public static final int EstimatedMaf= 11;
-    	public static final int MinBpOrigMaf= 12;
-    	public static final int MinBpOrigGen= 13;
-    	public static final int RefAllele	= 14;
-    	public static final int IsInDbSnp	= 15;
+    	public static final int ChromShort 			= 0;
+    	public static final int Dot1 				= 1;
+    	public static final int Dot2 				= 2;
+    	public static final int MinBPAfterLiftOver 	= 3;
+    	public static final int MaxBPAfterLiftOver 	= 4;
+    	public static final int MajorIndex			= 5;
+    	public static final int MinorIndex			= 6;
+    	public static final int ACount				= 7;
+    	public static final int CCount				= 8;
+    	public static final int GCount				= 9;
+    	public static final int TCount				= 10;
+    	public static final int EstimatedMinorAlleleFrequency = 11;
+    	public static final int MinBpOrigMaf		= 12;
+    	public static final int MinBpOrigGen		= 13;
+    	public static final int RefAllele			= 14;
+    	public static final int IsInDbSnp			= 15;
     	// Columns that will be added:
-    	public static final int ChromLongOrig=16;
-    	public static final int Alts		= 17;
-    	public static final int BgiJson		= 19;
+    	public static final int ChromLongOrig		= 16;
+    	public static final int Alts				= 17;
+    	public static final int EstimatedMajorAlleleFrequency = 18;
+    	public static final int BgiJson				= 19;
     }
     
     public static void main(String[] args) {	 
@@ -88,17 +89,18 @@ public class BGIPublisher {
         Pipe<History,History> xformPipe = new TransformFunctionPipe<History,History>( new BGIPipe() );
         InjectIntoJsonPipe inject = new InjectIntoJsonPipe(true, new Injector[] {
         	// Columns are 1-based (so adding the 1)
-            new ColumnInjector(1+Col.ChromLongOrig,	"chromosomeID", 				JsonType.STRING),
-            new ColumnInjector(1+Col.MinBpOrigMaf,	"genomic_position", 			JsonType.STRING),
-            new ColumnInjector(1+Col.MinBPAfterLiftOver,"genomic_position_after_liftOver", JsonType.STRING),
+            new ColumnInjector(1+Col.ChromLongOrig,	"chromosome_id", 				JsonType.STRING),
+            new ColumnInjector(1+Col.MinBpOrigMaf,	"genomic_position", 			JsonType.NUMBER),
+            new ColumnInjector(1+Col.MinBPAfterLiftOver,"genomic_position_after_liftOver", JsonType.NUMBER),
             new ColumnInjector(1+Col.MajorIndex, 	"index_of_major_allele", 		JsonType.NUMBER),
             new ColumnInjector(1+Col.MinorIndex,	"index_of_minor_allele", 		JsonType.NUMBER),
             new ColumnInjector(1+Col.ACount,		"number_A", 					JsonType.NUMBER),
             new ColumnInjector(1+Col.CCount, 		"number_C", 					JsonType.NUMBER), 
             new ColumnInjector(1+Col.GCount,		"number_G", 					JsonType.NUMBER),
             new ColumnInjector(1+Col.TCount,		"number_T", 					JsonType.NUMBER),
-            new ColumnInjector(1+Col.EstimatedMaf,	"estimatedMAF", 				JsonType.STRING),
-            new ColumnInjector(1+Col.IsInDbSnp, 	"isInDbSNP", 					JsonType.NUMBER),
+            new ColumnInjector(1+Col.EstimatedMinorAlleleFrequency,	"estimated_minor_allele_freq", JsonType.NUMBER),
+            new ColumnInjector(1+Col.EstimatedMajorAlleleFrequency,	"estimated_major_allele_freq", JsonType.NUMBER),
+            new ColumnInjector(1+Col.IsInDbSnp, 	"is_in_dbSNP", 					JsonType.NUMBER),
             new ColumnInjector(1+Col.ChromShort, 	CoreAttributes._landmark.toString(), JsonType.STRING),
             new ColumnInjector(1+Col.RefAllele,		CoreAttributes._refAllele.toString(), JsonType.STRING),
             new ColumnArrayInjector(1+Col.Alts,		CoreAttributes._altAlleles.toString(), JsonType.STRING, ","),
@@ -123,13 +125,14 @@ public class BGIPublisher {
                             		 1+Col.CCount,
                             		 1+Col.GCount,
                             		 1+Col.TCount,
-                            		 1+Col.EstimatedMaf,
+                            		 1+Col.EstimatedMinorAlleleFrequency,
                             		 1+Col.MinBpOrigMaf,
                             		 1+Col.MinBpOrigGen,
                             		 1+Col.RefAllele,
                             		 1+Col.IsInDbSnp,
                             		 1+Col.ChromLongOrig,
                             		 1+Col.Alts,
+                            		 1+Col.EstimatedMajorAlleleFrequency
                              } ), 
                              new MergePipe("\t"),
                          	 // Write to file: Don't append to file;  Add newlines to each line
@@ -168,6 +171,17 @@ public class BGIPublisher {
             //String altsJson = getAltAllelesJson(ref, Integer.parseInt(h.get(7)), Integer.parseInt(h.get(8)), Integer.parseInt(h.get(9)), Integer.parseInt(h.get(10)));
             String altsJson = getAltAllelesFromMajorMinor(ref, major, minor);
             h.add(altsJson);
+            
+            // Compute the Estimated MAJOR Allele Frequency
+            double[] countsACGT = new double[] {
+            		Double.parseDouble(h.get(Col.ACount)),
+            		Double.parseDouble(h.get(Col.CCount)),
+            		Double.parseDouble(h.get(Col.GCount)),
+            		Double.parseDouble(h.get(Col.TCount))
+            };
+            int majorIdx = Integer.parseInt(h.get(Col.MajorIndex));
+            double majorAlleleFreq = countsACGT[majorIdx] / (countsACGT[0] + countsACGT[1] + countsACGT[2] + countsACGT[3]);
+            h.add("" + majorAlleleFreq);
             
             // Throw an exception if the minBP column from the original maf file (col 12) 
             // does NOT match the minBP column from the original genotype file (col 13)
