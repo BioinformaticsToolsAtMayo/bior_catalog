@@ -405,7 +405,7 @@ public class CosmicPublisher {
 		                				 
 		                				 // if Strand is "-", reverse compliment the alleles
 		                				 if (this.strand!=null && this.strand.equals("-")) {
-		                					 complimentAlleles(this.ref, this.alt[0]);
+		                					 this.alt[0] = complimentAllele(this.alt[0]);
 		                				 }
 		                			 }
 		                		 } else if (snpType.equals("del")) {
@@ -417,22 +417,33 @@ public class CosmicPublisher {
 		
 		                				 if (refval.length()>0) {
 		                					 this.alt[0] = refval;
-		                					 this.ref = refval + tmpAlt; //
-		                					 this.minBp = String.valueOf(tVal);
-		                					 this.maxBp = String.valueOf(tVal); //
 		                					 
 			                				 // if Strand is "-", reverse compliment the alleles
 			                				 if (this.strand!=null && this.strand.equals("-")) {
-			                					 complimentAlleles(this.ref, this.alt[0]);
-			                				 }
+			                					 String complimentAlt = complimentAllele(tmpAlt);
+			                					 this.ref = refval + complimentAlt; //
+			                				 } else {
+			                					 this.ref = refval + tmpAlt; //
+			                				 }		                					 
+		                					 
+		                					 this.minBp = String.valueOf(tVal);
+		                					 this.maxBp = String.valueOf(tVal); //
+		                					 
 		                				 }
 		                		}
 	                		 }
 	                	 }
                 	 } else {
+                		 // this is a SNP
                 		 if (hgvs.getWildtype()!=null) {
                              if (CharMatcher.anyOf(hgvs.getWildtype()).matchesAnyOf(NUCLEOTIDES)) {
                             	 this.ref = hgvs.getWildtype();
+                            	 
+                         		// if Strand is "-", reverse compliment the alleles
+                				 if (this.strand!=null && this.strand.equals("-")) {
+                					 this.ref = complimentAllele(this.ref);
+                				 }
+
                              }
                 		 }
 
@@ -441,6 +452,7 @@ public class CosmicPublisher {
                             	 this.alt[0] = hgvs.getMutation();
                              }
                 		 }
+                		 
                 	 }
                  }
 			}
@@ -456,23 +468,17 @@ public class CosmicPublisher {
 		}
 
 		// 
-		private void complimentAlleles(String ref, String alt) {
-			Pipe p1 = new Pipeline(new ComplementPipe());
-			p1.setStarts(Arrays.asList(ref));
-			String complimentRef = (String)p1.next();
-			if (!complimentRef.isEmpty() && !complimentRef.equals("")) {
-				System.out.println("complimentRef="+complimentRef+"--ref="+this.ref);
-				this.ref = complimentRef; 
+		private String complimentAllele(String allele) {
+			Pipe pipe = new Pipeline(new ComplementPipe());
+			pipe.setStarts(Arrays.asList(allele));
+			String complimentAllele = (String)pipe.next();
+			if (!complimentAllele.isEmpty() && !complimentAllele.equals("")) {
+				System.out.println("before Allele="+allele+"--After:"+complimentAllele);
+				return complimentAllele;				
+			} else {
+				return "";
 			}
-			
-			Pipe p2 = new Pipeline(new ComplementPipe());
-			p2.setStarts(Arrays.asList(alt));
-			String complimentAlt = (String)p2.next();			
-			if (!complimentAlt.isEmpty() && !complimentAlt.equals("")) {
-				System.out.println("complimentAlt="+complimentAlt+"--alt="+this.alt);
-				this.alt[0] = complimentAlt; 
-			}
-			
+			 
 		}
 		
 	}
