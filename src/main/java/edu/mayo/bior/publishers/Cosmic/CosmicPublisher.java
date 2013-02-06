@@ -450,6 +450,11 @@ public class CosmicPublisher {
                 		 if (hgvs.getMutation()!=null){
                              if (CharMatcher.anyOf(hgvs.getMutation()).matchesAnyOf(NUCLEOTIDES)) {
                             	 this.alt[0] = hgvs.getMutation();
+                            	 
+                            	// if Strand is "-", reverse compliment the alleles
+                				 if (this.strand!=null && this.strand.equals("-")) {
+                					 this.alt[0] = complimentAllele(this.alt[0]);
+                				 }
                              }
                 		 }
                 		 
