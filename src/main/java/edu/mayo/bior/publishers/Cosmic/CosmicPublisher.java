@@ -42,6 +42,7 @@ import edu.mayo.pipes.history.HCutPipe;
 import edu.mayo.pipes.history.History;
 import edu.mayo.pipes.history.HistoryInPipe;
 import edu.mayo.pipes.history.HistoryOutPipe;
+import edu.mayo.pipes.string.ComplementPipe;
 import edu.mayo.pipes.util.GenomicObjectUtils;
 import edu.mayo.pipes.util.SystemProperties;
 import edu.mayo.util.HGVS;
@@ -61,7 +62,7 @@ public class CosmicPublisher {
         CosmicPublisher publisher = new CosmicPublisher();      
         //publisher.publish("/data/cosmic/v62/CosmicCompleteExport_v62_291112.tsv.gz", "/data/catalogs/cosmic/v62");
         //publisher.publish("C:\\mayo\\bior\\cosmic\\CosmicCompleteExport_v62_291112.tsv.gz", "C:\\temp");
-               
+        
         if(args.length >= 1){ 
             publisher.publish(args[0], args[1] + "/scratch/");
         }else{
@@ -176,9 +177,9 @@ public class CosmicPublisher {
         p.setStarts(Arrays.asList(file));
         
         for(int i=0; p.hasNext(); i++){
-            //System.out.println("Row="+i);
+            System.out.println("Row="+i);
             p.next();                     
-            //if(i>200000) break;
+            if(i>10000) break;
         }
         
     }
@@ -310,15 +311,15 @@ public class CosmicPublisher {
 			//_type
             history.add(Type.VARIANT.toString());
             
+            //Compute Strand. Do not move this, ComputeAllele  require Strand
+            this.computeStrand(history);
+            
             //Compute CHR, MINBP, MAXBP
             this.computeGenomePostion(history);
             
             //Compute REF, ALT
             this.computeAlleles(history);
-            
-            //Compute Strand
-            this.computeStrand(history);
-
+             
             //_landmark            
             history.add(this.chr);
             
@@ -394,14 +395,18 @@ public class CosmicPublisher {
 		                		 String refval = "";
 		
 		                		 if (snpType.equals("ins")) {
-		                			 //refval = getBasePairAtPosition(this.chr, this.minBp, this.maxBp);
 		                			 refval = getBasePairAtPosition(this.chr, this.maxBp, this.maxBp);
 		
-		                			 if (refval.length()>0) {
+		                			 if (refval.length()>0) {		                				 		
 		                				 this.ref = refval;
 		                				 //this.maxBp = this.minBp; //
 		                				 this.minBp = this.maxBp; //		            
 		                				 this.alt[0] = this.ref + tmpAlt; //
+		                				 
+		                				 // if Strand is "-", reverse compliment the alleles
+		                				 if (this.strand!=null && this.strand.equals("-")) {
+		                					 complimentAlleles(this.ref, this.alt[0]);
+		                				 }
 		                			 }
 		                		 } else if (snpType.equals("del")) {
 		                			 //if "deletion", we need to check the REF one position before
@@ -415,6 +420,11 @@ public class CosmicPublisher {
 		                					 this.ref = refval + tmpAlt; //
 		                					 this.minBp = String.valueOf(tVal);
 		                					 this.maxBp = String.valueOf(tVal); //
+		                					 
+			                				 // if Strand is "-", reverse compliment the alleles
+			                				 if (this.strand!=null && this.strand.equals("-")) {
+			                					 complimentAlleles(this.ref, this.alt[0]);
+			                				 }
 		                				 }
 		                		}
 	                		 }
@@ -443,6 +453,26 @@ public class CosmicPublisher {
 					this.strand = Character.toString(GenomicObjectUtils.getStrand(history.get(19)));
 				}
 			}			
+		}
+
+		// 
+		private void complimentAlleles(String ref, String alt) {
+			Pipe p1 = new Pipeline(new ComplementPipe());
+			p1.setStarts(Arrays.asList(ref));
+			String complimentRef = (String)p1.next();
+			if (!complimentRef.isEmpty() && !complimentRef.equals("")) {
+				System.out.println("complimentRef="+complimentRef+"--ref="+this.ref);
+				this.ref = complimentRef; 
+			}
+			
+			Pipe p2 = new Pipeline(new ComplementPipe());
+			p2.setStarts(Arrays.asList(alt));
+			String complimentAlt = (String)p2.next();			
+			if (!complimentAlt.isEmpty() && !complimentAlt.equals("")) {
+				System.out.println("complimentAlt="+complimentAlt+"--alt="+this.alt);
+				this.alt[0] = complimentAlt; 
+			}
+			
 		}
 		
 	}
