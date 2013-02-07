@@ -428,7 +428,7 @@ public class CosmicPublisher {
 			                					 this.ref = refval + tmpAlt; //
 			                				 }		                					 
 		                					 
-		                					 //this.minBp = String.valueOf(tVal); // do not change the min/max bp's
+		                					 this.minBp = String.valueOf(tVal); // do not change the min/max bp's
 		                					 //this.maxBp = String.valueOf(tVal); //		                					 
 		                				 }
 		                		}
