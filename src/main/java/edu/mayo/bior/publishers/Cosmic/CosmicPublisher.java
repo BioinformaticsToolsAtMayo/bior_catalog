@@ -177,9 +177,9 @@ public class CosmicPublisher {
         p.setStarts(Arrays.asList(file));
         
         for(int i=0; p.hasNext(); i++){
-            System.out.println("Row="+i);
+            //System.out.println("Row="+i);
             p.next();                     
-            if(i>10000) break;
+            //if(i>10000) break;
         }
         
     }
@@ -481,7 +481,7 @@ public class CosmicPublisher {
 			pipe.setStarts(Arrays.asList(allele));
 			String complimentAllele = (String)pipe.next();
 			if (!complimentAllele.isEmpty() && !complimentAllele.equals("")) {
-				System.out.println("before Allele="+allele+"--After:"+complimentAllele);
+				//System.out.println("before Allele="+allele+"--After:"+complimentAllele);
 				return complimentAllele;				
 			} else {
 				return "";
