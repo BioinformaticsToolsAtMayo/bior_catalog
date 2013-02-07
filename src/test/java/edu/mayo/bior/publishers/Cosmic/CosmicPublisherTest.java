@@ -33,7 +33,7 @@ public class CosmicPublisherTest {
            System.out.println(bPatPos);
        }
        
-       @Test
+       //@Test
        public void testTransform() throws Exception {
     	   System.out.println("Testing.. CosmicPublisherTest.testTransform()!!");
     	   
