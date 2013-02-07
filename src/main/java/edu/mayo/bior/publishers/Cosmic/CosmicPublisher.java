@@ -418,10 +418,10 @@ public class CosmicPublisher {
 		                				 if (refval.length()>0) {
 		                					 this.alt[0] = refval;
 		                					 
-			                				 // if Strand is "-", reverse compliment the alleles
-			                				 if (this.strand!=null && this.strand.equals("-")) {
-			                					 String complimentAlt = complimentAllele(tmpAlt);
-			                					 this.ref = refval + complimentAlt; //
+			                				 // if Strand is "-", reverse compliment the alleles. Also check tmpAlt has valid value A C T G
+			                				 if (this.strand!=null && this.strand.equals("-") && CharMatcher.anyOf(tmpAlt).matchesAnyOf(NUCLEOTIDES)) {
+		                						 String complimentAlt = complimentAllele(tmpAlt);
+		                						 this.ref = refval + complimentAlt; //
 			                				 } else {
 			                					 this.ref = refval + tmpAlt; //
 			                				 }		                					 
