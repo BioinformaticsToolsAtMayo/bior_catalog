@@ -77,7 +77,7 @@ public class CosmicPublisher {
      * 
      */
     public void publish(String rawDataFile, String outputDir) {
-        final String catalogFile = "cosmic.tsv";
+        final String catalogFile = "cosmic_GRCh37.tsv";
         
         String[] header = getHeader(rawDataFile);
         List<String> processedHeader = postProcessHeader(header);
