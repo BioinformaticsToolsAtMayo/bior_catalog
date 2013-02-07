@@ -387,7 +387,10 @@ public class CosmicPublisher {
                 		 // We check only "getMutation here because in Cosmic, if 'ins' or 'del' is included in CDS Mutation, it includes only ALT value.. 
                 		 // like 'c.123insA' or 'c.123delG'. Below we are are trying to get the REF from ALT values.
 	
-	                	 if (hgvs.getMutation()!=null && CharMatcher.anyOf(hgvs.getMutation()).matchesAnyOf(NUCLEOTIDES)) {
+	                	 if (hgvs.getMutation()!=null && 
+	                			 !hgvs.getMutation().contains("ins") &&
+	                			 !hgvs.getMutation().contains("del") && 
+	                			 CharMatcher.anyOf(hgvs.getMutation()).matchesAnyOf(NUCLEOTIDES)) {
 	                		 
 	                		 if (!this.minBp.equals("") && !this.minBp.equals("0") && NumberUtils.isNumber(this.minBp)) {
 	                			 
@@ -419,7 +422,7 @@ public class CosmicPublisher {
 		                					 this.alt[0] = refval;
 		                					 
 			                				 // if Strand is "-", reverse compliment the alleles. Also check tmpAlt has valid value A C T G
-			                				 if (this.strand!=null && this.strand.equals("-") && CharMatcher.anyOf(tmpAlt).matchesAnyOf(NUCLEOTIDES)) {
+			                				 if (this.strand!=null && this.strand.equals("-")) {
 		                						 String complimentAlt = complimentAllele(tmpAlt);
 		                						 this.ref = refval + complimentAlt; //
 			                				 } else {
