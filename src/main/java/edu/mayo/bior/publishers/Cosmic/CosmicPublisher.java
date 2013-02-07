@@ -141,7 +141,7 @@ public class CosmicPublisher {
      * 
      */
     private void processCosmicFile(String file, List<String> headerColumns, Pipe load) {
-    	Injector[] injectors = new Injector[33];
+    	Injector[] injectors = new Injector[32];
     	
     	for(int i=0;i<headerColumns.size();i++) {    		
     		injectors[i] =  new ColumnInjector(i+1, headerColumns.get(i), JsonType.STRING);
@@ -153,15 +153,15 @@ public class CosmicPublisher {
     	injectors[28] = new ColumnArrayInjector(29, CoreAttributes._altAlleles.toString(), JsonType.STRING, ",");
     	injectors[29] = new ColumnInjector(30, CoreAttributes._minBP.toString(), JsonType.NUMBER);
     	injectors[30] = new ColumnInjector(31, CoreAttributes._maxBP.toString(), JsonType.NUMBER);
-    	injectors[31] = new ColumnInjector(32, CoreAttributes._strand.toString(), JsonType.STRING);
-    	injectors[32] = new LiteralInjector(CoreAttributes._id.toString(),".",JsonType.STRING);
+    	//injectors[31] = new ColumnInjector(32, CoreAttributes._strand.toString(), JsonType.STRING);
+    	injectors[31] = new LiteralInjector(CoreAttributes._id.toString(),".",JsonType.STRING);
     	
         InjectIntoJsonPipe injectCosmicDataAsJson = new InjectIntoJsonPipe(true, injectors);
         
         // The final catalog file will have "landmark<tab>minbp<tab>maxbp<tab>JSON string"
          // Writing only columns 27: landmark/chr; 30: minbp; 31: maxbp to the final catalog file. 
         // The JSON string with all values from the raw file will be appended to the above. 
-        int[] cut = new int[] {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,28,29,32};
+        int[] cut = new int[] {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,28,29};
         
         Pipe<History,History> transform = new TransformFunctionPipe<History,History>( new CosmicTransformPipe() );
         
@@ -179,9 +179,8 @@ public class CosmicPublisher {
         for(int i=0; p.hasNext(); i++){
             //System.out.println("Row="+i);
             p.next();                     
-            //if(i>10000) break;
-        }
-        
+            //if(i>1000) break;
+        }        
     }
     
     public CosmicTransformPipe getCosmicTransformPipe() {
@@ -337,7 +336,7 @@ public class CosmicPublisher {
             history.add(this.maxBp);            
                        
             //_strand
-            history.add(this.strand);
+            //history.add(this.strand);
             
             //System.out.println(Arrays.asList(history));
             
@@ -429,9 +428,8 @@ public class CosmicPublisher {
 			                					 this.ref = refval + tmpAlt; //
 			                				 }		                					 
 		                					 
-		                					 this.minBp = String.valueOf(tVal);
-		                					 this.maxBp = String.valueOf(tVal); //
-		                					 
+		                					 //this.minBp = String.valueOf(tVal); // do not change the min/max bp's
+		                					 //this.maxBp = String.valueOf(tVal); //		                					 
 		                				 }
 		                		}
 	                		 }
