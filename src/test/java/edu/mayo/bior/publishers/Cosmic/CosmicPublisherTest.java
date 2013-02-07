@@ -33,19 +33,17 @@ public class CosmicPublisherTest {
            System.out.println(bPatPos);
        }
        
-       //@Test
+       @Test
        public void testTransform() throws Exception {
     	   System.out.println("Testing.. CosmicPublisherTest.testTransform()!!");
-    	   
-    	   String dataFile = "src/test/resources/testData/cosmic/cosmictest.tsv.gz";
-    	   String outDir = "src/test/resources/testData/cosmic/";
-    	   
-    	   final String INPUT_TSV  = "src/test/resources/testData/cosmic/cosmictest.tsv.gz";
-   		   final String EXPECTED_TSV="src/test/resources/testData/cosmic/cosmic.expected.tsv";
-   		   final String OUTPUT_TSV = "src/test/resources/testData/cosmic/tmpOut/cosmic_GRCh37.tsv";
-   		
-    	   new CosmicPublisher().publish(INPUT_TSV, OUTPUT_TSV);
-    	   
-    	   CatalogUtils.assertFileEquals(EXPECTED_TSV, OUTPUT_TSV);
+
+           final String INPUT_TSV  = "src/test/resources/testData/cosmic/cosmictest.tsv.gz";
+                   final String EXPECTED_TSV="src/test/resources/testData/cosmic/cosmic.expected.tsv";
+                final String OUTPUT_DIR="src/test/resources/testData/cosmic/tmpOut/";
+                   final String OUTPUT_TSV = "src/test/resources/testData/cosmic/tmpOut/cosmic_GRCh37.tsv";
+
+           new CosmicPublisher().publish(INPUT_TSV, OUTPUT_DIR);
+
+           CatalogUtils.assertFileEquals(EXPECTED_TSV, OUTPUT_TSV);
        }
 }
