@@ -11,6 +11,7 @@ import com.tinkerpop.pipes.PipeFunction;
 import com.tinkerpop.pipes.transform.TransformFunctionPipe;
 import com.tinkerpop.pipes.util.Pipeline;
 
+import edu.mayo.pipes.MergePipe;
 import edu.mayo.pipes.PrintPipe;
 import edu.mayo.pipes.UNIX.CatGZPipe;
 import edu.mayo.pipes.UNIX.GrepPipe;
@@ -112,7 +113,8 @@ public class OneBasedCatalogValidator {
 				//new TabixSearchHistoryPipe(fastaPath),
 				new Bed2SequencePipe(fastaPath, true),
 				// Compare chromosome, position, refAllele
-				new TransformFunctionPipe<History,History>(new SameAlleleFunction())
+				new TransformFunctionPipe<History,History>(new SameAlleleFunction()),
+				new MergePipe("\t")
 				//new PrintPipe()
 		);
 		
@@ -122,8 +124,17 @@ public class OneBasedCatalogValidator {
 		
 		// Show a dot for every 1000 lines processed
 		System.out.println("(.=1K processed,  o=10K,  O=100K)");
-		while(pipe.hasNext())
-			pipe.next();
+		String currentLine = "";
+		try {
+			while(pipe.hasNext())
+				currentLine = (String)pipe.next();
+		}catch(Exception e) {
+			System.err.println("Error on line:");
+			System.err.println("-----------------------------------");
+			System.err.println(currentLine);
+			System.err.println("-----------------------------------");
+			e.printStackTrace();
+		}
 		// Print a return after all the '.'s so next statement is on a new line
 		System.out.println();
 	
