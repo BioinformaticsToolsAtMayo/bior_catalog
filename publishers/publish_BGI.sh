@@ -46,5 +46,5 @@ java -cp $BIOR_CATALOG_HOME/conf:$BIOR_CATALOG_HOME/lib/* edu.mayo.bior.publishe
 
 ### Build the final bgz and tabix files
 echo "Build the bgz and tabix catalog files..."
-bgzip -c $scratch/5.catalog.json.tsv  >  $catalogDir/LuCAMP_200exomeFinal_hg19.tsv.bgz
-tabix -s 1 -b 2 -e 3 $catalogDir/LuCAMP_200exomeFinal_hg19.tsv.bgz
+bgzip -c $scratch/5.catalog.json.tsv  >  $catalogDir/LuCAMP_200exomeFinal_GRCh37.tsv.bgz
+tabix -s 1 -b 2 -e 3 $catalogDir/LuCAMP_200exomeFinal_GRCh37.tsv.bgz
