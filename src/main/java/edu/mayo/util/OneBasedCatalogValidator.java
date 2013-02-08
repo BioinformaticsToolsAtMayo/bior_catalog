@@ -107,7 +107,7 @@ public class OneBasedCatalogValidator {
 				new GrepPipe(grepRegEx),
 				// Convert to history
 				new HistoryInPipe(),
-				new PrintPipe(),
+				//new PrintPipe(),
 				// Search fasta file by position
 				//new TabixSearchHistoryPipe(fastaPath),
 				new Bed2SequencePipe(fastaPath, true),
@@ -121,10 +121,10 @@ public class OneBasedCatalogValidator {
 		pipe.setStarts(Arrays.asList(catalogPath));
 		
 		// Show a dot for every 1000 lines processed
-		System.out.println("(.=1000 processed,  o=10k,  O=100k)");
+		System.out.println("(.=1K processed,  o=10K,  O=100K)");
 		while(pipe.hasNext())
 			pipe.next();
-		// Print a return after all the '.'s
+		// Print a return after all the '.'s so next statement is on a new line
 		System.out.println();
 	
 		printResults();
@@ -183,7 +183,7 @@ public class OneBasedCatalogValidator {
 
 		private void printProgress() {
 			if(mTotalLines > 0 && (mTotalLines % 100000) == 0)
-				System.out.print("O");
+				System.out.println("O");
 			else if(mTotalLines > 0 && (mTotalLines % 10000) == 0)
 				System.out.print("o");
 			else if(mTotalLines > 0 && (mTotalLines % 1000 == 0) )
