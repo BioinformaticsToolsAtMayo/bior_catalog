@@ -80,6 +80,10 @@ public class OneBasedCatalogValidator {
 		}
 	}
 	
+	public int verifyOneBased(String catalogPath, String fastaPath) throws Exception {
+		return this.verifyOneBased(catalogPath, fastaPath, null);
+	}
+	
 	/** Checks all reference alleles within the catalog and compares those against the known
 	 *  reference alleles at the same one-based position within the fasta file (known to be good one-based ref alleles)
 	 * @param catalogPath  Path to catalog file that is to be tested
@@ -147,7 +151,7 @@ public class OneBasedCatalogValidator {
 	private void printResults() {
 		System.out.println("Num total lines: " + mTotalLines);
 		System.out.println("Num mismatches:  " + mMismatches);
-		System.out.println("Num not found (tabix found nothing at that position): " + mNotFound);
+		System.out.println("Num not found (tabix found nothing at that position, or chromosome not found (ex: chromosome 'M')): " + mNotFound);
 		System.out.println("Num unknown (NCBIGenome had an 'N' in that position): " + mUnknownRef);
 
 		System.out.println("Bad rows (1-based): ");
@@ -181,7 +185,7 @@ public class OneBasedCatalogValidator {
 			printProgress();
 
 			// No known ref found (from tabix search) for this line
-			if( history.size() < 5 )  {
+			if( history.size() < 5 || history.get(4).equals("."))  {
 				mNotFound++;
 				mBadRows.add(mTotalLines);
 				return history;
