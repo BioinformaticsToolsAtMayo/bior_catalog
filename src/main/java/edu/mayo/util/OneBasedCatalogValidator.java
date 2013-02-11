@@ -87,10 +87,9 @@ public class OneBasedCatalogValidator {
 	 * @param chrInFastaFile  Chromosome to confine the search to (so we can have smaller fasta files for testing).
 	 *                        This should match "1","2".."22","M","X","Y".
 	 * @return Number of bad matches
-	 * @throws IOException 
 	 * @throws Exception 
 	 */
-	public int verifyOneBased(String catalogPath, String fastaPath, String chrInFastaFile) throws IOException {
+	public int verifyOneBased(String catalogPath, String fastaPath, String chrInFastaFile) throws Exception {
 		System.out.println("Checking the refAlleles against a known refAllele one-based source...");
 		String grepRegEx = ".*";
 		if(chrInFastaFile != null) 
@@ -101,6 +100,8 @@ public class OneBasedCatalogValidator {
 		if( ! new File(fastaPath).exists() )
 			throw new FileNotFoundException("Fasta reference file does not exist: " + fastaPath);
 		
+		LastLineFunction lastLineFunc = new LastLineFunction();
+		
 		Pipeline pipe = new Pipeline(
 				// Load new catalog
 				new CatGZPipe("gzip"),
@@ -108,6 +109,7 @@ public class OneBasedCatalogValidator {
 				new GrepPipe(grepRegEx),
 				// Convert to history
 				new HistoryInPipe(),
+				new TransformFunctionPipe<History,History>(lastLineFunc),
 				//new PrintPipe(),
 				// Search fasta file by position
 				//new TabixSearchHistoryPipe(fastaPath),
@@ -124,16 +126,16 @@ public class OneBasedCatalogValidator {
 		
 		// Show a dot for every 1000 lines processed
 		System.out.println("(.=1K processed,  o=10K,  O=100K)");
-		String currentLine = "";
 		try {
 			while(pipe.hasNext())
-				currentLine = (String)pipe.next();
+				pipe.next();
 		}catch(Exception e) {
-			System.err.println("Error on line:");
+			System.err.println("\nLine we choked on:");
 			System.err.println("-----------------------------------");
-			System.err.println(currentLine);
+			System.err.println(lastLineFunc.mLastLine);
 			System.err.println("-----------------------------------");
 			e.printStackTrace();
+			throw e;
 		}
 		// Print a return after all the '.'s so next statement is on a new line
 		System.out.println();
@@ -154,7 +156,17 @@ public class OneBasedCatalogValidator {
 		}
 		System.out.println();
 	}
-	
+
+    public class LastLineFunction implements PipeFunction<History,History>{
+    	public String mLastLine = null;
+    	
+    	@Override
+		public History compute(History history) {
+    		mLastLine = history.getMergedData("\t");
+    		return history;
+		}
+    }
+
     public class SameAlleleFunction implements PipeFunction<History,History>{
         private JsonPath refAllelePath;
 
