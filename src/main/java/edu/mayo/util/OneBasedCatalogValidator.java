@@ -169,7 +169,8 @@ public class OneBasedCatalogValidator {
         private boolean mIsPrintRows = false;
 
         public SameAlleleFunction(boolean isPrintRows) {
-        	mRefAllelePath 	= JsonPath.compile(CoreAttributes._refAllele.toString());     
+        	mIsPrintRows = isPrintRows;
+        	mRefAllelePath 	= JsonPath.compile(CoreAttributes._refAllele.toString());
         }
         
 		@Override
