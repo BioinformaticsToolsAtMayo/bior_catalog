@@ -182,7 +182,7 @@ public class OneBasedCatalogValidator {
 			// No known ref found (from tabix search) for this line
 			if( history.size() < 5 || history.get(4).equals("."))  {
 				mNotFound++;
-				printRow("Known Ref not found at the specified position:", history);
+				printRow("=============== Known Ref not found at the specified position:", history);
 				return history;
 			}
 
@@ -194,10 +194,10 @@ public class OneBasedCatalogValidator {
 			
 			if( refAlleleKnown.equalsIgnoreCase("N") ) {
 				mUnknownRef++;
-				printRow("Unknown reference (Ref: " + ref + ", NCBI: N):", history);
+				printRow("=============== Unknown reference (Ref: " + ref + ", NCBI: N):", history);
 			} else if( ! ref.equalsIgnoreCase(refAlleleKnown) ) {
 				mMismatches++;
-				printRow("MISMATCH (Ref: " + ref + ", NCBI: " + refAlleleKnown + "):", history);
+				printRow("=============== MISMATCH (Ref: " + ref + ", NCBI: " + refAlleleKnown + "):", history);
 			}
 			
 			return history;
