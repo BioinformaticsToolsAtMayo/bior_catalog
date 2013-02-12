@@ -205,7 +205,7 @@ public class OneBasedCatalogValidator {
 		
 		private void printRow(String msg, History row) {
 			if(mIsPrintRows) {
-				System.out.println(msg);
+				System.out.println("\n" + msg);
 				System.out.println(row.getMergedData("\t"));
 			}
 		}
