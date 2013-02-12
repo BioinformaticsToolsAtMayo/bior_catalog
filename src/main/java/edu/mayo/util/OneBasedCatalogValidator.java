@@ -44,33 +44,32 @@ public class OneBasedCatalogValidator {
 	public int mNotFound	= 0;
 	public int mUnknownRef = 0;
 	
-	private ArrayList<Integer> mBadRows = new ArrayList<Integer>();
-
-	
 	public static void usage() {
 		System.out.println("Validate that all variants within the given catalog file match the reference allele from the trusted NCBIGenome build GRCh37 fasta file");
 		System.out.println("All variants will be checked unless you specify a particular chromosome.");
-		System.out.println("OneBasedCatalogValidator  <catalogFilePath>  <fastaWithAllRefsFilePath>  [chromosomeToRestrictSearchTo]");
+		System.out.println("OneBasedCatalogValidator  <catalogFilePath>  <fastaWithAllRefsFilePath>  <isPrintBadRows>  [chromosomeToRestrictSearchTo]");
 		System.out.println("NOTE: <fastaWithAllRefs> must refer to the NCBIGenome GRCh37 bgzip fasta file ");
 		System.out.println("        which has an associated tabix index with the extension .tbi in the same directory)");
 		System.out.println("NOTE: [chomosomeToRestrictSearchTo] is optional");
 		System.out.println("Ex: OneBasedCatalogValidator ");
 		System.out.println("        /data/catalogs/BGI/hg19/LuCAMP_200exomeFinal_hg19.tsv.bgz");
 		System.out.println("        /data/catalogs/NCBIGenome/GRCh37.p10/hs_ref_genome.fa.tsv.bgz");
+		System.out.println("        true");
 		System.out.println("        22");
 	}
 	
 	
 	
 	public static void main(String[] args) {
-		if( args.length != 2 && args.length != 3) {
+		if( args.length != 3 && args.length != 4) {
 			usage();
 			System.exit(1);
 		}
 		
 		try {
-			String chrom = args.length > 2  ?  args[2] : null;
-			int numBadRows = new OneBasedCatalogValidator().verifyOneBased(args[0], args[1], chrom);
+			boolean isPrintRows = Boolean.parseBoolean(args[2]);
+			String chrom = args.length > 3  ?  args[3] : null;
+			int numBadRows = new OneBasedCatalogValidator().verifyOneBased(args[0], args[1], isPrintRows, chrom);
 			if(numBadRows > 0)
 				System.out.println("Catalog checks out - it is in fact one-based");
 			else
@@ -81,7 +80,7 @@ public class OneBasedCatalogValidator {
 	}
 	
 	public int verifyOneBased(String catalogPath, String fastaPath) throws Exception {
-		return this.verifyOneBased(catalogPath, fastaPath, null);
+		return this.verifyOneBased(catalogPath, fastaPath, false, null);
 	}
 	
 	/** Checks all reference alleles within the catalog and compares those against the known
@@ -93,7 +92,7 @@ public class OneBasedCatalogValidator {
 	 * @return Number of bad matches
 	 * @throws Exception 
 	 */
-	public int verifyOneBased(String catalogPath, String fastaPath, String chrInFastaFile) throws Exception {
+	public int verifyOneBased(String catalogPath, String fastaPath, boolean isPrintRows, String chrInFastaFile) throws Exception {
 		System.out.println("Checking the refAlleles against a known refAllele one-based source...");
 		String grepRegEx = ".*";
 		if(chrInFastaFile != null) 
@@ -119,7 +118,7 @@ public class OneBasedCatalogValidator {
 				//new TabixSearchHistoryPipe(fastaPath),
 				new Bed2SequencePipe(fastaPath, true),
 				// Compare chromosome, position, refAllele
-				new TransformFunctionPipe<History,History>(new SameAlleleFunction()),
+				new TransformFunctionPipe<History,History>(new SameAlleleFunction(isPrintRows)),
 				new MergePipe("\t")
 				//new PrintPipe()
 		);
@@ -145,7 +144,7 @@ public class OneBasedCatalogValidator {
 		System.out.println();
 	
 		printResults();
-		return  mBadRows.size();
+		return  (mMismatches + mNotFound + mUnknownRef);
 	}
 	
 	private void printResults() {
@@ -153,12 +152,6 @@ public class OneBasedCatalogValidator {
 		System.out.println("Num mismatches:  " + mMismatches);
 		System.out.println("Num not found (tabix found nothing at that position, or chromosome not found (ex: chromosome 'M')): " + mNotFound);
 		System.out.println("Num unknown (NCBIGenome had an 'N' in that position): " + mUnknownRef);
-
-		System.out.println("Bad rows (1-based): ");
-		for(int row : mBadRows) {
-			System.out.print(row + ", ");
-		}
-		System.out.println();
 	}
 
     public class LastLineFunction implements PipeFunction<History,History>{
@@ -172,10 +165,11 @@ public class OneBasedCatalogValidator {
     }
 
     public class SameAlleleFunction implements PipeFunction<History,History>{
-        private JsonPath refAllelePath;
+        private JsonPath mRefAllelePath;
+        private boolean mIsPrintRows = false;
 
-        public SameAlleleFunction() {
-            refAllelePath 	= JsonPath.compile(CoreAttributes._refAllele.toString());     
+        public SameAlleleFunction(boolean isPrintRows) {
+        	mRefAllelePath 	= JsonPath.compile(CoreAttributes._refAllele.toString());     
         }
         
 		@Override
@@ -187,25 +181,32 @@ public class OneBasedCatalogValidator {
 			// No known ref found (from tabix search) for this line
 			if( history.size() < 5 || history.get(4).equals("."))  {
 				mNotFound++;
-				mBadRows.add(mTotalLines);
+				printRow("Not found:", history);
 				return history;
 			}
 
 			// Get info from variants to search on
 			String json = history.get(history.size() - 2);
-			String ref  = refAllelePath.read(json);
+			String ref  = mRefAllelePath.read(json);
 
 			String refAlleleKnown = history.get(history.size() - 1);
 			
 			if( refAlleleKnown.equalsIgnoreCase("N") ) {
 				mUnknownRef++;
-				mBadRows.add(mTotalLines);
+				printRow("Unknown reference ('N'):", history);
 			} else if( ! ref.equalsIgnoreCase(refAlleleKnown) ) {
 				mMismatches++;
-				mBadRows.add(mTotalLines);
+				printRow("MISMATCH:", history);
 			}
 			
 			return history;
+		}
+		
+		private void printRow(String msg, History row) {
+			if(mIsPrintRows) {
+				System.out.println(msg);
+				System.out.println(row.getMergedData("\t"));
+			}
 		}
 
 		private void printProgress() {
