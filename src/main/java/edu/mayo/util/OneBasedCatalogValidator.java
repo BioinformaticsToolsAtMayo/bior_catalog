@@ -69,11 +69,7 @@ public class OneBasedCatalogValidator {
 		try {
 			boolean isPrintRows = Boolean.parseBoolean(args[2]);
 			String chrom = args.length > 3  ?  args[3] : null;
-			int numBadRows = new OneBasedCatalogValidator().verifyOneBased(args[0], args[1], isPrintRows, chrom);
-			if(numBadRows > 0)
-				System.out.println("Catalog checks out - it is in fact one-based");
-			else
-				System.out.println("ERROR!  Catalog is either not one-based or needs liftOver performed on the chromosome positions.");
+			new OneBasedCatalogValidator().verifyOneBased(args[0], args[1], isPrintRows, chrom);
 		}catch(Exception e) {
 			e.printStackTrace();
 		}
@@ -152,6 +148,15 @@ public class OneBasedCatalogValidator {
 		System.out.println("Num mismatches:  " + mMismatches);
 		System.out.println("Num not found (tabix found nothing at that position, or chromosome not found (ex: chromosome 'M')): " + mNotFound);
 		System.out.println("Num unknown (NCBIGenome had an 'N' in that position): " + mUnknownRef);
+		
+		int numBadRows = mMismatches + mNotFound + mUnknownRef;
+		double percentMismatch = 100 * ((double)mMismatches)/((double)mTotalLines);
+		if(numBadRows == 0)
+			System.out.println("Catalog checks out - it is in fact one-based, and there were no mismatches, not-founds, or unknown ref alleles.");
+		else if(percentMismatch < 1)
+			System.out.println("WARNING: There are some ref allele mismatches, but they are under 1% (" + percentMismatch + ").");
+		else
+			System.out.println("ERROR!  Catalog is either not one-based or needs liftOver performed on the chromosome positions. Percent mismatches: " + percentMismatch);
 	}
 
     public class LastLineFunction implements PipeFunction<History,History>{
