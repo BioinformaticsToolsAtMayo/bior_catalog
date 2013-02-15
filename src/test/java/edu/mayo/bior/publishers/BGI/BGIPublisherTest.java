@@ -1,26 +1,17 @@
 package edu.mayo.bior.publishers.BGI;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.util.Arrays;
-import java.util.List;
 
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.google.common.io.Files;
 import com.tinkerpop.pipes.util.Pipeline;
 
 import edu.mayo.bior.publishers.BGIDanish.BGIPublisher;
-import edu.mayo.bior.utils.CatalogUtils;
-import edu.mayo.pipes.PrintPipe;
 import edu.mayo.pipes.WritePipe;
 import edu.mayo.pipes.JSON.tabix.SameVariantPipe;
 import edu.mayo.pipes.UNIX.CatPipe;
@@ -28,6 +19,7 @@ import edu.mayo.pipes.UNIX.GrepEPipe;
 import edu.mayo.pipes.bioinformatics.VCF2VariantPipe;
 import edu.mayo.pipes.history.HistoryInPipe;
 import edu.mayo.pipes.history.HistoryOutPipe;
+import edu.mayo.bior.utils.CatalogUtils;
 
 public class BGIPublisherTest {
 	
