@@ -1,23 +1,11 @@
 package edu.mayo.bior.publishers.Cosmic;
 
 import java.io.IOException;
-import java.util.Arrays;
 
 import org.junit.Test;
 
-import com.tinkerpop.pipes.Pipe;
-import com.tinkerpop.pipes.transform.TransformFunctionPipe;
-import com.tinkerpop.pipes.util.Pipeline;
-
-import edu.mayo.bior.publishers.Cosmic.CosmicPublisher.CosmicTransformPipe;
 import edu.mayo.bior.utils.CatalogUtils;
-import edu.mayo.pipes.HeaderPipe;
-import edu.mayo.pipes.MergePipe;
-import edu.mayo.pipes.PrintPipe;
-import edu.mayo.pipes.UNIX.CatGZPipe;
-import edu.mayo.pipes.history.HCutPipe;
-import edu.mayo.pipes.history.History;
-import edu.mayo.pipes.history.HistoryInPipe;
+
 
 public class CosmicPublisherTest {
 
@@ -37,10 +25,10 @@ public class CosmicPublisherTest {
        public void testTransform() throws Exception {
     	   System.out.println("Testing.. CosmicPublisherTest.testTransform()!!");
 
-           final String INPUT_TSV  = "src/test/resources/testData/cosmic/cosmictest.tsv.gz";
-                   final String EXPECTED_TSV="src/test/resources/testData/cosmic/cosmic.expected.tsv";
-                final String OUTPUT_DIR="src/test/resources/testData/cosmic/tmpOut/";
-                   final String OUTPUT_TSV = "src/test/resources/testData/cosmic/tmpOut/cosmic_GRCh37.tsv";
+           final String INPUT_TSV  	= "src/test/resources/testData/cosmic/cosmictest.tsv.gz";
+           final String EXPECTED_TSV= "src/test/resources/testData/cosmic/cosmic.expected.tsv";
+           final String OUTPUT_DIR	= "src/test/resources/testData/cosmic/tmpOut/";
+           final String OUTPUT_TSV 	= "src/test/resources/testData/cosmic/tmpOut/cosmic_GRCh37.tsv";
 
            new CosmicPublisher().publish(INPUT_TSV, OUTPUT_DIR);
 
