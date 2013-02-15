@@ -1,4 +1,4 @@
-package edu.mayo.util;
+package edu.mayo.bior.utils;
 
 import java.util.HashMap;
 import java.util.Map;
