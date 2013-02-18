@@ -10,10 +10,12 @@ import edu.mayo.pipes.JSON.InjectIntoJsonPipe;
 import edu.mayo.pipes.JSON.inject.ColumnInjector;
 import edu.mayo.pipes.JSON.inject.Injector;
 import edu.mayo.pipes.JSON.inject.JsonType;
+import edu.mayo.pipes.MergePipe;
 import edu.mayo.pipes.PrintPipe;
 import edu.mayo.pipes.ReplaceAllPipe;
 import edu.mayo.pipes.UNIX.CatPipe;
 import edu.mayo.pipes.UNIX.GrepEPipe;
+import edu.mayo.pipes.WritePipe;
 import edu.mayo.pipes.bioinformatics.vocab.CoreAttributes;
 import edu.mayo.pipes.history.HCutPipe;
 import edu.mayo.pipes.history.HistoryInPipe;
@@ -29,14 +31,29 @@ public class MirBasePublisher {
         System.out.println("usage: MirBasePublisher <rawDataFile> <rawOutputFile>");
     }
     
-    private static String infile = "src/test/resources/testData/mirbase/hsa.gff2";
+    
     
     public static void main(String[] args){
         MirBasePublisher mbp = new MirBasePublisher();
-        mbp.publish(infile,new PrintPipe());
+        
+        if( args.length != 2 ) {
+            usage();
+            System.exit(1);
+        }
+
+        String infile = args[0];
+        //String infile = "src/test/resources/testData/mirbase/hsa.gff2";
+        String outfile = args[1];
+        System.out.println("Input File:  " + infile);
+        System.out.println("Output File: " + outfile);  
+        //EX: mbp.publish(infile,new PrintPipe());
+        // Write to file: Don't append to file;  Add newlines to each line
+        Pipe out = new WritePipe(outfile, false, true);
+        mbp.publish(infile,out);
+        
     }
     
-    public void publish(String mirbaseFile, Pipe outPipe){
+    public Pipeline getPipeline(Pipe outPipe){
         int col = 0;
         InjectIntoJsonPipe inject = new InjectIntoJsonPipe(true, new Injector[] {
             new ColumnInjector(++col, CoreAttributes._landmark.toString(), JsonType.STRING),
@@ -60,9 +77,15 @@ public class MirBasePublisher {
                 new HistoryInPipe(),
                 inject,
                 new HCutPipe(cut),
+                new MergePipe("\t"),
                 outPipe
                 );
-        p.setStarts(Arrays.asList(infile));
+        return p;
+    }
+    
+    public void publish(String mirbaseFile, Pipe outPipe){
+        Pipeline p = getPipeline(outPipe);
+        p.setStarts(Arrays.asList(mirbaseFile));
         for(int i=0; p.hasNext(); i++){
             p.next();
         }
