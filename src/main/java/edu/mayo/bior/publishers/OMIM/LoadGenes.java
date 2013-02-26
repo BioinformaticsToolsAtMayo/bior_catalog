@@ -11,9 +11,12 @@ import com.tinkerpop.pipes.PipeFunction;
 import com.tinkerpop.pipes.transform.TransformFunctionPipe;
 import com.tinkerpop.pipes.util.Pipeline;
 import edu.mayo.pipes.JSON.Delim2JSONPipe;
+import edu.mayo.pipes.MergePipe;
+import edu.mayo.pipes.PrependStringPipe;
 
 import edu.mayo.pipes.PrintPipe;
 import edu.mayo.pipes.UNIX.CatPipe;
+import edu.mayo.pipes.WritePipe;
 import edu.mayo.pipes.history.History;
 import edu.mayo.pipes.history.HistoryInPipe;
 import edu.mayo.pipes.util.SystemProperties;
@@ -30,7 +33,8 @@ public class LoadGenes {
         System.out.println("Publishing: " + mim2gene);
         LoadGenes publisher = new LoadGenes();
         //TODO: switch out for the actual insert pipe
-        publisher.exec(mim2gene, new PrintPipe());       
+        //publisher.exec(mim2gene, new PrintPipe());   
+        publisher.exec(mim2gene, new WritePipe("/tmp/genemap.tsv", false, true)); 
     }
     
         
@@ -83,6 +87,8 @@ public class LoadGenes {
     	Pipe pipeline = new Pipeline(new CatPipe(),
                                     new HistoryInPipe(),
                                     pipes2json,
+                                    new MergePipe("\t"),
+                                    new PrependStringPipe(".\t.\t.\t"),
                                     insert);
     	pipeline.setStarts(Arrays.asList(filename));
     	while(pipeline.hasNext()){
