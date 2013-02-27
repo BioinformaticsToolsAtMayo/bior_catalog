@@ -20,7 +20,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
+ *  not needed for TREAT!
  * @author m102417
  */
 public class LoadDisease {
