@@ -15,7 +15,7 @@ public class OneBasedCatalogValidatorTest {
 		final String refAlleleFastaPath = "src/test/resources/testData/util/ncbiRefs.chr17.tsv.bgz";
 		
 		OneBasedCatalogValidator validator = new OneBasedCatalogValidator();
-		assertEquals(16, validator.verifyOneBased(catalogPath, refAlleleFastaPath, true, null));
+		assertEquals(16, validator.verifyOneBased(catalogPath, refAlleleFastaPath, false, null));
 		assertEquals(7078, validator.mTotalLines);
 		assertEquals(0, validator.mNotFound);
 		assertEquals(0, validator.mUnknownRef);
