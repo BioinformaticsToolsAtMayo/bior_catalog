@@ -25,13 +25,11 @@ public class OMIMPublisherTest {
 
     public File tempFolder;
     public File OUTPUT_TSV;
-    public File OUTPUT_TSV2;
     
     @Before
     public void createTestData() throws IOException {
     	tempFolder = tFolder.newFolder("hugoTmpDir");
-    	OUTPUT_TSV = new File(tempFolder, "genemap.tsv");
-    	OUTPUT_TSV2 = new File(tempFolder, "genemap2.tsv");
+    	OUTPUT_TSV = new File(tempFolder, "omim_GRCh37.tsv");
     }
 
     @Test
@@ -39,7 +37,7 @@ public class OMIMPublisherTest {
     	System.out.println("Testing OMIMPublisher.testExec()...");    	
     	WritePipe writePipe = new WritePipe(OUTPUT_TSV.getPath());    	
     	LoadGenes loadGenes = new LoadGenes();    	
-    	loadGenes.exec(INPUT_TSV, writePipe);    	
+    	loadGenes.exec(INPUT_TSV, tempFolder.getPath()+"\\");    	
     	CatalogUtils.assertFileEquals(EXPECTED_TSV, OUTPUT_TSV.getPath()); 
     }
     
@@ -52,10 +50,10 @@ public class OMIMPublisherTest {
     	String INPUT  = "src/test/resources/testData/hugo/genemap_sample";
     	//File OUTPUT = new File("src/test/resources/testData/hugo/genemap_sample.tsv");
     	
-    	WritePipe writePipe = new WritePipe(OUTPUT_TSV2.getPath());    	    	
+    	WritePipe writePipe = new WritePipe(OUTPUT_TSV.getPath());    	    	
     	LoadGenes loadGenes = new LoadGenes();    	
-    	loadGenes.exec(INPUT, writePipe);    	
-    	BufferedReader result = new BufferedReader(new FileReader(OUTPUT_TSV2));    	
+    	loadGenes.exec(INPUT, tempFolder.getPath()+"/");    	
+    	BufferedReader result = new BufferedReader(new FileReader(OUTPUT_TSV));    	
     	String actual = result.readLine();
 
     	assertEquals(EXPECTED_LINE, actual);
