@@ -1,42 +1,19 @@
 package edu.mayo.bior.publishers.OMIM;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.Arrays;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import com.tinkerpop.pipes.Pipe;
-import com.tinkerpop.pipes.PipeFunction;
-import com.tinkerpop.pipes.transform.TransformFunctionPipe;
 import com.tinkerpop.pipes.util.Pipeline;
-import edu.mayo.pipes.JSON.Delim2JSONPipe;
+
 import edu.mayo.pipes.MergePipe;
 import edu.mayo.pipes.PrependStringPipe;
-
-import edu.mayo.pipes.PrintPipe;
+import edu.mayo.pipes.JSON.Delim2JSONPipe;
 import edu.mayo.pipes.UNIX.CatPipe;
-import edu.mayo.pipes.WritePipe;
-import edu.mayo.pipes.history.History;
 import edu.mayo.pipes.history.HistoryInPipe;
-import edu.mayo.pipes.util.SystemProperties;
-import java.util.ArrayList;
-import java.util.List;
 
 public class LoadGenes {
 	
 	private static String version = "unkown";		
-	public static void main(String[] args) throws IOException{
-
-        //Used only for version
-        String mim2gene = "/data/OMIM/genemap";
-        System.out.println("Publishing: " + mim2gene);
-        LoadGenes publisher = new LoadGenes();
-        //TODO: switch out for the actual insert pipe
-        //publisher.exec(mim2gene, new PrintPipe());   
-        publisher.exec(mim2gene, new WritePipe("/tmp/genemap.tsv", false, true)); 
-    }
-    
         
       /**
         1  - Numbering system, in the format  Chromosome.Map_Entry_Number
@@ -95,7 +72,5 @@ public class LoadGenes {
     		pipeline.next();
     	}
     }
-    
-
 
 }
