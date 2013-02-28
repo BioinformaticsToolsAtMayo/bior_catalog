@@ -36,7 +36,7 @@ public class OMIMPublisherTest {
 
     @Test
     public void testExec() throws IOException {
-    	System.out.println("Testing OMIMPublisher..");    	
+    	System.out.println("Testing OMIMPublisher.testExec()...");    	
     	WritePipe writePipe = new WritePipe(OUTPUT_TSV.getPath());    	
     	LoadGenes loadGenes = new LoadGenes();    	
     	loadGenes.exec(INPUT_TSV, writePipe);    	
@@ -45,7 +45,7 @@ public class OMIMPublisherTest {
     
     @Test
     public void testExecResults() throws IOException {
-    	System.out.println("Testing OMIMPublisherTest.testExecResults()..");    	
+    	System.out.println("Testing OMIMPublisherTest.testExecResults()...");    	
     	
     	String EXPECTED_LINE = ".	.	.	{\"Chromosome.Map_Entry_Number\":1.1,\"MonthEntered\":9,\"Day\":11,\"Year\":95,\"Cytogenetic_location\":\"1pter-p36.13\",\"GeneSymbols\":\"CCV\",\"Gene_Status\":\"P\",\"Title\":\"Cataract, congenital, Volkmann type\",\"Title_cont\":\"\",\"MIM_Number\":115665,\"Method\":\"Fd\",\"Comments\":\"\",\"Disorders\":\"Cataract, congenital, Volkmann type (2)\",\"Disorders_cont\":\" \"}";
 
