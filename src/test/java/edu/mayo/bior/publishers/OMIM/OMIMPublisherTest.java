@@ -32,16 +32,16 @@ public class OMIMPublisherTest {
     	OUTPUT_TSV = new File(tempFolder, "omim_GRCh37.tsv");
     }
 
-    //@Test
+    @Test
     public void testExec() throws IOException {
     	System.out.println("Testing OMIMPublisher.testExec()...");    	
     	WritePipe writePipe = new WritePipe(OUTPUT_TSV.getPath());    	
     	LoadGenes loadGenes = new LoadGenes();    	
-    	loadGenes.exec(INPUT_TSV, tempFolder.getPath()+"\\");    	
+    	loadGenes.exec(INPUT_TSV, tempFolder.getPath()+"/");    	
     	CatalogUtils.assertFileEquals(EXPECTED_TSV, OUTPUT_TSV.getPath()); 
     }
     
-    //@Test
+    @Test
     public void testExecResults() throws IOException {
     	System.out.println("Testing OMIMPublisherTest.testExecResults()...");    	
     	
