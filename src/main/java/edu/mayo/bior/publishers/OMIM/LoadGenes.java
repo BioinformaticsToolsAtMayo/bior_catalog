@@ -94,7 +94,7 @@ public class LoadGenes {
     	Pipe pipeline = new Pipeline(new CatPipe(),
                                     new HistoryInPipe(),
                                     pipes2json,
-                                    new MergePipe("\t"),
+                                    new MergePipe("\t", true),
                                     new PrependStringPipe(".\t.\t.\t"),
                                     writePipe);
     	pipeline.setStarts(Arrays.asList(filename));
