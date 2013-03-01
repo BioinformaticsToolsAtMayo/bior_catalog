@@ -20,7 +20,7 @@ public class LoadGenes {
 	private static String version = "unkown";		
     
 	public static void usage(){
-        System.out.println("usage: CosmicPublisher <rawDataFile> <catalogOutputDir>");
+        System.out.println("usage: OmimPublisher <rawDataFile> <catalogOutputDir>");
     }
 	
 	public static void main(String[] args) {	 
