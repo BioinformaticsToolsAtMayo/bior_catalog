@@ -58,7 +58,7 @@ public class LoadGenes {
     */    
     public void exec(String filename, String outputDir){
     	
-    	final String catalogFile = "omim_GRCh37.tsv";
+    	final String catalogFile = "genemap_GRCh37.tsv";
     	
         System.out.println("Started loading OMIM at: " + new Timestamp(new Date().getTime()));
         
