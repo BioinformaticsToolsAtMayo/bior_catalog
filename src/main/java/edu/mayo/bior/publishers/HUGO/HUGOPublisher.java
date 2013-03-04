@@ -164,7 +164,7 @@ public class HUGOPublisher {
                 new HistoryInPipe(),
                 inject,
                 new HCutPipe(ccols),
-                new MergePipe("\t"),
+                new MergePipe("\t", true),
                 new PrependStringPipe(".\t0\t0\t"),
                 writePipe
                 );
