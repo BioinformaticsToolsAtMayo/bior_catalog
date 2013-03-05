@@ -170,58 +170,69 @@ public class SQLParserTest {
         assertEquals(19, inj.length);
         for(int i=0; i< inj.length; i++){
             ColumnInjector in = inj[i];
-            //`chrom` varchar(255) NOT NULL,
+                        //`chrom` varchar(255) NOT NULL,
             if(i==0){
-                assertEquals("chrom", in.getmKey());
+                assertEquals("bin", in.getmKey());
             }
-            //`chromStart` int(10) unsigned NOT NULL,
             if(i==1){
-                assertEquals("chromStart", in.getmKey());
+                assertEquals("tName", in.getmKey());
             }
-            //`chromEnd` int(10) unsigned NOT NULL,
             if(i==2){
-                assertEquals("chromEnd", in.getmKey());
+                assertEquals("tStart", in.getmKey());
             }
-            //`name` varchar(255) NOT NULL,
             if(i==3){
+                assertEquals("tEnd", in.getmKey());
+            }
+            if(i==4){
                 assertEquals("name", in.getmKey());
             }
-            //`score` int(10) unsigned NOT NULL DEFAULT '0',
-            if(i==4){
-                assertEquals("score", in.getmKey());
-            }
-            //`strand` char(1) DEFAULT NULL,
             if(i==5){
+                assertEquals("id", in.getmKey());
+            }
+            if(i==6){
                 assertEquals("strand", in.getmKey());
             }
-            //`thickStart` int(10) unsigned DEFAULT NULL,
-            if(i==6){
-                assertEquals("thickStart", in.getmKey());
-            }
-            //`thickEnd` int(10) unsigned DEFAULT NULL,
             if(i==7){
-                assertEquals("thickEnd", in.getmKey());
+                assertEquals("vertexCount", in.getmKey());
             }
-            //`reserved` int(10) unsigned DEFAULT NULL,
             if(i==8){
-                assertEquals("reserved", in.getmKey());
+                assertEquals("vTypes", in.getmKey());
             }
-            //`CN_State` enum('0','1','2','3','4') NOT NULL DEFAULT '2',
             if(i==9){
-                assertEquals("CN_State", in.getmKey());
+                assertEquals("vPositions", in.getmKey());
             }
-            //`cellType` enum('B_Lymphocyte','Fibroblast','Amniotic_fluid_cell_line','Chorionic_villus_cell_line') NOT NULL DEFAULT 'B_Lymphocyte',
             if(i==10){
-                assertEquals("cellType", in.getmKey());
+                assertEquals("edgeCount", in.getmKey());
             }
-            //`description` varchar(255) NOT NULL,
             if(i==11){
-                assertEquals("description", in.getmKey());
+                assertEquals("edgeStarts", in.getmKey());
             }
-            //`ISCN` varchar(255) NOT NULL,
             if(i==12){
-                assertEquals("ISCN", in.getmKey());
+                assertEquals("edgeEnds", in.getmKey());
             }
+            if(i==13){
+                assertEquals("evidence", in.getmKey());
+            }
+            if(i==14){
+                assertEquals("edgeTypes", in.getmKey());
+            }
+            if(i==15){
+                assertEquals("mrnaRefCount", in.getmKey());
+            }
+            if(i==16){
+                assertEquals("mrnaRefs", in.getmKey());
+            }
+            if(i==17){
+                assertEquals("mrnaTissues", in.getmKey());
+            }
+            if(i==18){
+                assertEquals("mrnaLibs", in.getmKey());
+            }
+            if(i==19){
+                assertEquals("edgeEnds", in.getmKey());
+            }
+
+            
         }
     }
 }
