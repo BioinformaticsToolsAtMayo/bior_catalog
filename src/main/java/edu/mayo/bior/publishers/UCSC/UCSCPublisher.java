@@ -48,14 +48,14 @@ public class UCSCPublisher {
     public static void main(String[] args) throws IOException {	 
         UCSCPublisher publisher = new UCSCPublisher();
         
-//        if( args.length != 2 ) {
-//            usage();
-//            System.exit(1);
-//        }
+        if( args.length != 2 ) {
+            usage();
+            System.exit(1);
+        }
 
         //String[] dirs = {"src/test/resources/testData/ucsc/","/tmp/"};
-        String[] dirs = {"/data/ucsc/hg19/","/tmp/test"};
-        args = dirs;
+        //String[] dirs = {"/data/ucsc/hg19/","/tmp/test"};
+        //args = dirs;
         String indir = args[0];
         String outdir = args[1];
         System.out.println("Input Directory:  " + indir);
@@ -131,7 +131,7 @@ public class UCSCPublisher {
         p.setStarts(Arrays.asList(datafile));
         for(int i=0; p.hasNext(); i++){
             p.next();
-            if(i==200) break; //temporary!
+            //if(i==200) break; //temporary!
         }
     }
     
