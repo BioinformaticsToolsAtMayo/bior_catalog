@@ -32,11 +32,17 @@ public class SQLParser {
         if(field.equalsIgnoreCase("chrom")){
             return JsonType.STRING;
         }
+        if(line.contains("enum(")){
+            return JsonType.STRING;
+        }
+        if(line.contains("set(")){
+            return JsonType.STRING;
+        }     
         
-        if(line.contains("int")){
+        if(line.contains("int") && !field.contains("int")){
             //int
             return JsonType.NUMBER;
-        }else if(line.contains("float")||line.contains("double")){
+        }else if((line.contains("float")||line.contains("double")) && !field.contains("int")){
             //float
             //double
             return JsonType.NUMBER;
