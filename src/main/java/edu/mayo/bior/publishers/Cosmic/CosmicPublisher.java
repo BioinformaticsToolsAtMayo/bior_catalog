@@ -16,6 +16,7 @@ import org.apache.commons.lang.StringUtils;
 import com.google.common.base.CharMatcher;
 import com.tinkerpop.pipes.Pipe;
 import com.tinkerpop.pipes.PipeFunction;
+import com.tinkerpop.pipes.transform.IdentityPipe;
 import com.tinkerpop.pipes.transform.TransformFunctionPipe;
 import com.tinkerpop.pipes.util.Pipeline;
 
@@ -29,6 +30,8 @@ import edu.mayo.pipes.JSON.inject.ColumnInjector;
 import edu.mayo.pipes.JSON.inject.Injector;
 import edu.mayo.pipes.JSON.inject.JsonType;
 import edu.mayo.pipes.JSON.inject.LiteralInjector;
+import edu.mayo.pipes.PrintPipe;
+import edu.mayo.pipes.SplitPipe;
 import edu.mayo.pipes.UNIX.CatGZPipe;
 import edu.mayo.pipes.UNIX.HeadPipe;
 import edu.mayo.pipes.bioinformatics.sequence.Bed2SequencePipe;
@@ -43,6 +46,7 @@ import edu.mayo.pipes.history.HistoryOutPipe;
 import edu.mayo.pipes.string.ComplementPipe;
 import edu.mayo.pipes.util.GenomicObjectUtils;
 import edu.mayo.pipes.util.SystemProperties;
+import java.io.IOException;
 
 /**
  *
