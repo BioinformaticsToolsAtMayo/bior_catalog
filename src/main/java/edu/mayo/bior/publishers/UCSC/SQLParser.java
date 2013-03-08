@@ -152,10 +152,27 @@ public class SQLParser {
         if(field.equalsIgnoreCase("chrom")){
             return CoreAttributes._landmark.toString();
         }
+
         //endStart
         if(field.equalsIgnoreCase("endStart")){
             return CoreAttributes._maxBP.toString();
         }
+        
+        //genoName
+        if(field.equalsIgnoreCase("genoName")){
+            return CoreAttributes._landmark.toString();
+        }
+        
+        //genoStart
+        if(field.equalsIgnoreCase("genoStart")){
+            return CoreAttributes._minBP.toString();
+        }
+        
+        //genoEnd
+        if(field.equalsIgnoreCase("genoEnd")){
+            return CoreAttributes._maxBP.toString();
+        }
+        
         return null;
     }
     
