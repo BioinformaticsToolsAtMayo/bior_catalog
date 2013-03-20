@@ -23,12 +23,14 @@ import edu.mayo.bior.utils.CatalogUtils;
 
 public class BGIPublisherTest {
 	
+	private final String TEST_DATA_DIR = "src/test/resources/testData/bgi/";
+	
 	@Test
 	/** Test out a chromosome that is non-numeric - such as chrY */
 	public void nonNumericChrom() throws IOException {
-		final String BGI_CHRY_INPUT_TSV  = "src/test/resources/testData/bgi/bgi.chrY.input.tsv";
-		final String BGI_CHRY_EXPECTED_TSV="src/test/resources/testData/bgi/bgi.chrY.catalog.expected.tsv";
-		final String BGI_CHRY_OUTPUT_TSV = "src/test/resources/testData/bgi/tmpOut/bgi.chrY.catalog.output.tsv";
+		final String BGI_CHRY_INPUT_TSV  = TEST_DATA_DIR + "bgi.chrY.input.tsv";
+		final String BGI_CHRY_EXPECTED_TSV=TEST_DATA_DIR + "bgi.chrY.catalog.expected.tsv";
+		final String BGI_CHRY_OUTPUT_TSV = TEST_DATA_DIR + "tmpOut/bgi.chrY.catalog.output.tsv";
 
 		// Create the output catalog for chrY from input text file
 		new BGIPublisher().publish(BGI_CHRY_INPUT_TSV, BGI_CHRY_OUTPUT_TSV);
@@ -39,9 +41,9 @@ public class BGIPublisherTest {
 	@Test 
 	public void chr17TenLinesBuild() throws IOException {
 		// Build the catalog
-		final String BGI_CHR17_INPUT_TSV    = "src/test/resources/testData/bgi/bgi.chr17.input.tsv";
-		final String BGI_CHR17_EXPECTED_TSV = "src/test/resources/testData/bgi/bgi.chr17.catalog.expected.tsv";
-		final String BGI_CHR17_OUTPUT_TSV   = "src/test/resources/testData/bgi/tmpOut/bgi.chr17.catalog.output.tsv";
+		final String BGI_CHR17_INPUT_TSV    = TEST_DATA_DIR + "bgi.chr17.input.tsv";
+		final String BGI_CHR17_EXPECTED_TSV = TEST_DATA_DIR + "bgi.chr17.catalog.expected.tsv";
+		final String BGI_CHR17_OUTPUT_TSV   = TEST_DATA_DIR + "tmpOut/bgi.chr17.catalog.output.tsv";
 		// Create the output catalog for chr17 from input text file
 		new BGIPublisher().publish(BGI_CHR17_INPUT_TSV, BGI_CHR17_OUTPUT_TSV);
 		CatalogUtils.assertFileEquals(BGI_CHR17_EXPECTED_TSV, BGI_CHR17_OUTPUT_TSV);
@@ -50,10 +52,10 @@ public class BGIPublisherTest {
 	@Test
 	public void sameVariantAgainstDbSnpBrca1() throws IOException {
 		// Test against SameVariant
-		final String BGI_CHR17_BGZ                 = new File("src/test/resources/testData/bgi/bgi.catalog.chr17.bgz").getCanonicalPath();
-		final String BGI_CHR17_SAME_VAR_EXPECTED_TSV = "src/test/resources/testData/bgi/bgi.chr17.catalog.sameVariant.expected.tsv";
-		final String BGI_CHR17_SAME_VAR_OUTPUT_TSV   = "src/test/resources/testData/bgi/tmpOut/bgi.chr17.catalog.sameVariant.output.tsv";
-		final String DBSNP_IN = "src/test/resources/testData/bgi/dbSNPS_overlap_BRCA1.vcf";
+		final String BGI_CHR17_BGZ                 = new File(TEST_DATA_DIR + "bgi.catalog.chr17.bgz").getCanonicalPath();
+		final String BGI_CHR17_SAME_VAR_EXPECTED_TSV = TEST_DATA_DIR + "bgi.chr17.catalog.sameVariant.expected.tsv";
+		final String BGI_CHR17_SAME_VAR_OUTPUT_TSV   = TEST_DATA_DIR + "tmpOut/bgi.chr17.catalog.sameVariant.output.tsv";
+		final String DBSNP_IN = TEST_DATA_DIR + "dbSNPS_overlap_BRCA1.vcf";
 		
 		System.out.println("exists?: " + new File(BGI_CHR17_BGZ).exists());
 		System.out.println("dbsnp path: " + BGI_CHR17_BGZ);
