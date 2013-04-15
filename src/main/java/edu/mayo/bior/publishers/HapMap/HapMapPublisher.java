@@ -10,8 +10,8 @@ import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import org.apache.log4j.Logger;
 
 import com.tinkerpop.pipes.Pipe;
 import com.tinkerpop.pipes.util.Pipeline;
@@ -29,7 +29,10 @@ import edu.mayo.pipes.history.HistoryInPipe;
 
 /** @author m102417 Daniel Quest,  Michael Meiners */
 public class HapMapPublisher {
-    public static void usage(){
+    
+	private static Logger sLogger = Logger.getLogger(HapMapPublisher.class);
+	
+	public static void usage(){
         System.out.println("usage: HapMapPublisher <rawDataDir> <hapmapTsvOutfile>");
     }
     
@@ -74,7 +77,7 @@ public class HapMapPublisher {
                         );
             }
         } catch (Exception ex) {
-            Logger.getLogger(HapMapPublisher.class.getName()).log(Level.SEVERE, null, ex);
+            sLogger.error("Failed to publish HapMap catalog!", ex);
             ex.printStackTrace();
         }        
         System.out.println("Completed loading HapMap at: " + new Timestamp(new Date().getTime()));
