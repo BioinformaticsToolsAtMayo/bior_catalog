@@ -4,20 +4,16 @@
  */
 package edu.mayo.bior.publishers.OMIM;
 
+import java.io.File;
+import java.io.IOException;
+
 import com.tinkerpop.pipes.Pipe;
 import com.tinkerpop.pipes.PipeFunction;
-import com.tinkerpop.pipes.transform.TransformFunctionPipe;
-import com.tinkerpop.pipes.util.Pipeline;
+
 import edu.mayo.pipes.PrintPipe;
 import edu.mayo.pipes.history.History;
 import edu.mayo.pipes.util.SystemProperties;
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
 
 /**
  *  not needed for TREAT!
@@ -25,7 +21,8 @@ import java.util.logging.Logger;
  */
 public class LoadDisease {
                 
-    private static String version = "unkown";		
+    private static String version = "unknown";
+    
     public static void main(String[] args) throws IOException{
 
             SystemProperties sysprop = new SystemProperties();
