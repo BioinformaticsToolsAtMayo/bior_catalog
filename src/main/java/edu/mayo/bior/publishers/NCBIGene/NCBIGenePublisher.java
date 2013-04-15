@@ -22,8 +22,8 @@ import edu.mayo.pipes.util.SystemProperties;
 import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import org.apache.log4j.Logger;
 
 /**
  *  This class creates all the catalogs needed for NCBIGene.
@@ -40,6 +40,8 @@ import java.util.logging.Logger;
  */
 public class NCBIGenePublisher {
     
+	private static Logger sLogger = Logger.getLogger(NCBIGenePublisher.class);
+	
     public static void usage(){
         System.out.println("usage: NCBIGenePublisher <rawDataDir> <catalogOutputDir>");
     }
@@ -76,7 +78,7 @@ public class NCBIGenePublisher {
                 processGenes(rawDataDir + "/" + filename, c, new WritePipe(outfile));
             }
         } catch (Exception ex) {
-            Logger.getLogger(NCBIGenePublisher.class.getName()).log(Level.SEVERE, null, ex);
+            sLogger.error("Failed to publish NCBIGene catalog!", ex);
             ex.printStackTrace();
         }        
         System.out.println("Completed loading NCBIGenes at: " + new Timestamp(new Date().getTime()));
