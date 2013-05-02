@@ -13,34 +13,13 @@ set -e
 
 
 #------------------------------------------------------------------------------------------
-# Given a raw data files (*.gbs.txt) build JSON data file (which contains position + JSON)
+# Given a raw data files (*.vcf) build JSON data file (which contains position + JSON)
 #------------------------------------------------------------------------------------------
 rawDataDir=$1
 targetCatalogDir=$2
 
 echo "Build JSON from raw data files"
 echo "Target directory: $targetCatalogDir"
-java -cp $BIOR_CATALOG_HOME/conf:$BIOR_CATALOG_HOME/lib/* edu.mayo.bior.publishers.ESP.ESPPublisher $rawDataDir  $targetCatalogDir
-
-
-#------------------------------------------------------------------------------------------
-# Sort the JSON data file by columns 1 (chr-string), 2 (minBP-numeric), and 3 (maxBP-numeric), and bgzip it
-#------------------------------------------------------------------------------------------
-#echo "Sort and bgzip the genes JSON data file..."
-#sort -k 1,1 -k 2,2n -k 3,3n  $targetCatalogDir/cosmic.tsv  |  bgzip >  $targetCatalogDir/cosmic.tsv.bgz
-
-
-#------------------------------------------------------------------------------------------
-# Create Tabix index
-# s = landmark, b = begin position, e = end position
-#------------------------------------------------------------------------------------------
-#echo "Create tabix index on the bgzip file..."
-#tabix -s 1 -b 2 -e 3  $targetCatalogDir/cosmic.tsv.bgz
-
-#------------------------------------------------------------------------------------------
-# Remove the temporary genes.tsv file that NCBIGenePublisher created
-#------------------------------------------------------------------------------------------
-#echo "Remove temp files..."
-#rm $targetCatalogDir/cosmic.tsv
+java -cp $BIOR_CATALOG_HOME/conf:$BIOR_CATALOG_HOME/lib/* edu.mayo.bior.publishers.ESP.ESPPublisher $rawDataDir  $targetCatalogDir/scratch/ESP6500SI_GRCh37.tsv
 
 echo "DONE."
