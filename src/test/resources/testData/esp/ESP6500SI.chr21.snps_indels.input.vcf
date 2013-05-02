@@ -1,0 +1,34 @@
+##fileformat=VCFv4.0
+##INFO=<ID=DBSNP,Number=.,Type=String,Description="dbSNP version which established the rs_id">
+##INFO=<ID=EA_AC,Number=.,Type=String,Description="European American Allele Count in the order of AltAlleles,RefAllele. For INDELs, A1, A2, or An refers to the N-th alternate allele while R refers to the reference allele.">
+##INFO=<ID=AA_AC,Number=.,Type=String,Description="African American Allele Count in the order of AltAlleles,RefAllele. For INDELs, A1, A2, or An refers to the N-th alternate allele while R refers to the reference allele.">
+##INFO=<ID=TAC,Number=.,Type=String,Description="Total Allele Count in the order of AltAlleles,RefAllele For INDELs, A1, A2, or An refers to the N-th alternate allele while R refers to the reference allele.">
+##INFO=<ID=MAF,Number=.,Type=String,Description="Minor Allele Frequency in percent in the order of EA,AA,All">
+##INFO=<ID=GTS,Number=.,Type=String,Description="Observed Genotypes. For INDELs, A1, A2, or An refers to the N-th alternate allele while R refers to the reference allele.">
+##INFO=<ID=EA_GTC,Number=.,Type=String,Description="European American Genotype Counts in the order of listed GTS">
+##INFO=<ID=AA_GTC,Number=.,Type=String,Description="African American Genotype Counts in the order of listed GTS">
+##INFO=<ID=GTC,Number=.,Type=String,Description="Total Genotype Counts in the order of listed GTS">
+##INFO=<ID=DP,Number=1,Type=Integer,Description="Average Sample Read Depth">
+##INFO=<ID=FG,Number=.,Type=String,Description="functionGVS">
+##INFO=<ID=GM,Number=.,Type=String,Description="accession">
+##INFO=<ID=AA,Number=1,Type=String,Description="chimpAllele">
+##INFO=<ID=AAC,Number=.,Type=String,Description="aminoAcidChange">
+##INFO=<ID=PP,Number=.,Type=String,Description="proteinPosition">
+##INFO=<ID=CDP,Number=.,Type=String,Description="cDNAPosition">
+##INFO=<ID=PH,Number=.,Type=String,Description="polyPhen">
+##INFO=<ID=CP,Number=1,Type=Float,Description="scorePhastCons">
+##INFO=<ID=CG,Number=1,Type=Float,Description="consScoreGERP">
+##INFO=<ID=GL,Number=.,Type=String,Description="geneList">
+##INFO=<ID=GS,Number=.,Type=String,Description="granthamScore">
+##INFO=<ID=CA,Number=.,Type=String,Description="clinicalAssociation">
+##INFO=<ID=EXOME_CHIP,Number=.,Type=String,Description="Whether a SNP is on the Illumina HumanExome Chip">
+##FILTER=<ID=INDEL5,Description="Nearby 1000 Genomes Pilot Indels within 5bp">
+##FILTER=<ID=SVM,Description="Failed SVM-based filter at threshold 0.3. (detailed at http://evs.gs.washington.edu/EVS/HelpSNPSummary.jsp#FilterStatus)">
+##INFO=<ID=GWAS_PUBMED,Number=.,Type=String,Description="PubMed records for GWAS hits">
+##QueryTarget=21:1-48129895
+##GenesInThisRegion=KRTAP20-1,NRIP1,SAMSN1,SLC19A1,POTED,IFNGR2,LRRC3,TCP10L,ERG,C21ORF63,C21ORF62,SYNJ1,MRPL39,NCAM2,SLC5A3,PRMT2,TMPRSS3,IFNAR2,TMPRSS2,IFNAR1,AGPAT3,USP25,MORC3,AIRE,C21ORF59,C21ORF58,C21ORF56,C21ORF7,KRTAP8-1,SOD1,CRYAA,SETD4,ZNF295,SON,C21ORF2,KRTAP6-3,KRTAP10-12,KRTAP6-2,CBR3,OLIG2,KRTAP10-11,KRTAP6-1,OLIG1,KRTAP10-10,B3GALT5,CBR1,FAM165B,COL18A1,TMEM50B,DOPEY2,MCM3AP,DNMT3L,RSPH1,USP16,KRTAP19-8,KRTAP19-7,KRTAP19-6,KRTAP19-5,KRTAP19-4,C2CD2,KRTAP19-3,URB1,KRTAP19-2,KRTAP19-1,PIGP,SCAF4,APP,BRWD1,DSCAM,KRTAP15-1,KRTAP13-4,KRTAP13-3,KRTAP13-2,PLAC4,KRTAP13-1,LTN1,PDE9A,HLCS,LOC100288336,KRTAP11-1,POFUT2,FAM207A,SUMO3,C21ORF33,CSTB,GCFC1,CYYR1,CHAF1B,CBS,RUNX1,ETS2,DONSON,PSMG1,HSPA13,CXADR,HSF2BP,LSS,CRYZL1,GRIK1,UMODL1,LOC100652984,PDXK,BACH1,ICOSLG,RRP1,PFKL,PWP2,GART,KRTAP27-1,SIM2,KRTAP25-1,WDR4,PTTG1IP,CCT8,MRPS6,MRAP,RWDD2B,KRTAP23-1,SLC37A1,LOC100652972,KRTAP21-3,KRTAP21-2,TPTE,KRTAP21-1,ADARB1,CLDN8,LCA5L,KCNJ6,KCNJ15,MX2,MX1,SH3BGR,MIS18A,JAM2,NDUFV3,BAGE2,PCP4,SIK1,TMPRSS15,COL6A2,COL6A1,LIPI,KRTAP7-1,BACE2,ATP5O,BTG3,ATP5J,TIAM1,PCNT,DIP2A,S100B,IL10RB,IGSF5,PCBP3,RIPK4,KRTAP12-4,KRTAP12-3,TFF3,KRTAP10-9,KRTAP12-2,TFF2,KRTAP10-8,KRTAP12-1,UBASH3A,TFF1,KRTAP10-7,KRTAP10-6,KRTAP10-5,RRP1B,KRTAP10-4,KRTAP10-3,KRTAP10-2,KRTAP10-1,CHODL,HMGN1,TRAPPC10,FTCD,CLDN17,N6AMT1,C21ORF91,CLDN14,GABPA,HUNK,ADAMTS5,FAM3B,ADAMTS1,CLIC6,RCAN1,YBEY,PKNOX1,TTC3,RBM11,UBE2G2,WRB,PRDM15,LOC388813,ITSN1,DSCR6,DSCR4,DSCR3,DYRK1A,KCNE2,KCNE1,KRTAP26-1,TSPEAR,DNAJC28,KRTAP24-1,U2AF1,KRTAP22-2,KRTAP22-1,ABCG1,TRPM2,KRTAP20-3,ITGB2,KRTAP20-2
+##KeggPathwayIDs=[IFNGR2=hsa04060,hsa04630,hsa04650,hsa05140,hsa05142];[SYNJ1=hsa00562,hsa01100,hsa04070];[NCAM2=hsa04514,hsa05020];[IFNAR2=hsa04060,hsa04620,hsa04630,hsa04650];[IFNAR1=hsa04060,hsa04620,hsa04630,hsa04650];[AGPAT3=hsa00561,hsa00564,hsa01100];[AIRE=hsa04120,hsa05340];[SOD1=hsa04146,hsa05014,hsa05016,hsa05020];[CBR3=hsa00590,hsa01100];[B3GALT5=hsa00601,hsa00603,hsa01100];[CBR1=hsa00590,hsa01100];[DNMT3L=hsa00270,hsa01100];[PIGP=hsa00563,hsa01100];[APP=hsa05010];[PDE9A=hsa00230];[HLCS=hsa00780,hsa01100];[CBS=hsa00260,hsa00270,hsa00450,hsa01100];[RUNX1=hsa05200,hsa05220,hsa05221];[ETS2=hsa04320];[CXADR=hsa05416];[LSS=hsa00100,hsa01100];[GRIK1=hsa04080];[PDXK=hsa00750,hsa01100];[ICOSLG=hsa04514,hsa04672];[PFKL=hsa00010,hsa00030,hsa00051,hsa00052,hsa01100];[GART=hsa00230,hsa00670,hsa01100];[CLDN8=hsa04514,hsa04530,hsa04670];[JAM2=hsa04514,hsa04530,hsa04670,hsa05120];[NDUFV3=hsa00190,hsa01100,hsa05010,hsa05012,hsa05016];[COL6A2=hsa04510,hsa04512];[COL6A1=hsa04510,hsa04512];[BACE2=hsa05010];[ATP5O=hsa00190,hsa01100,hsa05010,hsa05012,hsa05016];[ATP5J=hsa00190,hsa01100,hsa05010,hsa05012,hsa05016];[TIAM1=hsa04062,hsa04810];[IL10RB=hsa04060,hsa04630];[IGSF5=hsa04530,hsa05120];[FTCD=hsa00340,hsa00670,hsa01100];[CLDN17=hsa04514,hsa04530,hsa04670];[CLDN14=hsa04514,hsa04530,hsa04670];[UBE2G2=hsa04120,hsa05012];[U2AF1=hsa03040,hsa05131];[ABCG1=hsa02010];[ITGB2=hsa04514,hsa04650,hsa04670,hsa04810,hsa05140,hsa05416]
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO
+21	9908404	.	TG	T	.	PASS	DBSNP=.;EA_AC=1,3841;AA_AC=2,2134;TAC=3,5975;MAF=0.026,0.0936,0.0502;GTS=A1A1,A1R,RR;EA_GTC=0,1,1920;AA_GTC=0,2,1066;GTC=0,3,2986;DP=17;GL=.;CP=0.1;CG=0.1;AA=.;CA=.;EXOME_CHIP=no;GWAS_PUBMED=.;GM=.;FG=intergenic;AAC=.;PP=.;CDP=.;GS=.;PH=.
+21	9908407	.	TC	T	.	PASS	DBSNP=.;EA_AC=0,3754;AA_AC=3,2085;TAC=3,5839;MAF=0.0,0.1437,0.0514;GTS=A1A1,A1R,RR;EA_GTC=0,0,1877;AA_GTC=0,3,1041;GTC=0,3,2918;DP=16;GL=.;CP=0.1;CG=0.1;AA=.;CA=.;EXOME_CHIP=no;GWAS_PUBMED=.;GM=.;FG=intergenic;AAC=.;PP=.;CDP=.;GS=.;PH=.
+21	10862547	.	G	A	.	PASS	DBSNP=.;EA_AC=0,3182;AA_AC=6,1378;TAC=6,4560;MAF=0.0,0.4335,0.1314;GTS=AA,AG,GG;EA_GTC=0,0,1591;AA_GTC=0,6,686;GTC=0,6,2277;DP=93;GL=.;CP=0.0;CG=-1.5;AA=G;CA=.;EXOME_CHIP=no;GWAS_PUBMED=.;GM=.;FG=intergenic;AAC=.;PP=.;CDP=.;GS=.;PH=.

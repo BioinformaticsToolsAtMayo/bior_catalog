@@ -76,7 +76,7 @@ public class ESPPublisher {
         try {
             System.out.println("Parsing ESP from: " + rawDataDir); //chrDir);            
             
-            Pipeline p = new Pipeline(new LSPipe(false), new GrepPipe("ESP6500SI.chr2*.*"));
+            Pipeline p = new Pipeline(new LSPipe(false), new GrepPipe("ESP6500SI.chr*.*"));
             p.setStarts(Arrays.asList(new String[] {rawDataDir}));
             for(int i = 0; p.hasNext(); i++){ 
                 String filename = (String)p.next();
