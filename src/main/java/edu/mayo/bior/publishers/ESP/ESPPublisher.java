@@ -20,6 +20,7 @@ import com.tinkerpop.pipes.transform.TransformFunctionPipe;
 import com.tinkerpop.pipes.util.Pipeline;
 
 import edu.mayo.pipes.MergePipe;
+import edu.mayo.pipes.PrintPipe;
 import edu.mayo.pipes.WritePipe;
 import edu.mayo.pipes.JSON.DrillPipe;
 import edu.mayo.pipes.UNIX.CatPipe;
@@ -145,13 +146,9 @@ public class ESPPublisher {
     }
 	
 	/**	Transforms/splits the RAW MAF data in INFO column from ["0.02","0.213","0.003"] 
-	 * to "EA":{"_maf":[0.0026]},"AA":{"_maf":[0.0094]},"ALL":{"_maf":[0.002]}} 
+	 * to "EA":{"_maf":0.0026},"AA":{"_maf":0.0094},"ALL":{"_maf":0.002}} 
 	*/
 	public class ESPTransformPipe implements PipeFunction<History,History> {
-		public String MAF_EA = "";
-		public String MAF_AA = "";
-		public String MAF_ALL = "";
-		
 		final String[] MAF_LITERALS = { "EA", "AA", "ALL"};	
 		
 		@Override
@@ -166,7 +163,7 @@ public class ESPPublisher {
 		 * 
 		 * @param rawMAFLine - ["0.02","0.213","0.003"]
 		 * @param infoLine - {"CHROM":"12",.....}
-		 * @return - infoLine with added MAF values as {"CHROM":"12"....,"EA":{"_maf":[0.0026]},"AA":{"_maf":[0.0094]},"ALL":{"_maf":[0.002]}}
+		 * @return - infoLine with added MAF values as {"CHROM":"12"....,"EA":{"_maf":0.0026},"AA":{"_maf":0.0094},"ALL":{"_maf":0.002}}
 		 */
 		private String processInfo(String rawMAFLine, String infoLine) {
 			
@@ -193,21 +190,24 @@ public class ESPPublisher {
 				JsonObject record;
 				int i=0;
 				for(String val : rawValues) {
-					arr = new JsonArray();
+					//arr = new JsonArray();
+					record = new JsonObject();
 					try{
 						Double score = new Double(val);
 						//String tvalue = BigDecimal.valueOf(score.doubleValue() / 100).toPlainString();
 						BigDecimal bd = new BigDecimal(score);
 						BigDecimal newVal = bd.divide(new BigDecimal(100), 6, RoundingMode.HALF_EVEN);
 						//arr.add(new JsonPrimitive(Double.parseDouble(tvalue)));
-						arr.add(new JsonPrimitive(newVal));
+						//arr.add(new JsonPrimitive(newVal));
+						record.add("_maf", new JsonPrimitive(newVal));
 						
 					} catch(NumberFormatException nfe) {
-						arr.add(new JsonPrimitive(val));
+						//arr.add(new JsonPrimitive(val));
+						record.add("_maf", new JsonPrimitive(val));
 					}			
 					
-					record = new JsonObject();					
-					record.add("_maf", arr);
+					//record = new JsonObject();					
+					//record.add("_maf", arr);
 					
 					proot.add(MAF_LITERALS[i], record);
 					i++;					
