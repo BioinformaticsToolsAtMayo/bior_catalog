@@ -1,10 +1,8 @@
 package edu.mayo.bior.publishers.OMIM;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 
 import org.junit.Before;
@@ -19,39 +17,28 @@ public class OMIMPublisherTest {
 	@Rule
     public TemporaryFolder tFolder = new TemporaryFolder();
 
-    final String INPUT_TSV  	= "src/test/resources/testData/omim/genemap";
-    final String EXPECTED_TSV= "src/test/resources/testData/omim/omim.expected.tsv";
+    //final String INPUT_TSV    = "src/test/resources/testData/omim/genemap";
+    //final String EXPECTED_TSV = "src/test/resources/testData/omim/omim.expected.tsv";
 
     public File tempFolder;
     public File OUTPUT_TSV;
+    public File OUTPUT_BGZ;
     
     @Before
     public void createTestData() throws IOException {
     	tempFolder = tFolder.newFolder("omimTmpDir");
-    	OUTPUT_TSV = new File(tempFolder, "genemap_GRCh37.tsv");
+    	System.out.println("Temp folder: " + tempFolder.getCanonicalPath());
+    	OUTPUT_TSV = new File(tempFolder.getCanonicalPath() + "/scratch", "genemap_GRCh37.tsv");
+    	OUTPUT_BGZ = new File(tempFolder, "genemap_GRCh37.tsv.bgz");
     }
 
     @Test
     public void testExec() throws IOException {
     	System.out.println("Testing OMIMPublisher.testExec()...");    	
-    	LoadGenes loadGenes = new LoadGenes();    	
-    	loadGenes.exec(INPUT_TSV, tempFolder.getPath()+"/");
-    	CatalogUtils.assertFileEquals(EXPECTED_TSV, OUTPUT_TSV.getPath()); 
+    	new LoadGenes().exec("src/test/resources/testData/omim/genemap", tempFolder.getPath()+"/");
+    	//System.out.println(FileCompareUtils.loadFile(OUTPUT_TSV.getCanonicalPath()));
+    	CatalogUtils.assertFileEquals("src/test/resources/testData/omim/omim.expected.tsv", OUTPUT_TSV.getPath());
+    	assertTrue(OUTPUT_BGZ.exists());
+    	assertTrue(OUTPUT_BGZ.length() > 0);
     }
-    
-    @Test
-    public void testExecResults() throws IOException {
-    	System.out.println("Testing OMIMPublisherTest.testExecResults()...");    	
-    	
-    	String EXPECTED_LINE = ".	.	.	{\"Chromosome.Map_Entry_Number\":1.1,\"MonthEntered\":9,\"Day\":11,\"Year\":95,\"Cytogenetic_location\":\"1pter-p36.13\",\"GeneSymbols\":\"CCV\",\"Gene_Status\":\"P\",\"Title\":\"Cataract, congenital, Volkmann type\",\"Title_cont\":\"\",\"MIM_Number\":115665,\"Method\":\"Fd\",\"Comments\":\"\",\"Disorders\":\"Cataract, congenital, Volkmann type (2)\",\"Disorders_cont\":\" \"}";
-
-    	String INPUT  = "src/test/resources/testData/omim/genemap_sample";
-    	LoadGenes loadGenes = new LoadGenes();    	
-    	loadGenes.exec(INPUT, tempFolder.getPath()+"/");    	
-    	BufferedReader result = new BufferedReader(new FileReader(OUTPUT_TSV));    	
-    	String actual = result.readLine();
-
-    	assertEquals(EXPECTED_LINE, actual);
-    }
-    
 }
