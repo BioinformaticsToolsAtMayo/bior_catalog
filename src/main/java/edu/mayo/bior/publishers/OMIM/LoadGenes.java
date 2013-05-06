@@ -68,7 +68,9 @@ public class LoadGenes {
         String line = null;
         int numLines = 0;
         while( (line = fin.readLine()) != null ) {
-        	fout.write(".\t.\t.\t" + toJson(line) + "\n");
+        	// Add ". 0 0" to beginning to signify chrom, minBP, maxBP to stay compatible with catalog design,
+        	// even though these fields are not available for genes
+        	fout.write(".\t0\t0\t" + toJson(line) + "\n");
         	numLines++;
         }
         fin.close();
