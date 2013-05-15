@@ -100,6 +100,7 @@ public class IndexerDatabase {
 	private void createTable(boolean isKeyInteger, int maxKeyLength, Connection dbConn) throws SQLException {
         final String SQL = "CREATE TABLE Indexer " 
         		+ "("
+        		+   (isKeyInteger ? "KeyUpper BIGINT," : "KeyUpper VARCHAR(" + maxKeyLength + "), ")
         		+   (isKeyInteger ? "Key BIGINT," : "Key VARCHAR(" + maxKeyLength + "), ")
         		+   "FilePos BIGINT" 
         		+ ")";
@@ -117,7 +118,7 @@ public class IndexerDatabase {
 	public void zipIndexesToDb(File bgzipFile, int keyColumn, String jsonPathToKey, boolean isKeyInteger, String delimiter, File newDb)
 	 throws NumberFormatException, SQLException, IOException, InterruptedException, ClassNotFoundException {
 		// Write the indexes to a flat text file
-		File tmpTxtIdxFile = new File(bgzipFile.getParent() + "/tmpIdx.txt");
+		File tmpTxtIdxFile = new File(bgzipFile.getCanonicalFile().getParent(), "tmpIdx.txt");
 		utils.zipIndexesToTextFile(bgzipFile, delimiter, keyColumn, jsonPathToKey, tmpTxtIdxFile);
 		
 		int maxKeyLength = getMaxKeyLength(tmpTxtIdxFile);
@@ -128,18 +129,21 @@ public class IndexerDatabase {
 		Connection dbConn = getConnectionH2(newDb);
 		createTable(isKeyInteger, maxKeyLength, dbConn);
 		
-		final String SQL = "INSERT INTO Indexer (Key, FilePos) VALUES (?, ?)";
+		final String SQL = "INSERT INTO Indexer (KeyUpper, Key, FilePos) VALUES (?, ?, ?)";
 		PreparedStatement stmt = dbConn.prepareStatement(SQL);
 		dbConn.setAutoCommit(true);
 		String line = null;
 		while( (line = fin.readLine()) != null ) {
 			String key = utils.getCol(line, delimiter, 1);
 			Long pos = Long.valueOf(utils.getCol(line, delimiter, 2));
-			if(isKeyInteger)
+			if(isKeyInteger) {
 				stmt.setLong(1, Integer.valueOf(key));
-			else
-				stmt.setString(1, key);
-			stmt.setLong(2, pos);
+				stmt.setLong(2, Integer.valueOf(key));
+			} else {
+				stmt.setString(1, key.toUpperCase());
+				stmt.setString(2, key);
+			}
+			stmt.setLong(3, pos);
 			stmt.execute();
 		}
 
@@ -170,7 +174,7 @@ public class IndexerDatabase {
 
 		BufferedReader fin = new BufferedReader(new FileReader(tmpTxt));
 		
-		final String SQL = "INSERT INTO Indexer (Key, FilePos) VALUES (?, ?)";
+		final String SQL = "INSERT INTO Indexer (KeyUpper, Key, FilePos) VALUES (?, ?, ?)";
 		PreparedStatement stmt = dbConn.prepareStatement(SQL);
 		dbConn.setAutoCommit(true);
 
@@ -180,11 +184,14 @@ public class IndexerDatabase {
 			String[] cols = line.split("\t");
 			String key = cols[0];
 			String pos = cols[1];
-			if(isKeyInteger)
+			if(isKeyInteger) {
 				stmt.setLong(1, Integer.valueOf(key));
-			else
-				stmt.setString(1, key);
-			stmt.setLong(2, Long.valueOf(pos));
+				stmt.setLong(2, Integer.valueOf(key));
+			} else {
+				stmt.setString(1, key.toUpperCase());
+				stmt.setString(2, key);
+			}
+			stmt.setLong(3, Long.valueOf(pos));
 			stmt.execute();
 			dbConn.commit();
 
@@ -212,7 +219,7 @@ public class IndexerDatabase {
 	/** Find file positions within zip file matching ids 
 	 * @throws SQLException */
 	public HashMap<String,List<Long>> findIndexes(List<String> idsToFind, boolean isKeyInteger, Connection dbConn) throws SQLException {
-		final String SQL = "SELECT FilePos FROM Indexer WHERE Key = ?";
+		final String SQL = "SELECT FilePos FROM Indexer WHERE KeyUpper = ?";
 		PreparedStatement stmt = dbConn.prepareStatement(SQL);
 		HashMap<String,List<Long>> key2posMap = new HashMap<String,List<Long>>();
 		int count = 0;
@@ -246,7 +253,7 @@ public class IndexerDatabase {
 			if(isKeyInteger)
 				stmt.setLong(1, Long.valueOf(id));
 			else
-				stmt.setString(1, id);
+				stmt.setString(1, id.toUpperCase());
 			
 			ResultSet rs = stmt.executeQuery();
 			while(rs.next()) {
