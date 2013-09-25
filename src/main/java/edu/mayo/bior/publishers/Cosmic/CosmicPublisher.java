@@ -19,6 +19,7 @@ import com.tinkerpop.pipes.PipeFunction;
 import com.tinkerpop.pipes.transform.IdentityPipe;
 import com.tinkerpop.pipes.transform.TransformFunctionPipe;
 import com.tinkerpop.pipes.util.Pipeline;
+import edu.mayo.bior.utils.GetBasesUtil;
 
 import edu.mayo.bior.utils.HGVS;
 import edu.mayo.pipes.HeaderPipe;
@@ -188,47 +189,6 @@ public class CosmicPublisher {
     	return ctp;
     }
 
-    /**
-     * This methood is used to retrieve the REF Allele from NCBIGenome at a position.
-     * In Cosmic raw data file, REF and ALT are retrieved from column:CDS Mutation
-     * and this is represented using a HGVS nomenclature.. "c.123G>T"
-     * but there are some cases where this data is like "c.123_124>T" where REF is missing.
-     * This method below is used to retrieve REF win cases like above. 
-     */
-    Pipe pipeline = null;
-    Bed2SequencePipe bed2sequencePipe = null;
-    public String getBasePairAtPosition(String landmark, String minBP, String maxBP) {
-        ArrayList<String> in = new ArrayList<String>();
-        in.add(landmark);
-        in.add(minBP);
-        in.add(maxBP);
-        String result = "";
-        
-        try {
-	        if(bed2sequencePipe == null){
-	            SystemProperties sysprop = new SystemProperties();
-	            //bed2sequencePipe = new Bed2SequencePipe(sysprop.get("hs_complete_genome_catalog"));
-	            bed2sequencePipe = new Bed2SequencePipe("/data/catalogs/NCBIGenome/GRCh37.p10/hs_ref_genome.fa.tsv.bgz");
-	            //bed2sequencePipe = new Bed2SequencePipe("C:\\mayo\\bior\\ncbigenome\\hs_ref_genome.fa.tsv.bgz");
-	            pipeline = new Pipeline(bed2sequencePipe);
-	        }
-	        bed2sequencePipe.reset();
-	        pipeline.reset();
-	        
-	        pipeline.setStarts(Arrays.asList(in));
-	        
-	        //if (pipeline.hasNext()) {
-	        	ArrayList<String> out = (ArrayList<String>) pipeline.next();
-	        	result = out.get(3); 
-	        //}
-        } catch(Exception e) {
-        	result = "";        	
-        	System.err.println(e.getMessage());
-        	e.printStackTrace();
-	    }
-        
-        return result;
-    }
 
 	/**
 	 * Transforms history/data from raw file into core-attributes and adds them as additional columns to the raw file again.
@@ -366,6 +326,7 @@ public class CosmicPublisher {
 			} 			
 		}
 		
+                GetBasesUtil baseu = new GetBasesUtil();
         // Data for a alleles is in Col 13 and is like "c.35G>A"
 		private void computeAlleles(History history) {
 			if (history.size()>=12) {
@@ -397,7 +358,7 @@ public class CosmicPublisher {
 		                		 String refval = "";
 		
 		                		 if (snpType.equals("ins")) {
-		                			 refval = getBasePairAtPosition(this.chr, this.maxBp, this.maxBp);
+		                			 refval = baseu.getBasePairAtPosition(this.chr, this.maxBp, this.maxBp);
 		
 		                			 if (refval.length()>0) {		                				 		
 		                				 this.ref = refval;
@@ -415,7 +376,7 @@ public class CosmicPublisher {
 		                			 
 		                				 Integer tmpMinBp = new Integer(this.minBp);
 		                				 int tVal = tmpMinBp.intValue() - 1;
-		                				 refval = getBasePairAtPosition(this.chr, String.valueOf(tVal), String.valueOf(tVal));
+		                				 refval = baseu.getBasePairAtPosition(this.chr, String.valueOf(tVal), String.valueOf(tVal));
 		
 		                				 if (refval.length()>0) {
 		                					 this.alt[0] = refval;

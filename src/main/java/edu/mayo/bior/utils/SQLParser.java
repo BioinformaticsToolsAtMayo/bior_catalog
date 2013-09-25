@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package edu.mayo.bior.publishers.UCSC;
+package edu.mayo.bior.utils;
 
 import edu.mayo.pipes.JSON.inject.ColumnInjector;
 import edu.mayo.pipes.JSON.inject.Injector;
@@ -12,6 +12,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -19,6 +20,39 @@ import java.util.List;
  * @author dquest
  */
 public class SQLParser {
+    
+    List<String> isFieldLineMatches = null;
+    
+    public SQLParser(){
+        //don't initialize any fields
+        isFieldLineMatches = new ArrayList<String>();
+    }
+    
+    /**
+     * 
+     * @param isFieldLine a set of strings for identifying if it is a field line, e.g. VARCHAR, DATE, INT, NUMBER
+     */
+    public SQLParser(List<String> isFieldLine){
+        isFieldLineMatches = isFieldLine;
+    }
+    
+    private void initDefaults(){
+        isFieldLineMatches = new ArrayList<String>();
+        isFieldLineMatches.add("VARCHAR");
+        isFieldLineMatches.add("CHAR"); 
+        isFieldLineMatches.add("DATE");
+        isFieldLineMatches.add(" INT");
+        isFieldLineMatches.add(" SMALLINT ");
+        isFieldLineMatches.add("DECIMAL");
+        isFieldLineMatches.add("ENUM");
+        isFieldLineMatches.add(" TEXT");
+        isFieldLineMatches.add(" YEAR");        
+    }
+    
+    public SQLParser(boolean useIsFieldLineDefaults){
+        initDefaults();
+    }
+    
     //cat *.sql | grep "NOT NULL" | grep -v char | grep -v blob | grep -v int | grep -v float | grep -v double | grep -v date | grep -v enum | grep -v text | grep -v set | grep -v time | less
     public JsonType getType(String line){
         //return JsonType.STRING;
@@ -57,13 +91,18 @@ public class SQLParser {
             return JsonType.STRING;
         }
     }
-    
+    //needed improvement, check the dialect and build this based on the SQL dialect
     public boolean isFieldLine(String line){
         if(line.matches(".*`.*`.*NOT NULL.*")) return true;
         if(line.matches(".*`.*`.*DEFAULT NULL.*")) return true;
         if(line.matches(".*`.*`.*default NULL.*")) return true;
         if(line.matches(".*`.*`.*blob,.*")) return true;
-        else return false;
+        for(String opt : isFieldLineMatches){
+            if(line.contains(opt)){
+                return true;
+            }
+        }
+        return false;
     }
     
     public String getField4Line(String line){
@@ -75,9 +114,36 @@ public class SQLParser {
         }
     }
     
+    /**
+     * e.g. convert CREATE TABLE journal ( into journal
+     * @param line
+     * @return 
+     */
+    public String getTableName(String line){
+        String name = "";
+        if(line.contains("CREATE TABLE")){
+            return name;
+        }else {
+            String tmp = line.replaceAll("CREATE TABLE", "");
+            tmp = tmp.replaceAll("(", "");
+            name = tmp.trim();
+        }
+        return name;
+    }
+    
     public int getCreateLine(List<String> lines){
+        return getCreateLine(lines, 0);
+    }
+    
+    /**
+     * starting at startpos, get the first create line you can find.
+     * @param lines
+     * @param startPos
+     * @return 
+     */
+    public int getCreateLine(List<String> lines, int startPos){
         int n = 0;
-        for(int i=0; i<lines.size(); i++ ){
+        for(int i=startPos; i<lines.size(); i++ ){
             if(lines.get(i).contains("CREATE TABLE")){
                 return i;
             }
@@ -86,9 +152,21 @@ public class SQLParser {
     }
     
     public int getCloseLine(List<String> lines){
+        return getCloseLine(lines, 0);
+    }
+    
+    //) ENGINE = MyISAM CHARSET=utf8
+    /**
+     * Starting at startpos, get the first close line you can find and return the line number.
+     * @param lines
+     * @param startPos
+     * @return 
+     */
+    public int getCloseLine(List<String> lines, int startPos){
         int n = 0;
-        for(int i=0; i<lines.size(); i++ ){
-            if(lines.get(i).matches(".*\\) ENGINE.MyISAM .*DEFAULT CHARSET.*")){
+        for(int i=startPos; i<lines.size(); i++ ){
+            if(lines.get(i).matches(".*\\) ENGINE.MyISAM .*DEFAULT CHARSET.*") 
+                    || lines.get(i).matches(".*\\) ENGINE.*MyISAM.*CHARSET.*") ){
                 return i;
             }
         }
@@ -102,7 +180,7 @@ public class SQLParser {
     }
     
     public ColumnInjector[] getInjectorsFromSQL(List<String> lines){
-        int count = 0;
+        int count = 0;         
         int createLine = this.getCreateLine(lines);
         int closeLine = this.getCloseLine(lines);
         ArrayList<ColumnInjector> jects = new ArrayList<ColumnInjector>();
@@ -116,6 +194,36 @@ public class SQLParser {
         }
         ColumnInjector[] array = jects.toArray(new ColumnInjector[jects.size()]);
         return array;
+    }
+    
+    /**
+     * 
+     * @param file - the complete path to the SQL file
+     * @return Key,Value - Key is the table name, value is an injector that holds the variable name and type 
+     */
+    public HashMap<String,ColumnInjector> getInjectorsFromSQLFile(String file) throws IOException{
+        List<String> lines = loadFileToMemory(file);
+        HashMap<String,ColumnInjector> injectors = new HashMap<String,ColumnInjector>();
+        int createLine = this.getCreateLine(lines);
+        int closeLine = this.getCloseLine(lines);
+        String tableName = this.getTableName(lines.get(createLine));
+        int count = 0;
+        while(closeLine > 0 ){
+            for(int i=createLine+1; i<closeLine; i++){
+                String line = lines.get(i);
+                if(isFieldLine(line)){
+                    count++;
+                    System.out.println("\t" + line);
+                    String field = getField4Line(line);
+                    injectors.put(field, makeInjector(count,getField4Line(line), getType(line)));
+                }
+            }
+            createLine = this.getCreateLine(lines, closeLine+1);
+            closeLine = getCloseLine(lines, closeLine+1);
+            tableName = this.getTableName(lines.get(createLine));
+            count = 0;
+        }
+        return injectors;     
     }
     
 
@@ -247,6 +355,15 @@ public class SQLParser {
         }
         JsonType jtype = getType(line);
         return new ColumnInjector(lineNumber,id,jtype);
+    }
+    
+    public int[] cutArr(int size){
+        int[] c = new int[size];
+        for(int i=0;i<size;i++){
+            c[i]=i+1;
+            //System.out.println(c[i]);
+        }
+        return c;
     }
     
 }

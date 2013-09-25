@@ -9,6 +9,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import edu.mayo.bior.utils.CatalogUtils;
+import edu.mayo.bior.utils.GetBasesUtil;
 
 
 public class CosmicPublisherTest {
@@ -36,9 +37,10 @@ public class CosmicPublisherTest {
 	
     //@Test
     public void testgetBPatPos() throws IOException{
+        GetBasesUtil baseu = new GetBasesUtil();
     	System.out.println("Testing getBPatPos... Make sure your sys.properties is set up to include hs_complete_genome_catalog and that catalog is on your path");
         CosmicPublisher cp = new CosmicPublisher(); 
-        String bPatPos = cp.getBasePairAtPosition("9", "133748282", "133748283");
+        String bPatPos = baseu.getBasePairAtPosition("9", "133748282", "133748283");
         System.out.println(bPatPos);
     }
        

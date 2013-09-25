@@ -4,6 +4,7 @@
  */
 package edu.mayo.bior.publishers.UCSC;
 
+import edu.mayo.bior.utils.SQLParser;
 import com.tinkerpop.pipes.Pipe;
 import com.tinkerpop.pipes.PipeFunction;
 import com.tinkerpop.pipes.transform.IdentityPipe;
@@ -63,15 +64,6 @@ public class UCSCPublisher {
         publisher.publish(indir, outdir, true);//use true for reporting if you want a report, and uncomment the break below so it just ouputs a few lines in the process method
     } 
     
-    public int[] cutArr(int size){
-        int[] c = new int[size];
-        for(int i=0;i<size;i++){
-            c[i]=i+1;
-            //System.out.println(c[i]);
-        }
-        return c;
-    }
-    
     public void publish(String indir, String outdir, boolean reporting) throws IOException{
         List<String> sqls = getSQL(indir);
         Pipeline p = new Pipeline(
@@ -96,7 +88,7 @@ public class UCSCPublisher {
             //Inject the original data into the JSON
             InjectIntoJsonPipe inject = new InjectIntoJsonPipe(true, inj);
             //cut out the original data
-            HCutPipe cut = new HCutPipe(false, cutArr(inj.length));
+            HCutPipe cut = new HCutPipe(false, sqlp.cutArr(inj.length));
             //TODO: need to drill out the golden attrs
             DrillPipe drill = new DrillPipe(true, sqlp.getGoldenDrillPaths(lines, reporting));
             //write the output file

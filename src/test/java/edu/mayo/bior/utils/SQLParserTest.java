@@ -2,8 +2,9 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package edu.mayo.bior.publishers.UCSC;
+package edu.mayo.bior.utils;
 
+import edu.mayo.bior.utils.SQLParser;
 import edu.mayo.pipes.JSON.inject.ColumnInjector;
 import edu.mayo.pipes.JSON.inject.Injector;
 import edu.mayo.pipes.JSON.inject.JsonType;

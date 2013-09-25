@@ -20,6 +20,7 @@ import edu.mayo.pipes.bioinformatics.VCF2VariantPipe;
 import edu.mayo.pipes.history.HistoryInPipe;
 import edu.mayo.pipes.history.HistoryOutPipe;
 import edu.mayo.bior.utils.CatalogUtils;
+import edu.mayo.pipes.PrintPipe;
 
 public class BGIPublisherTest {
 	
@@ -68,8 +69,8 @@ public class BGIPublisherTest {
 				new SameVariantPipe(BGI_CHR17_BGZ),
 				new HistoryOutPipe(),
 				new GrepEPipe("\\{\\}"), // Remove any lines with a blank json object for the SameVariantPipe output
-				new WritePipe(BGI_CHR17_SAME_VAR_OUTPUT_TSV, false, true) 
-				//new PrintPipe()
+				new WritePipe(BGI_CHR17_SAME_VAR_OUTPUT_TSV, false, true), 
+				new PrintPipe()
 				);
         pipe.setStarts(Arrays.asList(DBSNP_IN));
 		while(pipe.hasNext()) {

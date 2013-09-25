@@ -4,6 +4,7 @@
  */
 package edu.mayo.bior.publishers.UCSC;
 
+import edu.mayo.bior.utils.SQLParser;
 import com.tinkerpop.pipes.Pipe;
 import edu.mayo.pipes.JSON.DrillPipe;
 import edu.mayo.pipes.JSON.InjectIntoJsonPipe;
@@ -64,7 +65,7 @@ public class UCSCPublisherTest {
         System.out.println("Processing: " + testfile);
         Injector[] inj = sqlp.getInjectorsFromSQL(lines);
         InjectIntoJsonPipe inject = new InjectIntoJsonPipe(true, inj);
-        HCutPipe cut = new HCutPipe(false, ucsc.cutArr(inj.length));
+        HCutPipe cut = new HCutPipe(false, sqlp.cutArr(inj.length));
         DrillPipe drill = new DrillPipe(true, sqlp.getGoldenDrillPaths(lines, false));
         ucsc.process(testfile, inject, cut, drill, new PrintPipe());  //idea replace this print pipe with something else that will help us with testing...
         //things we have to test for each ucsc required by treat:
