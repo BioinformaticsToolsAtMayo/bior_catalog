@@ -130,7 +130,11 @@ public class LoadGenes {
     	//	Year
     	//	MIM_Number
     	JsonObject json = new JsonObject();
-    	if(chromMapEntryNum.length() > 0)	json.addProperty("Chromosome.Map_Entry_Number", Double.parseDouble(chromMapEntryNum));
+    	// NOTE: Chromosome.Map_Entry_Number is actually a string. Ex:
+    	//   7.15
+    	//	 7.20
+    	//	 7q11.1
+    	if(chromMapEntryNum.length() > 0)	json.addProperty("Chromosome.Map_Entry_Number", chromMapEntryNum);
     	if(month.length() > 0)				json.addProperty("MonthEntered", 				Integer.parseInt(month));
     	if(day.length() > 0)				json.addProperty("Day", 						Integer.parseInt(day));
     	if(year.length() > 0)				json.addProperty("Year", 						Integer.parseInt(year));
