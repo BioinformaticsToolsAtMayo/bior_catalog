@@ -107,20 +107,20 @@ public class LoadGenes {
     private String toJson(String line) {
     	String[] cols = line.split("\\|", 18);
     	int i=0;
-    	String chromMapEntryNum	= cols[i++];
-    	String month 			= cols[i++];
-    	String day				= cols[i++];
-    	String year				= cols[i++];
-    	String cytoLoc			= cols[i++];
-    	String geneSymbols		= cols[i++];
-    	String geneStatus		= cols[i++];
-    	String title			= merge(cols[i++], cols[i++]);
-    	String mimNum			= cols[i++];
-    	String method			= cols[i++];
-    	String comments			= merge(cols[i++], cols[i++]);
-    	String disorders		= merge(cols[i++], cols[i++], cols[i++]);
-    	String mouseCorrelate	= cols[i++];
-    	String ref				= cols[i++];
+    	String chromMapEntryNum	= cols[i++].trim();
+    	String month 			= cols[i++].trim();
+    	String day				= cols[i++].trim();
+    	String year				= cols[i++].trim();
+    	String cytoLoc			= cols[i++].trim();
+    	String geneSymbols		= cols[i++].trim();
+    	String geneStatus		= cols[i++].trim();
+    	String title			= merge(cols[i++].trim(), cols[i++].trim());
+    	String mimNum			= cols[i++].trim();
+    	String method			= cols[i++].trim();
+    	String comments			= merge(cols[i++].trim(), cols[i++].trim());
+    	String disorders		= merge(cols[i++].trim(), cols[i++].trim(), cols[i++].trim());
+    	String mouseCorrelate	= cols[i++].trim();
+    	String ref				= cols[i++].trim();
     	
     	// NOTE: Only add those values that are non-null, non-empty-string
     	// NOTE: These columns should be numeric:
@@ -134,7 +134,7 @@ public class LoadGenes {
     	//   7.15
     	//	 7.20
     	//	 7q11.1
-    	if(chromMapEntryNum.length() > 0)	json.addProperty("Chromosome.Map_Entry_Number", chromMapEntryNum);
+    	if(chromMapEntryNum.length() > 0)	json.addProperty("Chromosome_Map_Entry_Number", chromMapEntryNum);
     	if(month.length() > 0)				json.addProperty("MonthEntered", 				Integer.parseInt(month));
     	if(day.length() > 0)				json.addProperty("Day", 						Integer.parseInt(day));
     	if(year.length() > 0)				json.addProperty("Year", 						Integer.parseInt(year));
