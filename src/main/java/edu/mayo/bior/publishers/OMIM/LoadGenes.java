@@ -59,34 +59,49 @@ public class LoadGenes {
     	double start = System.currentTimeMillis();
         System.out.println("Started loading OMIM at: " + new Timestamp(new Date().getTime()));
         
-        File fileOut = new File(outputDir + "/scratch", "genemap_GRCh37.tsv");
-        fileOut.getCanonicalFile().getParentFile().mkdirs();
-        System.out.println("OMIM input file: " + fileInPath);
-
-        BufferedWriter fout = new BufferedWriter(new FileWriter(fileOut));
-        BufferedReader fin = new BufferedReader(new FileReader(fileInPath));
-        String line = null;
+        BufferedWriter fout = null;
+        BufferedReader fin  = null;
         int numLines = 0;
-        while( (line = fin.readLine()) != null ) {
-        	// Add ". 0 0" to beginning to signify chrom, minBP, maxBP to stay compatible with catalog design,
-        	// even though these fields are not available for genes
-        	fout.write(".\t0\t0\t" + toJson(line) + "\n");
-        	numLines++;
-        }
-        fin.close();
-        fout.close();
+        String line = null;
+        try {
+            File fileOut = new File(outputDir + "/scratch", "genemap_GRCh37.tsv");
+            fileOut.getCanonicalFile().getParentFile().mkdirs();
+            System.out.println("OMIM input file: " + fileInPath);
 
-        System.out.println("Building bgzip file...");
-        File bgzipOut = new File(outputDir, fileOut.getName() + ".bgz");
-        new IndexUtils().bgzip(fileOut, bgzipOut);
+	        fout = new BufferedWriter(new FileWriter(fileOut));
+	        fin = new BufferedReader(new FileReader(fileInPath));
+	        while( (line = fin.readLine()) != null ) {
+	        	numLines++;
+	        	// Add ". 0 0" to beginning to signify chrom, minBP, maxBP to stay compatible with catalog design,
+	        	// even though these fields are not available for genes
+	        	fout.write(".\t0\t0\t" + toJson(line) + "\n");
+	        }
+	        fin.close();
+	        fout.close();
+	
+	        System.out.println("Building bgzip file...");
+	        File bgzipOut = new File(outputDir, fileOut.getName() + ".bgz");
+	        new IndexUtils().bgzip(fileOut, bgzipOut);
+
+	    	double end = System.currentTimeMillis();
+	    	System.out.println("Lines processed: " + numLines);
+	    	System.out.println("File size in:    " + new File(fileInPath).length());
+	    	System.out.println("File size out:   " + fileOut.length());
+	    	System.out.println("Bgzip file size: " + bgzipOut.length());
+	    	System.out.println("Runtime: " + (end-start)/1000.0);
+	    	System.out.println("DONE.");
+
+        } catch(Exception e) {
+        	e.printStackTrace();
+        	System.out.println("Failed on line: " + numLines);
+        	System.out.println("Line: " + line);
+        } finally {
+        	if( fin != null )
+        		fin.close();
+        	if( fout != null )
+        		fout.close();        	
+        }
         
-    	double end = System.currentTimeMillis();
-    	System.out.println("Lines processed: " + numLines);
-    	System.out.println("File size in:    " + new File(fileInPath).length());
-    	System.out.println("File size out:   " + fileOut.length());
-    	System.out.println("Bgzip file size: " + bgzipOut.length());
-    	System.out.println("Runtime: " + (end-start)/1000.0);
-    	System.out.println("DONE.");
     }
 
     private String toJson(String line) {

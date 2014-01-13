@@ -13,7 +13,8 @@ set -e
 
 
 #------------------------------------------------------------------------------------------
-# Given a raw data files (*.gbs.txt) build JSON data file (which contains position + JSON)
+# Given a raw data files (usually this is the "genemap" file, no extension) build JSON data file (which contains position + JSON)
+# (did it used to be *.gbs.txt???)
 #------------------------------------------------------------------------------------------
 rawDataDir=$1
 targetCatalogDir=$2
