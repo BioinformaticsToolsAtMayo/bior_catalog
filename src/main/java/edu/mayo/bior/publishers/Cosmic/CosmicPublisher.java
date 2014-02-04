@@ -47,6 +47,8 @@ import edu.mayo.pipes.history.HistoryOutPipe;
 import edu.mayo.pipes.string.ComplementPipe;
 import edu.mayo.pipes.util.GenomicObjectUtils;
 import edu.mayo.pipes.util.SystemProperties;
+
+import java.io.File;
 import java.io.IOException;
 
 /**
@@ -56,7 +58,7 @@ import java.io.IOException;
 public class CosmicPublisher {
 	
     public static void usage(){
-        System.out.println("usage: CosmicPublisher <rawDataFile> <catalogOutputDir>");
+        System.err.println(String.format("usage: java %s <rawDataFile> <catalogOutputDir> <hs_complete_genome_catalog>", CosmicPublisher.class.getName()));
     }
     
     public static void main(String[] args) {	 
@@ -64,8 +66,14 @@ public class CosmicPublisher {
         //publisher.publish("/data/cosmic/v62/CosmicCompleteExport_v62_291112.tsv.gz", "/data/catalogs/cosmic/v62");
         //publisher.publish("C:\\mayo\\bior\\cosmic\\CosmicCompleteExport_v62_291112.tsv.gz", "C:\\temp");
         
-        if(args.length >= 1){ 
-            publisher.publish(args[0], args[1] + "/scratch/");
+        if(args.length == 3){
+        	File scratch = new File(args[1] + "/scratch/");
+        	scratch.mkdirs();
+        	
+        	String rawDataFile = args[0];
+        	String hsCompleteGenomeCatalog = args[2];
+        	
+            publisher.publish(rawDataFile, hsCompleteGenomeCatalog, scratch);
         }else{
             usage();
             System.exit(1);
@@ -77,7 +85,7 @@ public class CosmicPublisher {
      *
      * 
      */
-    public void publish(String rawDataFile, String outputDir) {
+    public void publish(String rawDataFile, String hsCompleteGenomeCatalog, File outputDir) {
         final String catalogFile = "cosmic_GRCh37.tsv";
         
         String[] header = getHeader(rawDataFile);
@@ -86,12 +94,11 @@ public class CosmicPublisher {
        
         System.out.println("Started loading Cosmic at: " + new Timestamp(new Date().getTime()));
         
-        //String outfile = outputDir + "\\" + catalogFile; 
-        String outfile = outputDir + catalogFile;        
-        System.out.println("Outputing File to: " + outputDir + "cosmic.tsv");
+        File outfile = new File(outputDir, catalogFile);        
+        System.out.println(String.format("Outputing File to: %s", outfile.getAbsolutePath()));
                 
         //processCosmicFile(rawDataFile, processedHeader, new PrintPipe());
-        processCosmicFile(rawDataFile, processedHeader, new WritePipe(outfile));
+        processCosmicFile(rawDataFile, processedHeader, new WritePipe(outfile.getAbsolutePath()), hsCompleteGenomeCatalog);
         
         System.out.println("COMPLETED loading Cosmic at: " + new Timestamp(new Date().getTime()));
     }    
@@ -141,7 +148,7 @@ public class CosmicPublisher {
      *
      * 
      */
-    private void processCosmicFile(String file, List<String> headerColumns, Pipe load) {
+    private void processCosmicFile(String file, List<String> headerColumns, Pipe load, String hsCompleteGenomeCatalog) {
     	Injector[] injectors = new Injector[32];
     	
     	for(int i=0;i<headerColumns.size();i++) {    		
@@ -164,7 +171,7 @@ public class CosmicPublisher {
         // The JSON string with all values from the raw file will be appended to the above. 
         int[] cut = new int[] {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,28,29};
         
-        Pipe<History,History> transform = new TransformFunctionPipe<History,History>( new CosmicTransformPipe() );
+        Pipe<History,History> transform = new TransformFunctionPipe<History,History>( new CosmicTransformPipe(hsCompleteGenomeCatalog) );
         
         Pipe p = new Pipeline(new CatGZPipe("gzip"),
         						new HeaderPipe(1),        						
@@ -184,8 +191,8 @@ public class CosmicPublisher {
         }        
     }
     
-    public CosmicTransformPipe getCosmicTransformPipe() {
-    	CosmicTransformPipe ctp = new CosmicTransformPipe();
+    public CosmicTransformPipe getCosmicTransformPipe(String hsCompleteGenomeCatalog) {
+    	CosmicTransformPipe ctp = new CosmicTransformPipe(hsCompleteGenomeCatalog);
     	return ctp;
     }
 
@@ -233,9 +240,20 @@ public class CosmicPublisher {
 		String maxBp = "";
 		String ref = "";
 		String[] alt;
-		String strand = "";		
+		String strand = "";
+		String hsCompleteGenomeCatalog;
 	
 		final String NUCLEOTIDES = "ACTG";
+
+		/**
+		 * Constructor
+		 * 
+		 * @param hsCompleteGenomeCatalog
+		 */
+		public CosmicTransformPipe(String hsCompleteGenomeCatalog)
+		{
+			this.hsCompleteGenomeCatalog = hsCompleteGenomeCatalog;
+		}
 		
 		@Override
 		public History compute(History history) {
@@ -358,7 +376,7 @@ public class CosmicPublisher {
 		                		 String refval = "";
 		
 		                		 if (snpType.equals("ins")) {
-		                			 refval = baseu.getBasePairAtPosition(this.chr, this.maxBp, this.maxBp);
+		                			 refval = baseu.getBasePairAtPosition(this.chr, this.maxBp, this.maxBp, this.hsCompleteGenomeCatalog);
 		
 		                			 if (refval.length()>0) {		                				 		
 		                				 this.ref = refval;
@@ -376,7 +394,7 @@ public class CosmicPublisher {
 		                			 
 		                				 Integer tmpMinBp = new Integer(this.minBp);
 		                				 int tVal = tmpMinBp.intValue() - 1;
-		                				 refval = baseu.getBasePairAtPosition(this.chr, String.valueOf(tVal), String.valueOf(tVal));
+		                				 refval = baseu.getBasePairAtPosition(this.chr, String.valueOf(tVal), String.valueOf(tVal), this.hsCompleteGenomeCatalog);
 		
 		                				 if (refval.length()>0) {
 		                					 this.alt[0] = refval;

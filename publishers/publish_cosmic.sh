@@ -17,10 +17,11 @@ set -e
 #------------------------------------------------------------------------------------------
 rawDataDir=$1
 targetCatalogDir=$2
+ncbiGenomeFile=$3
 
 echo "Build JSON from raw data files"
 echo "Target directory: $targetCatalogDir"
-java -cp $BIOR_CATALOG_HOME/conf:$BIOR_CATALOG_HOME/lib/* edu.mayo.bior.publishers.Cosmic.CosmicPublisher $rawDataDir  $targetCatalogDir
+java -cp $BIOR_CATALOG_HOME/conf:$BIOR_CATALOG_HOME/lib/* edu.mayo.bior.publishers.Cosmic.CosmicPublisher $rawDataDir  $targetCatalogDir $ncbiGenomeFile
 
 
 #------------------------------------------------------------------------------------------

@@ -8,6 +8,8 @@ import com.tinkerpop.pipes.Pipe;
 import com.tinkerpop.pipes.util.Pipeline;
 import edu.mayo.pipes.bioinformatics.sequence.Bed2SequencePipe;
 import edu.mayo.pipes.util.SystemProperties;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -16,9 +18,7 @@ import java.util.Arrays;
  * @author m102417
  */
 public class GetBasesUtil {
-    
-    private String GenomePath = "/data/catalogs/NCBIGenome/GRCh37.p10/hs_ref_genome.fa.tsv.bgz";
-    
+        
         /**
      * This methood is used to retrieve the REF Allele from NCBIGenome at a position.
      * In Cosmic raw data file, REF and ALT are retrieved from column:CDS Mutation
@@ -28,7 +28,7 @@ public class GetBasesUtil {
      */
     Pipe pipeline = null;
     Bed2SequencePipe bed2sequencePipe = null;
-    public String getBasePairAtPosition(String landmark, String minBP, String maxBP) {
+    public String getBasePairAtPosition(String landmark, String minBP, String maxBP, String hsCompleteGenomeCatalog) {
         ArrayList<String> in = new ArrayList<String>();
         in.add(landmark);
         in.add(minBP);
@@ -37,10 +37,7 @@ public class GetBasesUtil {
         
         try {
 	        if(bed2sequencePipe == null){
-	            SystemProperties sysprop = new SystemProperties();
-	            //bed2sequencePipe = new Bed2SequencePipe(sysprop.get("hs_complete_genome_catalog"));
-	            bed2sequencePipe = new Bed2SequencePipe(GenomePath);
-	            //bed2sequencePipe = new Bed2SequencePipe("C:\\mayo\\bior\\ncbigenome\\hs_ref_genome.fa.tsv.bgz");
+	            bed2sequencePipe = new Bed2SequencePipe(hsCompleteGenomeCatalog);
 	            pipeline = new Pipeline(bed2sequencePipe);
 	        }
 	        bed2sequencePipe.reset();
@@ -61,5 +58,9 @@ public class GetBasesUtil {
         return result;
     }
 
+    public String getBasePairAtPosition(String landmark, String minBP, String maxBP) throws IOException {
+        SystemProperties sysprop = new SystemProperties();
+    	return this.getBasePairAtPosition(landmark, minBP, maxBP, sysprop.get("hs_complete_genome_catalog"));
+    }
     
 }

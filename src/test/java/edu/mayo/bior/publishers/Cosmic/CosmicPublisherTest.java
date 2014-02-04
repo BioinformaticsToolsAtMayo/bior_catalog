@@ -22,6 +22,16 @@ public class CosmicPublisherTest {
     public TemporaryFolder tFolder = new TemporaryFolder();
 
     final String INPUT_TSV  	= "src/test/resources/testData/cosmic/cosmictest.tsv.gz";
+    
+    // instructions for building:
+    // 1.) Exract relevant lines from full genome catalog:
+    //     zcat cosmictest.tsv.gz | cut -f 19 | xargs tabix hs_ref_genome.fa.tsv.bgz > test_hs_ref_genome.fa.tsv
+    // 2.) Build TABIX files
+    //     sort -k 1,1 -k 2,2n -k 3,3n  test_hs_ref_genome.fa.tsv  |  bgzip >  test_hs_ref_genome.fa.tsv.bgz
+    //     tabix -s 1 -b 2 -e 3 test_hs_ref_genome.fa.tsv.bgz 
+    //
+    final String INPUT_GENOME_CATALOG = "src/test/resources/testData/cosmic/test_hs_ref_genome.fa.tsv.bgz";
+    
     final String EXPECTED_TSV= "src/test/resources/testData/cosmic/cosmic.expected.tsv";
 
     public File tempFolder;
@@ -48,7 +58,7 @@ public class CosmicPublisherTest {
     public void testTransform() throws Exception {
     	System.out.println("Testing.. CosmicPublisherTest.testTransform()!!");
 
-        new CosmicPublisher().publish(INPUT_TSV, tempFolder.getPath()+"/");
+        new CosmicPublisher().publish(INPUT_TSV, INPUT_GENOME_CATALOG, tempFolder);
 
         CatalogUtils.assertFileEquals(EXPECTED_TSV, OUTPUT_TSV.getPath());        
     }    
