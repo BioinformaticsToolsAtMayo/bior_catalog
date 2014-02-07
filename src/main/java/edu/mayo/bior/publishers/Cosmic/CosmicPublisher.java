@@ -86,7 +86,7 @@ public class CosmicPublisher {
      * 
      */
     public void publish(String rawDataFile, String hsCompleteGenomeCatalog, File outputDir) {
-        final String catalogFile = "cosmic_GRCh37.tsv";
+        final String catalogFile = "cosmic.tsv";
         
         String[] header = getHeader(rawDataFile);
         List<String> processedHeader = postProcessHeader(header);

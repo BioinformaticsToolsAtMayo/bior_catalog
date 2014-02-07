@@ -8,7 +8,7 @@
 # Print each line that is executed (-x), and exit if any command fails (-e)
 #set -x -e
 set -e
-#echo $BIOR_CATALOG_HOME
+echo "BIOR_CATALOG_HOME=$BIOR_CATALOG_HOME"
 #source $BIOR_CATALOG_HOME/setupEnv.sh
 
 
@@ -27,21 +27,22 @@ java -cp $BIOR_CATALOG_HOME/conf:$BIOR_CATALOG_HOME/lib/* edu.mayo.bior.publishe
 #------------------------------------------------------------------------------------------
 # Sort the JSON data file by columns 1 (chr-string), 2 (minBP-numeric), and 3 (maxBP-numeric), and bgzip it
 #------------------------------------------------------------------------------------------
-#echo "Sort and bgzip the genes JSON data file..."
-#sort -k 1,1 -k 2,2n -k 3,3n  $targetCatalogDir/cosmic.tsv  |  bgzip >  $targetCatalogDir/cosmic.tsv.bgz
+echo "Sort and bgzip..."
+sort -k 1,1 -k 2,2n -k 3,3n  $targetCatalogDir/scratch/cosmic.tsv  |  bgzip >  $targetCatalogDir/cosmic.tsv.bgz
 
 
 #------------------------------------------------------------------------------------------
 # Create Tabix index
 # s = landmark, b = begin position, e = end position
 #------------------------------------------------------------------------------------------
-#echo "Create tabix index on the bgzip file..."
-#tabix -s 1 -b 2 -e 3  $targetCatalogDir/cosmic.tsv.bgz
+echo "Create tabix index on the bgzip file..."
+tabix -s 1 -b 2 -e 3  $targetCatalogDir/cosmic.tsv.bgz
 
 #------------------------------------------------------------------------------------------
 # Remove the temporary genes.tsv file that NCBIGenePublisher created
 #------------------------------------------------------------------------------------------
-#echo "Remove temp files..."
-#rm $targetCatalogDir/cosmic.tsv
+echo "Remove temp files..."
+rm $targetCatalogDir/scratch/cosmic.tsv
+rmdir $targetCatalogDir/scratch
 
 echo "DONE."

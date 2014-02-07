@@ -40,7 +40,7 @@ public class CosmicPublisherTest {
     @Before
     public void createTestData() throws IOException {
     	tempFolder = tFolder.newFolder("cosmicTempDir");
-    	OUTPUT_TSV = new File(tempFolder, "cosmic_GRCh37.tsv");
+    	OUTPUT_TSV = new File(tempFolder, "cosmic.tsv");
     	
     	//System.out.println(tempFolder.getPath() +"::"+ output.getPath());
     }
