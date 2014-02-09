@@ -1,12 +1,16 @@
-package edu.mayo.publishers;
+package edu.mayo.bior.publishers;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.util.ArrayList;
 
 import org.apache.log4j.lf5.util.Resource;
 import org.junit.Test;
@@ -29,7 +33,7 @@ public class BuildNcbiCatalog {
 	File catalogOutDir;
 	
 	@Test
-	public void createAndTestCatalog() throws IOException {
+	public void createAndTestCatalog() throws IOException, InterruptedException {
 		initEnv();
 		initFiles();
 		
@@ -65,10 +69,12 @@ public class BuildNcbiCatalog {
 		String currentDir = new File(".").getCanonicalPath();
 		String userDir = System.getProperty("user.dir");
 		
-		System.getenv().put("BASEDIR", currentDir);
+		String x1 = execCmd("sh export BASEDIR=" + currentDir);
 		// Dynamically grab the unzipped distribution folder name
 		String folder = execCmd("ls -F target | grep \"bior.*/\" | cut -d \"/\" -f 1");
-		System.getenv().put("FOLDER", folder);
+		String x2 = execCmd("sh export FOLDER=" + folder);
+		System.out.println("x1 = " + x1);
+		System.out.println("x2 = " + x2);
 	}
 	
 	private void verifyDataFilesExist() {
@@ -97,7 +103,11 @@ public class BuildNcbiCatalog {
 	
 	}
 
-	private void buildCatalog() throws IOException {
+	private void buildCatalog() throws IOException, InterruptedException {
+		
+		ArrayList<String> output = execCmds(new String[] { "cd publishers", "ls -la" });
+		System.out.println(output);
+		
 		// Unzip the ncbi genes raw tar gzip file to the tempDir
 		System.out.println("Untar raw file...");
 		String rsp = execCmd("tar -zxvf " + ncbiGenesRawTarGz.getCanonicalPath()
@@ -110,14 +120,14 @@ public class BuildNcbiCatalog {
 		
 		// Build the catalog using the shell scripts
 		System.out.println("Creating the catalog...");
-		rsp = execCmd("source setEnv.sh");
+		rsp = execCmd("sh source setEnv.sh");
 		System.out.println("Rsp source: " + rsp);
 		rsp = execCmd("cd publishers");
 		rsp = execCmd("pwd");
 		System.out.println("Rsp pwd: " + rsp);
 		rsp = execCmd("echo $BIOR_CATALOG_HOME");
 		System.out.println("Rsp $BIOR_CATALOG_HOME = " + rsp);
-		rsp = execCmd("publish_NcbiGene.sh " + tempPath + " " + outputPath);
+		rsp = execCmd("sh publish_NcbiGene.sh " + tempPath + " " + outputPath);
 		System.out.println("Rsp: " + rsp);
 		
 		// Verify all output files exist and sizes and content correct
@@ -153,4 +163,35 @@ public class BuildNcbiCatalog {
         return outBuff.toString();
 	}
 	
+	private ArrayList<String> execCmds(String[] cmds) throws IOException, InterruptedException {
+		Process proc = Runtime.getRuntime().exec("pwd");
+		// Empty the output buffer
+		BufferedInputStream resultsInfo = new BufferedInputStream(proc.getInputStream());
+		BufferedInputStream resultsError= new BufferedInputStream(proc.getErrorStream());
+		String junk = readInStream(resultsInfo);
+		String junk2= readInStream(resultsError);
+		PrintWriter cmdsIn = new PrintWriter(proc.getOutputStream());
+		ArrayList<String> results = new ArrayList<String>();
+		for(String cmd : cmds) {
+			cmdsIn.println("sh " + cmd);
+			cmdsIn.flush();
+			proc.waitFor();
+			String info = readInStream(resultsInfo);
+			String error = readInStream(resultsError);
+			results.add(info + (error.length() > 0 ? "\n" : "") );
+		}
+		cmdsIn.close();
+		int returnCode = proc.waitFor();
+		System.out.println("Return code = " + returnCode);
+		return results;
+	}
+	
+	private String readInStream(InputStream in) throws IOException {
+		byte[] buf = new byte[32*1024];
+		int len = -1;
+		String s = "";
+		while( (len = in.read(buf)) != -1 )
+			s += new String(buf, 0, len);
+		return s;
+	}
 }
