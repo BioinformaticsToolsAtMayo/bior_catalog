@@ -124,13 +124,12 @@ public class LoadGenes {
     	
     	// NOTE: Only add those values that are non-null, non-empty-string
     	// NOTE: These columns should be numeric:
-    	// 	Chromosome.Map_Entry_Number
     	//	MonthEntered
     	//	Day
     	//	Year
     	//	MIM_Number
     	JsonObject json = new JsonObject();
-    	// NOTE: Chromosome.Map_Entry_Number is actually a string. Ex:
+    	// NOTE: Chromosome_Map_Entry_Number is actually a string because of the 'q' that was added to some chromosome numbers around fall 2013. Ex:
     	//   7.15
     	//	 7.20
     	//	 7q11.1
