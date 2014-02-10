@@ -60,7 +60,7 @@ public class BGIPublisherTest {
 		
 		System.out.println("exists?: " + new File(BGI_CHR17_BGZ).exists());
 		System.out.println("dbsnp path: " + BGI_CHR17_BGZ);
-
+		
 		// Run SameVariant pipe against DbSNP variants within BRCA1 (on chr17)
 		Pipeline pipe = new Pipeline(
 				new CatPipe(),
@@ -68,9 +68,10 @@ public class BGIPublisherTest {
 				new VCF2VariantPipe(),
 				new SameVariantPipe(BGI_CHR17_BGZ),
 				new HistoryOutPipe(),
+				new GrepEPipe("^#"),  // Remove headers
 				new GrepEPipe("\\{\\}"), // Remove any lines with a blank json object for the SameVariantPipe output
-				new WritePipe(BGI_CHR17_SAME_VAR_OUTPUT_TSV, false, true), 
-				new PrintPipe()
+				new WritePipe(BGI_CHR17_SAME_VAR_OUTPUT_TSV, false, true)
+				//new PrintPipe()
 				);
         pipe.setStarts(Arrays.asList(DBSNP_IN));
 		while(pipe.hasNext()) {
