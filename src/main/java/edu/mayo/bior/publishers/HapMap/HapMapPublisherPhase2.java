@@ -68,13 +68,14 @@ public class HapMapPublisherPhase2 {
         Pipeline p = new Pipeline(
         	new CatPipe(), 
         	new HistoryInPipe(),
-        	// Cut out empty columns
-        	new HCutPipe(new int[] {2,3,6,8}),
+        	// Cut out empty columns - NOTE: We won't mess with the headers since we are NOT passing any
+        	// metadata info to the HistoryInPipe which would cause the header to get out of sync with the data
+        	new HCutPipe(false, new int[] {2,3,6,8}),
         	drill,                //construct the golden attributes
         	replaceChr,
         	inject,               //inject the golden attributes into the json
         	// Cut out all columns except chrom, start, end, json
-        	new HCutPipe(new int[] {4,5,6,7}),
+        	new HCutPipe(false, new int[] {4,5,6,7}),
         	new CollapseHapMapVariantsPipe(),
         	new MergePipe("\t", false),
         	new WritePipe(outFile, false, true)
