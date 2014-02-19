@@ -4,11 +4,12 @@
 # 1) sys.properties will be loaded and the properties contain the correct path to the chr.gbs.txt files
 # 2) Tabix is installed on the local machine
 # 3) BIOR_CATALOG_HOME variable has been set
+#      It should be set to something like: ~/bior_catalog/target/bior_catalog-2.2.2-SNAPSHOT
 #------------------------------------------------------------------------------------------
 # Print each line that is executed (-x), and exit if any command fails (-e)
 #set -x -e
 set -e
-source $BIOR_CATALOG_HOME/setupEnv.sh
+source $BIOR_CATALOG_HOME/../../setupEnv.sh
 
 
 #------------------------------------------------------------------------------------------
