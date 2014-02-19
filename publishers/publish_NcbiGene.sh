@@ -9,14 +9,27 @@
 # Print each line that is executed (-x), and exit if any command fails (-e)
 #set -x -e
 set -e
-source $BIOR_CATALOG_HOME/../../setupEnv.sh
-
+mydir=$PWD
+cd $BIOR_CATALOG_HOME/../../
+source setupEnv.sh
+cd $mydir
 
 #------------------------------------------------------------------------------------------
 # Given a raw data files (*.gbs.txt) build JSON data file (which contains position + JSON)
 #------------------------------------------------------------------------------------------
 rawDataDir=$1
 targetCatalogDir=$2
+
+if [ -z "$rawDataDir" ] || [ ! -d "$rawDataDir" ] ; then
+  echo "No directory specified for RAW DATA (or directory does not exist): $rawDataDir"
+  exit 1;
+fi  
+
+if [ -z "$targetCatalogDir" ] || [ ! -d "$targetCatalogDir" ] ; then
+  echo "No directory specified for TARGET CATALOG (or directory does not exist): $targetCatalogDir"
+  exit 1;
+fi  
+
 
 echo "Build JSON from raw data files"
 echo "Target directory: $targetCatalogDir"
