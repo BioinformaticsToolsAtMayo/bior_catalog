@@ -108,7 +108,10 @@ public class SQLParser {
     public String getField4Line(String line){
         String[] split = line.split("`");
         if(split.length != 3){
-            return null;
+            split = line.split("\\s+");
+            //e.g. 		journal VARCHAR(10),
+            return split[1];
+
         }else{
             return split[1];
         }
@@ -121,11 +124,11 @@ public class SQLParser {
      */
     public String getTableName(String line){
         String name = "";
-        if(line.contains("CREATE TABLE")){
+        if(!line.contains("CREATE TABLE")){
             return name;
         }else {
             String tmp = line.replaceAll("CREATE TABLE", "");
-            tmp = tmp.replaceAll("(", "");
+            tmp = tmp.replaceAll("\\(", "");
             name = tmp.trim();
         }
         return name;
@@ -199,31 +202,39 @@ public class SQLParser {
     /**
      * 
      * @param file - the complete path to the SQL file
-     * @return Key,Value - Key is the table name, value is an injector that holds the variable name and type 
+     * @return Table,<Field,ColumnInjector> - Key is the table name, value is an injector that holds the variable name and type
      */
-    public HashMap<String,ColumnInjector> getInjectorsFromSQLFile(String file) throws IOException{
+    public HashMap<String,HashMap<String,ColumnInjector>> getInjectorsFromSQLFile(String file, boolean reporting) throws IOException{
         List<String> lines = loadFileToMemory(file);
-        HashMap<String,ColumnInjector> injectors = new HashMap<String,ColumnInjector>();
+        HashMap<String,HashMap<String,ColumnInjector>> schema = new HashMap<String,HashMap<String,ColumnInjector>>();
+
         int createLine = this.getCreateLine(lines);
         int closeLine = this.getCloseLine(lines);
         String tableName = this.getTableName(lines.get(createLine));
         int count = 0;
         while(closeLine > 0 ){
+            HashMap<String,ColumnInjector> injectors = new HashMap<String,ColumnInjector>();
+            if(reporting )System.out.println(tableName);
             for(int i=createLine+1; i<closeLine; i++){
                 String line = lines.get(i);
                 if(isFieldLine(line)){
                     count++;
-                    System.out.println("\t" + line);
+                    if(reporting) System.out.println("\t" + line);
                     String field = getField4Line(line);
+                    if(reporting) System.out.println("****" + field);
                     injectors.put(field, makeInjector(count,getField4Line(line), getType(line)));
                 }
             }
+            //save to hash
+            schema.put(tableName,injectors);
+
+            //move on to the next table description
             createLine = this.getCreateLine(lines, closeLine+1);
             closeLine = getCloseLine(lines, closeLine+1);
             tableName = this.getTableName(lines.get(createLine));
             count = 0;
         }
-        return injectors;     
+        return schema;
     }
     
 

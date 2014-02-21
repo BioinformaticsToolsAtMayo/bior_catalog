@@ -10,17 +10,21 @@ import edu.mayo.bior.publishers.Cosmic.CosmicPublisher;
 import edu.mayo.bior.utils.GetBasesUtil;
 import edu.mayo.bior.utils.SQLParser;
 import edu.mayo.pipes.JSON.InjectIntoJsonPipe;
-import edu.mayo.pipes.JSON.inject.Injector;
+import edu.mayo.pipes.JSON.inject.*;
 import edu.mayo.pipes.PrintPipe;
 import edu.mayo.pipes.ReplaceAllPipe;
 import edu.mayo.pipes.UNIX.CatPipe;
+import edu.mayo.pipes.bioinformatics.vocab.CoreAttributes;
+import edu.mayo.pipes.bioinformatics.vocab.Type;
 import edu.mayo.pipes.history.HCutPipe;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+
+import edu.mayo.pipes.history.HistoryInPipe;
 import net.minidev.json.JSONObject;
-import edu.mayo.pipes.JSON.inject.ColumnInjector;
+
 import java.io.File;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -40,12 +44,75 @@ public class HGMDPublisher {
         HGMDPublisher pub = new HGMDPublisher();
         String hg19file = "/data/hgmd/2012_3/pro/setup/data/pro/hg19_coords.txt.gz";
         String schemaFile = "/data/hgmd/2012_2/table_schema.txt";
-        //pub.ParseSQL(schemaFile);
+        HashMap<String, HashMap<String, ColumnInjector>> schema = pub.ParseSQL(schemaFile, true);
+        pub.createCatalogFromRawFile("/data/hgmd/2012_3/pro/setup/data/pro/hg19_coords.txt.gz", schema);
+
+
         //pub.loadHG19cords(hg19file);
-        pub.setupTmpH2(schemaFile, "/tmp");
-        pub.loadTable("mutation", "/data/hgmd/2012_3/pro/setup/data/pro/");
+        //pub.setupTmpH2(schemaFile, "/tmp");
+        //pub.loadTable("mutation", "/data/hgmd/2012_3/pro/setup/data/pro/");
     }
     Connection conn;
+
+    public void createCatalogFromRawFile(String rawFile, HashMap<String,HashMap<String,ColumnInjector>> schema){
+
+        HashMap<String,ColumnInjector> injectors = null;
+        //given the filename, what injectors do we need to use?
+        for(String table: schema.keySet()){
+            if(rawFile.endsWith(table + ".txt.gz")){
+                injectors = schema.get(table);
+            }
+        }
+        if(injectors == null){
+            //don't have a schema, can't parse
+            return;
+        }
+        InjectIntoJsonPipe inject = new InjectIntoJsonPipe(true, createInjectorArr(injectors));
+        Pipeline p = new Pipeline(new CatPipe(),
+                new ReplaceAllPipe("!","\t"),
+                new HistoryInPipe(),
+                inject,
+                new PrintPipe()
+        );
+        p.setStarts(Arrays.asList(rawFile));
+
+        for(int i=0;p.hasNext();i++){
+            p.next();
+        }
+
+    }
+
+    /**
+     * find the injector coresponding to a specific column in the has by looking at the position of the injector
+     * @param position
+     * @param injectors
+     * @return
+     */
+    public ColumnInjector injectorAtPosition(int position, HashMap<String,ColumnInjector> injectors){
+        for(String key: injectors.keySet()){
+            ColumnInjector i = injectors.get(key);
+            if(i.getColumn() == position){
+                return i;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * create an array of injectors for use in constructing the InjectIntoJsonPipe
+     * @param injectors
+     * @return
+     */
+    public Injector[] createInjectorArr(HashMap<String,ColumnInjector> injectors){
+        Injector[] arr = new Injector[injectors.size()];
+        for(int i=0;i<arr.length;i++){
+            arr[i]=injectorAtPosition(i,injectors);
+        }
+        return arr;
+    }
+
+
+
     public void setupTmpH2(String schemaFile, String tmpdir) throws SQLException, IOException{  
         cleanup(tmpdir);
         List<String> lines = sqlp.loadFileToMemory(schemaFile);       
@@ -97,28 +164,28 @@ public class HGMDPublisher {
         statement.close();
     }
     
-    public void loadTable(String tablename, String filesDir) throws SQLException{
-        Statement statement = conn.createStatement();
-        Pipeline p = new Pipeline(
-                new CatPipe(),
-                new PrintPipe()
-                );
-        p.setStarts(Arrays.asList(filesDir + tablename + ".txt.gz"));
-        for(int i=0; p.hasNext(); i++){
-            String s = (String) p.next();
-        }
-        statement.close();
-    }
+//    public void loadTable(String tablename, String filesDir) throws SQLException{
+//        Statement statement = conn.createStatement();
+//        Pipeline p = new Pipeline(
+//                new CatPipe(),
+//                new PrintPipe()
+//                );
+//        p.setStarts(Arrays.asList(filesDir + tablename + ".txt.gz"));
+//        for(int i=0; p.hasNext(); i++){
+//            String s = (String) p.next();
+//        }
+//        statement.close();
+//    }
     
     /**
      * given a file containing MYSQL, parse it and construct a hashmap of <TableName,Injector> pairs
      * @param sqlFile
      * @return
-     * @throws IOException 
+     * @throws IOException
      */
-    public HashMap<String,ColumnInjector> ParseSQL(String sqlFile) throws IOException{  
+    public HashMap<String,HashMap<String,ColumnInjector>> ParseSQL(String sqlFile, boolean reporting) throws IOException{
         System.out.println("Parsing SQL: " + sqlFile);
-        HashMap<String,ColumnInjector> hm = sqlp.getInjectorsFromSQLFile(sqlFile);
+        HashMap<String,HashMap<String,ColumnInjector>> hm = sqlp.getInjectorsFromSQLFile(sqlFile,reporting);
         return hm;
     }
     
