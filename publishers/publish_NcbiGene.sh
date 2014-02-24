@@ -1,27 +1,35 @@
 #!/bin/bash
 #------------------------------------------------------------------------------------------
 # Assumptions:
-# 1) sys.properties will be loaded and the properties contain the correct path to the chr.gbs.txt files
-# 2) Tabix is installed on the local machine
-# 3) BIOR_CATALOG_HOME variable has been set
-#      It should be set to something like: ~/bior_catalog/target/bior_catalog-2.2.2-SNAPSHOT
+# 1) Bgzip is installed on the local machine and in $PATH
+# 2) Tabix is installed on the local machine and in $PATH
 #------------------------------------------------------------------------------------------
 # Print each line that is executed (-x), and exit if any command fails (-e)
 #set -x -e
 set -e
-mydir=$PWD
-cd $BIOR_CATALOG_HOME/../../
+
+currentDir="`pwd`/"
+currentScript=`echo $0 | sed 's/^[./]*//'`
+## echo "currentScript : $currentScript"
+scriptPath="$currentDir$currentScript"
+## echo "scriptPath : $scriptPath"
+scriptDir="`dirname $scriptPath`"
+## echo "scriptDir: $scriptDir"
+echo "Running setupEnv.sh from: $scriptDir/../"
+cd "$scriptDir/../"
 source setupEnv.sh
-cd $mydir
+cd $currentDir
 
 #------------------------------------------------------------------------------------------
-# Given a raw data files (*.gbs.txt) build JSON data file (which contains position + JSON)
+# Given raw data files (*.gbs.txt) build JSON data file (which contains position + JSON)
 #------------------------------------------------------------------------------------------
 rawDataDir=$1
 targetCatalogDir=$2
 
 if [ -z "$rawDataDir" ] || [ ! -d "$rawDataDir" ] ; then
   echo "No directory specified for RAW DATA (or directory does not exist): $rawDataDir"
+  echo "Example:  /data5/bsi/refdata-new/ncbi_genome/human/downloaded/latest/2014_02_04/Assembled_chromosomes/gbs"
+  echo "Where this directory would contain files (one per chromosome) like: hs_ref_GRCh37.p13_chr11.gbs.gz"
   exit 1;
 fi  
 
