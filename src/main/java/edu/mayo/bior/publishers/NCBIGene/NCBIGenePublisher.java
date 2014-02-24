@@ -4,7 +4,8 @@
  */
 package edu.mayo.bior.publishers.NCBIGene;
 
-import java.nio.file.NoSuchFileException;
+
+import java.io.FileNotFoundException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -103,8 +104,7 @@ public class NCBIGenePublisher {
 
 	/** Match filenames:  hs_ref_GRCh*.gbs.gz"
 	 	Ex:  hs_ref_GRCh37.p13_chr14.gbs.gz  	*/
-	private List<String> getGeneGzips(String rawDataDir)
-			throws NoSuchFileException {
+	private List<String> getGeneGzips(String rawDataDir)  throws FileNotFoundException {
 		final String FILE_PATTERN = "hs_ref_GRCh\\S+_chr\\S+\\.gbs\\.gz";
 		Pipeline<String,String> p = new Pipeline(new Pipe[] {new LSPipe(false), new GrepPipe(FILE_PATTERN)});
 		p.setStarts(Arrays.asList(new String[] {rawDataDir}));
@@ -115,7 +115,7 @@ public class NCBIGenePublisher {
 		
 		// If no files match, then throw an exception!
 		if(files.size() == 0)
-			throw new NoSuchFileException("There were no files that matched file pattern: '" + FILE_PATTERN + "'  within directory: " + rawDataDir);
+			throw new FileNotFoundException("There were no files that matched file pattern: '" + FILE_PATTERN + "'  within directory: " + rawDataDir);
 		return files;
 	}
     

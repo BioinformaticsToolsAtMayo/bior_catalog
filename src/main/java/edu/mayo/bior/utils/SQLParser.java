@@ -107,12 +107,14 @@ public class SQLParser {
     
     public String getField4Line(String line){
         String[] split = line.split("`");
-        if(split.length != 3){
-            split = line.split("\\s+");
-            //e.g. 		journal VARCHAR(10),
+        // Ex: "  `chrom` varchar(255) NOT NULL,";
+        // OR  "  KEY `chrom` (`chrom`(14),`bin`)"
+        if( split.length >= 3 ) {
             return split[1];
-
-        }else{
+        }
+        //Ex:	"journal VARCHAR(10),"
+        else {
+            split = line.split("\\s+");
             return split[1];
         }
     }

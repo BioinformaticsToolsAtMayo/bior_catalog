@@ -88,11 +88,13 @@ public class SQLParserTest {
         String s3 = "  `chromStart` int(10) unsigned NOT NULL,";
         String s4 = "  `chromEnd` int(10) unsigned NOT NULL,";
         String s5 = "  KEY `chrom` (`chrom`(14),`bin`)";
-        assertEquals("bin",sqlp.getField4Line(s1));
-        assertEquals("chrom",sqlp.getField4Line(s2));
+        String s6 = "  journal VARCHAR(10),";
+        assertEquals("bin",		sqlp.getField4Line(s1));
+        assertEquals("chrom",	sqlp.getField4Line(s2));
         assertEquals("chromStart",sqlp.getField4Line(s3));
         assertEquals("chromEnd",sqlp.getField4Line(s4));
-        assertEquals(null,sqlp.getField4Line(s5));
+        assertEquals("chrom",	sqlp.getField4Line(s5));
+        assertEquals("journal",	sqlp.getField4Line(s6));
     }
     
     @Test
